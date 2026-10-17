@@ -1,0 +1,173 @@
+{
+  "review_round": "03",
+  "review_type": "Independent visual review of all ten supplied browser screenshots",
+  "overall_score": 8.3,
+  "score_scale": "0–10; judged within the supplied low-resolution, low-poly visual style",
+  "verdict": "The visible scene satisfies the core brief. The furnished room now reads as an occupied apartment within a grounded, multi-storey urban building. No required visual fix is demonstrated by these screenshots. Remaining weaknesses are optional presentation and architectural polish.",
+  "scope": {
+    "files_written": [
+      "art/review/round-03/review.json"
+    ],
+    "callers_tests_fixtures_config_exports": "No implementation changes; none affected.",
+    "user_data_risk": "None from this review artifact."
+  },
+  "per_image": [
+    {
+      "image": "00-apartment.png",
+      "score": 8.4,
+      "observations": [
+        "The dense kitchen, dining furniture, utensils, bed and plants preserve a furnished, lived-in room.",
+        "The yellow fridge presents solid opaque faces; the wall and floor do not show through it.",
+        "The foreground plant pot is solid, with visible soil and distinct leaf silhouettes rather than rectangular image cards.",
+        "The distant bedroom window is filled by the neighbouring facade, supporting the apartment setting."
+      ]
+    },
+    {
+      "image": "01-entrance-wall.png",
+      "score": 8.4,
+      "observations": [
+        "The entrance is surrounded by continuous opaque wall, with no entrance-side window visible.",
+        "The pot is opaque, and the plant retains cutout leaf edges.",
+        "The TV, table and cabinet maintain the original domestic character."
+      ]
+    },
+    {
+      "image": "02-corridor.png",
+      "score": 8.0,
+      "observations": [
+        "Opposing and repeated doors clearly communicate a shared corridor and neighbouring flats.",
+        "The tight width, bare bulbs and rough textures form a coherent worn apartment corridor.",
+        "The requested rough corridor texture treatment should be retained.",
+        "The distant stair access is visually subdued, but this is not a demonstrated functional obstruction."
+      ]
+    },
+    {
+      "image": "03-east-window.png",
+      "score": 8.7,
+      "observations": [
+        "The close brick facade almost completely fills the opening and produces the requested claustrophobia.",
+        "Both AC units sit on visible supports in wall space between windows; neither overlays a window opening.",
+        "Window recesses, floor bands and cast shadows give the opposing facade useful depth at this style level."
+      ]
+    },
+    {
+      "image": "04-bedroom-window.png",
+      "score": 8.6,
+      "observations": [
+        "The bed and curtains frame a close opposing building, making the bedroom feel enclosed by the city.",
+        "AC units have visible brackets and clear separation from neighbouring window openings.",
+        "The facade has coherent storeys and a vertical pipe; no floating attachment is evident."
+      ]
+    },
+    {
+      "image": "05-building-context.png",
+      "score": 7.8,
+      "observations": [
+        "The occupied building visibly reaches the pavement and has multiple storeys, a street entrance and a canopy.",
+        "The narrow gap to the adjacent brick building supports the confined interior views.",
+        "The small, varied openings on the occupied floor are confirmed as actual windows by image 09, not escaped furniture.",
+        "The street and pavement terminate abruptly against the flat background at the far right, limiting this wide establishing view.",
+        "No stair half-landing is visibly protruding through the street facade."
+      ]
+    },
+    {
+      "image": "06-court-from-window.png",
+      "score": 8.6,
+      "observations": [
+        "The close balconies make the courtyard relationship particularly convincing from inside the apartment.",
+        "Balcony slabs meet the wall beneath doors, with side enclosures and diagonal supports.",
+        "The visible AC unit occupies clear wall space rather than blocking the adjacent window."
+      ]
+    },
+    {
+      "image": "07-court-detail.png",
+      "score": 8.3,
+      "observations": [
+        "Tall close walls, continuous ground, bins, litter and pipes establish a grounded service courtyard.",
+        "The balcony braces visibly connect slabs to the facade.",
+        "Windows remain readable and clear of the visible AC units.",
+        "Some surface repetition is apparent, but it is compatible with the intended low-resolution style."
+      ]
+    },
+    {
+      "image": "08-stair-landing.png",
+      "score": 7.5,
+      "observations": [
+        "A stair flight, handrails, a turning area and an overhead return flight establish a real stairwell.",
+        "The small visible window is surrounded by wall and is not visibly bisected by a landing slab.",
+        "The close crop, similar dark tones and chunky overhead stair geometry make the circulation harder to read than the rest of the scene.",
+        "This image does not establish full-route clearance or walkability."
+      ]
+    },
+    {
+      "image": "09-occupied-exterior.png",
+      "score": 8.3,
+      "observations": [
+        "All three differently sized original windows are visibly embedded in the occupied facade, with sills.",
+        "Curtains, the TV and table, and kitchen fixtures appear behind the openings; they do not read as props escaped onto the exterior.",
+        "The opposing balcony doors, slabs, rails and braces have a coherent attachment relationship.",
+        "The occupied floor has a noticeably different wall texture and irregular opening rhythm compared with the repeated floors above and below; this is an integration polish issue, not a failure to enclose the apartment."
+      ]
+    }
+  ],
+  "brief_assessment": {
+    "furnished_original_room": "The supplied interior views show a coherent furnished room. Exact asset-by-asset preservation cannot be established without an earlier reference.",
+    "grounded_multi_storey_apartment": "Pass in the visible evidence, especially images 05, 07 and 09.",
+    "entrance_side_windows_removed": "Pass for the entrance wall shown in image 01.",
+    "shared_corridor_and_neighbours": "Pass visually in image 02. Interior layouts behind neighbouring doors are not visible.",
+    "close_city_facades": "Pass strongly in images 03, 04 and 06.",
+    "ac_and_balcony_attachment": "Pass for visible attachments and window clearance in images 03, 04, 06, 07 and 09.",
+    "rough_corridor_textures": "Appropriate and retained; no cleanup recommended.",
+    "fridge_opacity": "Pass in image 00.",
+    "plant_pot_opacity_and_leaf_cutouts": "Pass for the visible plants in images 00 and 01.",
+    "stair_facade_and_window_corrections": "The exterior shows no visible landing extrusion, and the visible stairwell window is clear of a crossing slab. Complete geometry clearance is not provable from these views.",
+    "window_sills": "Clearly visible on the occupied exterior openings in image 09."
+  },
+  "strengths": [
+    "Interior window views convincingly place the room in a narrow urban gap.",
+    "The room retains its furniture density and domestic identity.",
+    "The shared corridor and grounded exterior communicate an apartment building rather than a detached trailer.",
+    "AC units and balconies have readable supports and occupy plausible facade locations.",
+    "The requested opaque fridge and pots, plus cutout plant leaves, look correct in the supplied views."
+  ],
+  "required_fixes": [],
+  "prioritized_remaining_issues": [
+    {
+      "priority": 1,
+      "classification": "optional polish",
+      "issue": "The stairwell is the least visually legible part of the review.",
+      "image_evidence": [
+        "08-stair-landing.png: the overhead stepped underside dominates the top half, while similar wall and stair values obscure the turning area."
+      ],
+      "minimal_fix": "If this is a regular player view, use a small existing-light adjustment to distinguish the landing and treads. Preserve the rough textures; do not rebuild the stairs solely on this screenshot.",
+      "confidence": "High for visual readability; insufficient evidence to assert a circulation or collision defect."
+    },
+    {
+      "priority": 2,
+      "classification": "optional polish",
+      "issue": "The occupied storey reads as a visually separate facade band.",
+      "image_evidence": [
+        "09-occupied-exterior.png: its flatter grey-brown wall texture and three irregular window sizes stand apart from the yellow repeated storeys.",
+        "05-building-context.png: the occupied openings are visibly distinct in the wider composition."
+      ],
+      "minimal_fix": "If exterior consistency matters, match the occupied wall texture tint or scale more closely to the adjacent storeys. Preserve the three original windows and their sizes.",
+      "confidence": "High; the difference is visible, but can reasonably read as a renovated storey."
+    },
+    {
+      "priority": 3,
+      "classification": "optional polish",
+      "issue": "The wide exterior exposes an abrupt end to the surrounding world.",
+      "image_evidence": [
+        "05-building-context.png: the far-right pavement and street edge meet the plain grey background."
+      ],
+      "minimal_fix": "Only if this wide angle is player-accessible or used for presentation, extend the existing street surface or hide its end behind an existing building mass.",
+      "confidence": "High for this screenshot; player visibility is unknown."
+    }
+  ],
+  "limitations": [
+    "All ten named screenshots were opened with view_image and inspected.",
+    "No browser session, implementation edits, source-geometry audit or additional agents were used.",
+    "Static images cannot verify collision, full stair traversal, hidden neighbouring rooms, material behavior at every angle, animation or runtime performance.",
+    "No earlier screenshot set was used as proof of asset preservation or claimed corrections."
+  ]
+}

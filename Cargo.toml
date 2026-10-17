@@ -1,0 +1,30 @@
+[package]
+name = "CasinoGame"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+# Temporary screenshot viewpoints; remove after visual approval.
+scene-review = []
+
+[dependencies]
+bevy = { version = "0.19.1", default-features = false, features = ["3d", "ui", "keyboard", "mouse", "jpeg"] }
+
+bevy_rapier3d = { version = "0.35", default-features = false, features = ["dim3", "async-collider"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+web-sys = { version = "0.3", features = ["Window", "Document", "Element"] }
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.web]
+inherits = "dev"
+opt-level = 1
+debug = false
+
+[profile.web.package."*"]
+opt-level = 1

@@ -1,0 +1,85 @@
+{
+  "round": 1,
+  "review_basis": "All eight supplied Chromium screenshots inspected directly at full displayed resolution. Limited source inspection clarified placement conventions; scores judge the visible result within the intended low-resolution PSX style.",
+  "score": 7.2,
+  "verdict": "The architectural rebuild largely resolves the original brief, but this is a sound first pass rather than a finished scene. The furnished apartment is preserved, its entrance reads as an internal party wall, and exterior windows face genuinely close multi-storey buildings. Remaining work should focus on attachment details, facade variation, depth lighting, and stronger proof of the apartment-to-building connection.",
+  "per_image": [
+    {"image": "00-apartment.png", "score": 7.5, "assessment": "A convincing inhabited, cramped interior with its furniture and small props intact. The distant window immediately establishes a close opposite building. Lighting is very even and murky; ceiling bulbs do not visibly explain the illumination. The narrow room itself is acceptable because the task retains the original trailer interior."},
+    {"image": "01-entrance-wall.png", "score": 8.5, "assessment": "The strongest correction: an opaque entrance door in a continuous solid wall, with no exterior windows alongside it. Furniture remains coherent. The image alone cannot prove what is behind the wall, but the corridor view supplies useful corroboration."},
+    {"image": "02-corridor.png", "score": 6.5, "assessment": "A continuous enclosed shared corridor with multiple apartment doors, floor and ceiling. It now feels like part of a larger building. The stair end reads as overlapping slabs and thin rods from this position, and the corridor has no readable lighting fixture. The same coarse ground-like material on floor and ceiling makes it feel more provisional than the apartment."},
+    {"image": "03-east-window.png", "score": 7.0, "assessment": "The near facade fills the window and achieves enclosure. Exhaust units occupy solid piers rather than glazing. Their little support rods are visibly detached below the housings; the identical blue window panels and regularly repeated facade bands make the view look flat and stamped."},
+    {"image": "04-bedroom-window.png", "score": 7.0, "assessment": "Strong immediate proximity outside the retained bedroom. Drainpipe and exhaust units avoid the window openings. Repeated windows, vents, and small dark marks in horizontal bands are especially exposed by the wide framing. Detached exhaust brackets repeat here too."},
+    {"image": "05-building-context.png", "score": 6.5, "assessment": "Closed building masses, roofs and parapets establish a real urban block rather than an isolated trailer. However, the foreground roof hides the host facade and most ground connections, so this is weak evidence for the precise apartment-to-host-building attachment. The empty grey background and exposed pale ground edge make the wider city read as a finite test set."},
+    {"image": "06-court-from-window.png", "score": 4.0, "assessment": "An ineffective review composition: the window reveal/sill, frame and sofa occupy most of the image, while the courtyard floor is almost entirely hidden. It confirms a close opposing wall and a nearby balcony, but does not demonstrate the intended view down into the court. This score primarily concerns the evidence/framing, not an assertion that the architecture is broken."},
+    {"image": "07-court-detail.png", "score": 7.0, "assessment": "Good vertical enclosure, convincing close spacing, real ground, and service clutter concentrated along the edge. Balconies now have slabs, guards and diagonal braces, with no obvious window collision visible. Door access and exact threshold alignment are not clear enough in this image to certify. Very regular facade repetition and weak contact shadows still flatten the space."}
+  ],
+  "strengths": [
+    "The original furnished interior remains recognizable and coherently arranged.",
+    "The entrance elevation is now an opaque party wall with an internal door rather than an exposed glazed trailer facade.",
+    "The shared corridor has a continuous enclosure and neighbouring apartment doors.",
+    "Both principal window views are tightly bounded by neighbouring multi-storey facades, delivering the requested claustrophobic scale.",
+    "No exhaust or drainpipe visibly crosses glazing in the principal window views; this is a clear improvement over the reported earlier defect.",
+    "The courtyard has a continuous ground plane, attached building bases, and believable edge clutter. No major floating building is visible in the supplied views.",
+    "Balconies visibly have guards and structural braces rather than unsupported isolated slabs. The image set does not show an obvious balcony cutting across a neighbouring window."
+  ],
+  "issues": [
+    {
+      "severity": "medium",
+      "priority": 1,
+      "image": ["03-east-window.png", "04-bedroom-window.png", "07-court-detail.png"],
+      "evidence": "The two rust-coloured rods beneath each exhaust housing leave a visible gap to the housing, so they read as floating sticks rather than supports. In the close apartment-window views this is an immediately legible attachment defect. Source inspection corroborates that the rod endpoints remain below the housing base.",
+      "fix": "Raise or reshape the existing brackets so their upper ends visibly meet the housing underside while their wall ends remain anchored to the solid pier. Two simple diagonal supports are sufficient; do not add a new fixture system. Check the actual rod thickness and bounds, not just nominal endpoints."
+    },
+    {
+      "severity": "medium",
+      "priority": 2,
+      "image": ["03-east-window.png", "04-bedroom-window.png", "07-court-detail.png"],
+      "evidence": "Nearly every window has the same pale blue panel and trim, and rows repeat the same composition. The bedroom facade also repeats short dark marks in the horizontal bands at identical positions. At this close viewing distance the city reads as a tiled backdrop rather than a collection of inhabited flats.",
+      "fix": "Introduce a small deliberate pattern of existing URBAN facade/window variants and solid bays where available, concentrated in the two visible apartment-window views. Keep floor bands and opening heights aligned, and preserve the measured fixture clearances. Avoid random per-object clutter or new assets."
+    },
+    {
+      "severity": "medium",
+      "priority": 3,
+      "image": ["00-apartment.png", "03-east-window.png", "04-bedroom-window.png", "07-court-detail.png"],
+      "evidence": "Indoor surfaces are uniformly dim while the opposing facades are evenly bright. Exhaust housings and ground clutter show little visible contact shadow, so their physical attachment is less convincing. Existing low-resolution textures are not the problem; the lack of local light separation is.",
+      "fix": "Tune the existing ambient/directional lighting and shadow setup to strengthen contact beneath balconies, exhaust units and ground clutter without crushing the apartment into black. Let the window-facing surfaces read slightly brighter than the room recesses. Use existing renderer capabilities before adding any lights or bespoke shading."
+    },
+    {
+      "severity": "medium",
+      "priority": 4,
+      "image": ["05-building-context.png", "06-court-from-window.png"],
+      "evidence": "The wide context view is dominated by a foreground roof, hiding the exact host-building connection. The downward window view is dominated by the sill and interior furniture, hiding the courtyard floor. These images do not adequately prove two of the critical requirements despite the stronger evidence in other shots.",
+      "fix": "Recapture one oblique exterior view showing the occupied apartment elevation, adjacent host facade, floors below and ground in the same frame. Move the downward review camera toward a real usable part of the window and use a less extreme downward/sideways angle so both the opening and courtyard are visible. Do not alter the retained interior merely to improve a temporary review camera."
+    },
+    {
+      "severity": "low",
+      "priority": 5,
+      "image": ["02-corridor.png"],
+      "evidence": "The far end is visually ambiguous: overlapping horizontal slabs and thin inclined rails are visible, but neither stair direction nor landing continuity is immediately readable. The corridor ceiling uses an especially conspicuous ground/slab texture, and the corridor has no visible source for its uniform illumination.",
+      "fix": "First capture a closer diagonal stair-landing view to distinguish genuine geometry defects from this camera overlap. If needed, correct landing/rail joins only. Use an existing plain wall or ceiling material for the ceiling and, if the kit has one, a single restrained wall/ceiling light fixture to establish scale and lighting logic. This is lower priority because the player is locked inside the apartment."
+    },
+    {
+      "severity": "low",
+      "priority": 6,
+      "image": ["05-building-context.png"],
+      "evidence": "The distant grey void and abruptly exposed pale ground around isolated background blocks weaken the wider-city impression. The primary interior views conceal this effectively.",
+      "fix": "Only if reachable player window angles expose these edges, reposition an existing background URBAN mass or adjust distance fog to hide them. Do not build a larger city merely for this elevated debug shot."
+    }
+  ],
+  "critical_brief_status": {
+    "original_furnished_interior_retained": "visually passes",
+    "entrance_side_shared_corridor_instead_of_exterior_windows": "visually passes in the paired entrance and corridor images",
+    "close_claustrophobic_exterior_city": "passes in both main window views and courtyard detail",
+    "floating_narrow_standalone_apartment": "no visible recurrence, but exterior host-attachment evidence needs a better camera",
+    "fixtures_crossing_windows": "no visible recurrence in the inspected images; detached exhaust supports remain",
+    "balcony_floor_door_alignment": "no obvious violation visible, but exact threshold alignment is not certifiable from these camera angles",
+    "urban_only_asset_provenance": "not independently audited; screenshots cannot establish provenance"
+  },
+  "next_review": "After corrections, request a fresh independent reviewer and provide the same eight views with improved context/downward-window framing, plus a close balcony threshold or stair view only if those joints are changed.",
+  "scope": "Only this review report is written. No implementation, callers, tests, fixtures, configuration, exports or assets are changed.",
+  "limitations": [
+    "No live movement, collision or performance testing was performed.",
+    "No comprehensive asset provenance or geometry-intersection audit was performed.",
+    "Single screenshots cannot certify every floor, door threshold, or unseen building connection."
+  ]
+}
