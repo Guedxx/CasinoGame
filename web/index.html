@@ -14,6 +14,7 @@
 <script type="module">
   import init from './CasinoGame.js';
   try {
+    if (!navigator.gpu) throw new Error('WebGPU is unavailable. Use a WebGPU-enabled browser over HTTPS or localhost.');
     await init();
     document.querySelector('#status').remove();
   } catch (error) {

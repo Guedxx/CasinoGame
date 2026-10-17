@@ -27,8 +27,10 @@ tools/build-web.sh
 python3 -m http.server 8080 --bind 127.0.0.1 --directory dist
 ```
 
-Open <http://localhost:8080>. The build uses WebGL2 and copies the apartment assets
-into `dist/`. On system Rust installations with `rust-src` but no precompiled
+Open <http://localhost:8080>. The build uses WebGPU and copies the apartment assets
+into `dist/`. A WebGPU-enabled browser and HTTPS (or localhost) are required.
+Both versions use one sunlight shadow cascade and six shadow-casting indoor spotlights.
+On system Rust installations with `rust-src` but no precompiled
 WASM target, the script builds the standard library from those sources instead.
 The first build takes several minutes; subsequent builds reuse compiled crates.
 

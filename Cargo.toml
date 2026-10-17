@@ -13,6 +13,7 @@ bevy = { version = "0.19.1", default-features = false, features = ["3d", "ui", "
 bevy_rapier3d = { version = "0.35", default-features = false, features = ["dim3", "async-collider"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
+bevy = { version = "0.19.1", default-features = false, features = ["webgpu"] }
 web-sys = { version = "0.3", features = ["Window", "Document", "Element"] }
 
 [profile.dev]

@@ -29,6 +29,7 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
             ..default()
         },
         CascadeShadowConfigBuilder {
+            num_cascades: 1,
             maximum_distance: 40.0,
             ..default()
         }
