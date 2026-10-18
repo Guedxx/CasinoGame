@@ -1,0 +1,51 @@
+[
+  {
+    "resolution": "1600\u00d7900",
+    "view": "apartment",
+    "before": 21.234339674484136,
+    "after": 21.235931195590833,
+    "percent": 0.007495034604776407
+  },
+  {
+    "resolution": "1600\u00d7900",
+    "view": "entrance-wall",
+    "before": 21.44344291929636,
+    "after": 22.36186240583865,
+    "percent": 4.282985199712641
+  },
+  {
+    "resolution": "1600\u00d7900",
+    "view": "east-window",
+    "before": 23.818728254492108,
+    "after": 24.362209839836357,
+    "percent": 2.2817405679153024
+  },
+  {
+    "resolution": "1600\u00d7900",
+    "view": "bedroom-window",
+    "before": 20.738075606532036,
+    "after": 20.461889730371464,
+    "percent": -1.3317816050086084
+  },
+  {
+    "resolution": "1600\u00d7900",
+    "view": "court-from-window",
+    "before": 15.492253873063468,
+    "after": 15.615825702401292,
+    "percent": 0.7976362274354276
+  },
+  {
+    "resolution": "3073\u00d71920",
+    "view": "apartment",
+    "before": 9.505703422053704,
+    "after": 10.730042786878958,
+    "percent": 12.880050117961028
+  },
+  {
+    "resolution": "3073\u00d71920",
+    "view": "court-from-window",
+    "before": 6.042833022304663,
+    "after": 6.3972278679239,
+    "percent": 5.864713526108245
+  }
+]

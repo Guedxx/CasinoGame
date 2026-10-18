@@ -1,0 +1,16 @@
+art/review/performance/lighting-optimization/trace-selected-gpu / court-from-window: 25.59 acquisitions/s; 64.4ms max gap; 384 page draws; 380 successful page display IDs (25.32/s).
+  WebGPU decoder flushes >50ms: 0, 0.0ms clipped wall, 0.0ms full-span CPU, longest none.
+  Game RAF max 24.4ms; decision reasons {'SendDefault': 489, 'SendFrameTiming': 272}
+
+art/review/performance/lighting-optimization/trace-selected-cpu / court-from-window: 25.86 acquisitions/s; 57.0ms max gap; 388 page draws; 384 successful page display IDs (25.59/s).
+  WebGPU decoder flushes >50ms: 0, 0.0ms clipped wall, 0.0ms full-span CPU, longest none.
+  Game RAF max 31.9ms; decision reasons {'SendFrameTiming': 274, 'SendDefault': 498}
+
+Acquisitions are producer throughput, not physical presentation.
+Filter by marker renderer PID + page layer tree; deduplicate successful reporter display_trace_id.
+Successful page presentation feedback is compositor evidence, not unique fresh WebGPU texture-to-photon measurement.
+Display::FrameDisplayed also occurs for failed/sanitized feedback; its raw count is not game FPS.
+WebGPU decoder flush wall time includes driver/waits, not direct GPU shader execution time.
+Pair reporter spans by (PID, async local ID) in export order; filter by end timestamp inside sample marks.
+Other event counts use event timestamp inside marks. Long flush wall totals are clipped to marks; CPU totals describe full intersecting spans.
+Trace recording perturbs execution; compare ordinary throughput using separate untraced runs.

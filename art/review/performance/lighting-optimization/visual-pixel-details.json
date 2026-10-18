@@ -1,0 +1,177 @@
+{
+  "note": "Nonexact saved captures; difference display amplified85x, before/after crops8x nearest neighbor. Cause not established.",
+  "images": [
+    {
+      "view": "bathroom-standing",
+      "coordinate_origin": "top-left; zero-based",
+      "changed_pixels": 2,
+      "crop": {
+        "left": 1232,
+        "top": 608,
+        "width": 48,
+        "height": 48
+      },
+      "pixels": [
+        {
+          "x": 1256,
+          "y": 632,
+          "before": [
+            24,
+            31,
+            41
+          ],
+          "after": [
+            24,
+            31,
+            42
+          ],
+          "delta": [
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "x": 1256,
+          "y": 633,
+          "before": [
+            25,
+            30,
+            39
+          ],
+          "after": [
+            25,
+            31,
+            41
+          ],
+          "delta": [
+            0,
+            1,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "view": "entrance-wall",
+      "coordinate_origin": "top-left; zero-based",
+      "changed_pixels": 2,
+      "crop": {
+        "left": 879,
+        "top": 81,
+        "width": 48,
+        "height": 48
+      },
+      "pixels": [
+        {
+          "x": 903,
+          "y": 105,
+          "before": [
+            45,
+            51,
+            58
+          ],
+          "after": [
+            45,
+            51,
+            56
+          ],
+          "delta": [
+            0,
+            0,
+            -2
+          ]
+        },
+        {
+          "x": 903,
+          "y": 106,
+          "before": [
+            46,
+            50,
+            49
+          ],
+          "after": [
+            46,
+            50,
+            46
+          ],
+          "delta": [
+            0,
+            0,
+            -3
+          ]
+        }
+      ]
+    },
+    {
+      "view": "kitchen-right-edge",
+      "coordinate_origin": "top-left; zero-based",
+      "changed_pixels": 3,
+      "crop": {
+        "left": 682,
+        "top": 245,
+        "width": 48,
+        "height": 48
+      },
+      "pixels": [
+        {
+          "x": 706,
+          "y": 269,
+          "before": [
+            41,
+            43,
+            37
+          ],
+          "after": [
+            42,
+            44,
+            39
+          ],
+          "delta": [
+            1,
+            1,
+            2
+          ]
+        },
+        {
+          "x": 706,
+          "y": 270,
+          "before": [
+            43,
+            45,
+            40
+          ],
+          "after": [
+            44,
+            46,
+            41
+          ],
+          "delta": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "x": 707,
+          "y": 270,
+          "before": [
+            20,
+            12,
+            10
+          ],
+          "after": [
+            21,
+            13,
+            10
+          ],
+          "delta": [
+            1,
+            1,
+            0
+          ]
+        }
+      ]
+    }
+  ]
+}

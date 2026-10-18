@@ -9,6 +9,7 @@ import json
 import math
 import random
 import re
+import runpy
 import struct
 
 import bmesh
@@ -615,3 +616,6 @@ assert all(abs(materials[n]['alphaCutoff']-.025)<.0001 for n in cutout_materials
 manifest = dict(interior_objects=len(interior.objects), urban_instances=len(placements), urban_sources=sorted(used_sources), fixture_clearance_checks=len(fixtures), corridor_width_m=2.2, ground_y=GROUND, source_blend=str(SOURCE.relative_to(ROOT)), export=str(OUT.relative_to(ROOT)))
 (ROOT / 'art/apartment_city_manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
 print('CITY_COMPLETE', json.dumps(manifest))
+
+# Keep the confined-player runtime export in sync with the full authoring scene.
+runpy.run_path(str(ROOT / 'tools/build_window_scene.py'), run_name='__main__')

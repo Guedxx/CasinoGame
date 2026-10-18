@@ -1,0 +1,1067 @@
+{
+  "status": "Complete: final alternating throughput repeats, matched path-choice traces, native render-target image comparisons",
+  "method": {
+    "metric": "Canvas acquisitions / full sample wall time; not displayed FPS",
+    "sample_ms": 15000,
+    "order_per_resolution": [
+      "baseline",
+      "candidate",
+      "candidate",
+      "baseline"
+    ],
+    "samples_per_role_view_resolution": 2,
+    "aggregation": "Sum acquisitions divided by sum sample seconds",
+    "p95": "Individual sample interior acquisition-interval percentiles, not averaged or pooled",
+    "max_gap": "Includes leading and trailing sample boundaries",
+    "traces_in_throughput": false,
+    "all_samples_visible_focused": true,
+    "duplicate_texture_acquisitions": 0
+  },
+  "environment": {
+    "browser": "154.0.8037.97",
+    "adapter": {
+      "vendor": "intel",
+      "architecture": "gen-12lp",
+      "isFallbackAdapter": false
+    },
+    "physical_canvases": [
+      "1600x900",
+      "3073x1920"
+    ],
+    "asset": "apartment_windows.glb",
+    "asset_sha256": "3e3bda5ab7c5abdf6b95011af1af4d7302fd964f9d6ab7db2d2e89520f2ea6e3"
+  },
+  "candidate": {
+    "build_profile": "web-perf inherits release; opt-level=3; thin LTO; codegen-units=1; incremental=false",
+    "clusters": {
+      "total": 4096,
+      "z_slices": 24,
+      "first_slice_depth_m": 1,
+      "far_depth_m": 2000,
+      "dynamic_resizing": true
+    },
+    "spotlight_shader": "Skip existing exact-zero distance/cone attenuation, and direct lighting with exact-zero shadow multiplier; preserve positive contribution code",
+    "wasm_clustering": "CPU path selected at Startup; other GlobalClusterSettings device capabilities and limits preserved",
+    "isolated_cpu_speed_gain_claimed": false
+  },
+  "wasm": {
+    "baseline_bytes": 153101013,
+    "candidate_bytes": 89206695,
+    "size_reduction_percent": 41.73343908573616
+  },
+  "comparisons": [
+    {
+      "canvas": "1600x900",
+      "view": "apartment",
+      "baseline": {
+        "role": "baseline",
+        "canvas": "1600x900",
+        "view": "apartment",
+        "samples": 2,
+        "total_seconds": 30.019099999997763,
+        "acquisitions_per_second": 25.816896575848634,
+        "sample_rate_min": 25.77594245370987,
+        "sample_rate_max": 25.857874989174203,
+        "sample_p95_ms": [
+          43.5,
+          43.400000002235174
+        ],
+        "max_gap_ms": 69.40000000223517
+      },
+      "candidate": {
+        "role": "candidate",
+        "canvas": "1600x900",
+        "view": "apartment",
+        "samples": 2,
+        "total_seconds": 30.010200000002982,
+        "acquisitions_per_second": 32.688885778831946,
+        "sample_rate_min": 32.455631751867806,
+        "sample_rate_max": 32.92213980579609,
+        "sample_p95_ms": [
+          33.400000002235174,
+          34.30000000074506
+        ],
+        "max_gap_ms": 50.099999997764826
+      },
+      "acquisition_rate_change_percent": 26.618184655904642
+    },
+    {
+      "canvas": "1600x900",
+      "view": "court-from-window",
+      "baseline": {
+        "role": "baseline",
+        "canvas": "1600x900",
+        "view": "court-from-window",
+        "samples": 2,
+        "total_seconds": 30.010500000003724,
+        "acquisitions_per_second": 17.993702204226288,
+        "sample_rate_min": 17.92568504104648,
+        "sample_rate_max": 18.061729793854553,
+        "sample_p95_ms": [
+          61.19999999925494,
+          60.100000001490116
+        ],
+        "max_gap_ms": 89.89999999850988
+      },
+      "candidate": {
+        "role": "candidate",
+        "canvas": "1600x900",
+        "view": "court-from-window",
+        "samples": 2,
+        "total_seconds": 30.019,
+        "acquisitions_per_second": 27.249408707818382,
+        "sample_rate_min": 27.192023673058603,
+        "sample_rate_max": 27.30675475869882,
+        "sample_p95_ms": [
+          39.79999999701977,
+          40.100000001490116
+        ],
+        "max_gap_ms": 55.599999997764826
+      },
+      "acquisition_rate_change_percent": 51.43858889371944
+    },
+    {
+      "canvas": "3073x1920",
+      "view": "apartment",
+      "baseline": {
+        "role": "baseline",
+        "canvas": "3073x1920",
+        "view": "apartment",
+        "samples": 2,
+        "total_seconds": 30.009500000000003,
+        "acquisitions_per_second": 10.23009380362885,
+        "sample_rate_min": 10.196872958960771,
+        "sample_rate_max": 10.263313984096998,
+        "sample_p95_ms": [
+          106.60000000149012,
+          102.39999999850988
+        ],
+        "max_gap_ms": 286.5
+      },
+      "candidate": {
+        "role": "candidate",
+        "canvas": "3073x1920",
+        "view": "apartment",
+        "samples": 2,
+        "total_seconds": 30.021300000000746,
+        "acquisitions_per_second": 14.556331671179766,
+        "sample_rate_min": 14.526941479081094,
+        "sample_rate_max": 14.585706008112775,
+        "sample_p95_ms": [
+          72.89999999850988,
+          72.80000000074506
+        ],
+        "max_gap_ms": 87.80000000074506
+      },
+      "acquisition_rate_change_percent": 42.289327454810824
+    },
+    {
+      "canvas": "3073x1920",
+      "view": "court-from-window",
+      "baseline": {
+        "role": "baseline",
+        "canvas": "3073x1920",
+        "view": "court-from-window",
+        "samples": 2,
+        "total_seconds": 30.00829999999702,
+        "acquisitions_per_second": 6.264933368435355,
+        "sample_rate_min": 6.264870737056622,
+        "sample_rate_max": 6.2649960010663825,
+        "sample_p95_ms": [
+          173.59999999776483,
+          167.90000000223517
+        ],
+        "max_gap_ms": 185.90000000223517
+      },
+      "candidate": {
+        "role": "candidate",
+        "canvas": "3073x1920",
+        "view": "court-from-window",
+        "samples": 2,
+        "total_seconds": 30.00689999999851,
+        "acquisitions_per_second": 11.130773255485124,
+        "sample_rate_min": 11.064601274428224,
+        "sample_rate_max": 11.196939503204126,
+        "sample_p95_ms": [
+          96.30000000074506,
+          93.10000000149012
+        ],
+        "max_gap_ms": 102.19999999925494
+      },
+      "acquisition_rate_change_percent": 77.66786334177718
+    }
+  ],
+  "runs": [
+    {
+      "role": "baseline",
+      "sequence_index": 1,
+      "directory": "final-1600-baseline-1",
+      "results_file": "final-1600-baseline-1/results.json",
+      "canvas": {
+        "width": 1600,
+        "height": 900
+      },
+      "url": "http://127.0.0.1:8080/optimization-baseline/",
+      "browser": "154.0.8037.97",
+      "adapter": {
+        "vendor": "intel",
+        "architecture": "gen-12lp",
+        "isFallbackAdapter": false
+      },
+      "gameplay_smoke": "pointer lock, walk, jump, turn, escape, restart",
+      "errors": [],
+      "samples": [
+        {
+          "round": 1,
+          "view": "apartment",
+          "frames": 387,
+          "seconds": 15.014,
+          "fps": 25.77594245370987,
+          "unique_textures": 387,
+          "duplicate_acquisitions": 0,
+          "unique_texture_fps": 25.77594245370987,
+          "p95_ms": 43.5,
+          "leading_gap_ms": 10.800000000745058,
+          "trailing_gap_ms": 10.699999999254942,
+          "max_gap_ms": 69.40000000223517
+        },
+        {
+          "round": 1,
+          "view": "court-from-window",
+          "frames": 271,
+          "seconds": 15.00410000000149,
+          "fps": 18.061729793854553,
+          "unique_textures": 271,
+          "duplicate_acquisitions": 0,
+          "unique_texture_fps": 18.061729793854553,
+          "p95_ms": 61.19999999925494,
+          "leading_gap_ms": 16.699999999254942,
+          "trailing_gap_ms": 31.600000001490116,
+          "max_gap_ms": 71.5
+        }
+      ]
+    },
+    {
+      "role": "candidate",
+      "sequence_index": 2,
+      "directory": "final-1600-candidate-2",
+      "results_file": "final-1600-candidate-2/results.json",
+      "canvas": {
+        "width": 1600,
+        "height": 900
+      },
+      "url": "http://127.0.0.1:8080/optimization-cpu/",
+      "browser": "154.0.8037.97",
+      "adapter": {
+        "vendor": "intel",
+        "architecture": "gen-12lp",
+        "isFallbackAdapter": false
+      },
+      "gameplay_smoke": "pointer lock, walk, jump, turn, escape, restart",
+      "errors": [],
+      "samples": [
+        {
+          "round": 1,
+          "view": "apartment",
+          "frames": 494,
+          "seconds": 15.005100000001491,
+          "fps": 32.92213980579609,
+          "unique_textures": 494,
+          "duplicate_acquisitions": 0,
+          "unique_texture_fps": 32.92213980579609,
+          "p95_ms": 33.400000002235174,
+          "leading_gap_ms": 20.5,
+          "trailing_gap_ms": 8.900000002235174,
+          "max_gap_ms": 49.80000000074506
+        },
+        {
+          "round": 1,
+          "view": "court-from-window",
+          "frames": 410,
+          "seconds": 15.01460000000149,
+          "fps": 27.30675475869882,
+          "unique_textures": 410,
+          "duplicate_acquisitions": 0,
+          "unique_texture_fps": 27.30675475869882,
+          "p95_ms": 39.79999999701977,
+          "leading_gap_ms": 26.300000000745058,
+          "trailing_gap_ms": 6.400000002235174,
+          "max_gap_ms": 54.400000002235174
+        }
+      ]
+    },
+    {
+      "role": "candidate",
+      "sequence_index": 3,
+      "directory": "final-1600-candidate-3",
+      "results_file": "final-1600-candidate-3/results.json",
+      "canvas": {
+        "width": 1600,
+        "height": 900
+      },
+      "url": "http://127.0.0.1:8080/optimization-cpu/",
+      "browser": "154.0.8037.97",
+      "adapter": {
+        "vendor": "intel",
+        "architecture": "gen-12lp",
+        "isFallbackAdapter": false
+      },
+      "gameplay_smoke": "pointer lock, walk, jump, turn, escape, restart",
+      "errors": [],
+      "samples": [
+        {
+          "round": 1,
+          "view": "apartment",
+          "frames": 487,
+          "seconds": 15.005100000001491,
+          "fps": 32.455631751867806,
+          "unique_textures": 487,
+          "duplicate_acquisitions": 0,
+          "unique_texture_fps": 32.455631751867806,
+          "p95_ms": 34.30000000074506,
+          "leading_gap_ms": 15.600000001490116,
+          "trailing_gap_ms": 16.600000001490116,
+          "max_gap_ms": 50.099999997764826
+        },
+        {
+          "round": 1,
+          "view": "court-from-window",
+          "frames": 408,
+          "seconds": 15.00439999999851,
+          "fps": 27.192023673058603,
+          "unique_textures": 408,
+          "duplicate_acquisitions": 0,
+          "unique_texture_fps": 27.192023673058603,
+          "p95_ms": 40.100000001490116,
+          "leading_gap_ms": 8.699999999254942,
+          "trailing_gap_ms": 17.100000001490116,
+          "max_gap_ms": 55.599999997764826
+        }
+      ]
+    },
+    {
+      "role": "baseline",
+      "sequence_index": 4,
+      "directory": "final-1600-baseline-4",
+      "results_file": "final-1600-baseline-4/results.json",
+      "canvas": {
+        "width": 1600,
+        "height": 900
+      },
+      "url": "http://127.0.0.1:8080/optimization-baseline/",
+      "browser": "154.0.8037.97",
+      "adapter": {
+        "vendor": "intel",
+        "architecture": "gen-12lp",
+        "isFallbackAdapter": false
+      },
+      "gameplay_smoke": "pointer lock, walk, jump, turn, escape, restart",
+      "errors": [],
+      "samples": [
+        {
+          "round": 1,
+          "view": "apartment",
+          "frames": 388,
+          "seconds": 15.005099999997764,
+          "fps": 25.857874989174203,
+          "unique_textures": 388,
+          "duplicate_acquisitions": 0,
+          "unique_texture_fps": 25.857874989174203,
+          "p95_ms": 43.400000002235174,
+          "leading_gap_ms": 23,
+          "trailing_gap_ms": 20.699999999254942,
+          "max_gap_ms": 60.19999999925494
+        },
+        {
+          "round": 1,
+          "view": "court-from-window",
+          "frames": 269,
+          "seconds": 15.006400000002236,
+          "fps": 17.92568504104648,
+          "unique_textures": 269,
+          "duplicate_acquisitions": 0,
+          "unique_texture_fps": 17.92568504104648,
+          "p95_ms": 60.100000001490116,
+          "leading_gap_ms": 15.400000002235174,
+          "trailing_gap_ms": 10.199999999254942,
+          "max_gap_ms": 89.89999999850988
+        }
+      ]
+    },
+    {
+      "role": "baseline",
+      "sequence_index": 1,
+      "directory": "final-3073-baseline-1",
+      "results_file": "final-3073-baseline-1/results.json",
+      "canvas": {
+        "width": 3073,
+        "height": 1920
+      },
+      "url": "http://127.0.0.1:8080/optimization-baseline/",
+      "browser": "154.0.8037.97",
+      "adapter": {
+        "vendor": "intel",
+        "architecture": "gen-12lp",
+        "isFallbackAdapter": false
+      },
+      "gameplay_smoke": "pointer lock, walk, jump, turn, escape, restart",
+      "errors": [],
+      "samples": [
+        {
+          "round": 1,
+          "view": "apartment",
+          "frames": 153,
+          "seconds": 15.004599999997765,
+          "fps": 10.196872958960771,
+          "unique_textures": 153,
+          "duplicate_acquisitions": 0,
+          "unique_texture_fps": 10.196872958960771,
+          "p95_ms": 106.60000000149012,
+          "leading_gap_ms": 60.19999999925494,
+          "trailing_gap_ms": 80.30000000074506,
+          "max_gap_ms": 286.5
+        },
+        {
+          "round": 1,
+          "view": "court-from-window",
+          "frames": 94,
+          "seconds": 15.00429999999702,
+          "fps": 6.264870737056622,
+          "unique_textures": 94,
+          "duplicate_acquisitions": 0,
+          "unique_texture_fps": 6.264870737056622,
+          "p95_ms": 173.59999999776483,
+          "leading_gap_ms": 124.29999999701977,
+          "trailing_gap_ms": 26.099999997764826,
+          "max_gap_ms": 185.90000000223517
+        }
+      ]
+    },
+    {
+      "role": "candidate",
+      "sequence_index": 2,
+      "directory": "final-3073-candidate-2",
+      "results_file": "final-3073-candidate-2/results.json",
+      "canvas": {
+        "width": 3073,
+        "height": 1920
+      },
+      "url": "http://127.0.0.1:8080/optimization-cpu/",
+      "browser": "154.0.8037.97",
+      "adapter": {
+        "vendor": "intel",
+        "architecture": "gen-12lp",
+        "isFallbackAdapter": false
+      },
+      "gameplay_smoke": "pointer lock, walk, jump, turn, escape, restart",
+      "errors": [],
+      "samples": [
+        {
+          "round": 1,
+          "view": "apartment",
+          "frames": 219,
+          "seconds": 15.014699999999255,
+          "fps": 14.585706008112775,
+          "unique_textures": 219,
+          "duplicate_acquisitions": 0,
+          "unique_texture_fps": 14.585706008112775,
+          "p95_ms": 72.89999999850988,
+          "leading_gap_ms": 16.100000001490116,
+          "trailing_gap_ms": 7.5,
+          "max_gap_ms": 86.19999999925494
+        },
+        {
+          "round": 1,
+          "view": "court-from-window",
+          "frames": 166,
+          "seconds": 15.002800000000745,
+          "fps": 11.064601274428224,
+          "unique_textures": 166,
+          "duplicate_acquisitions": 0,
+          "unique_texture_fps": 11.064601274428224,
+          "p95_ms": 96.30000000074506,
+          "leading_gap_ms": 17,
+          "trailing_gap_ms": 51.5,
+          "max_gap_ms": 102.19999999925494
+        }
+      ]
+    },
+    {
+      "role": "candidate",
+      "sequence_index": 3,
+      "directory": "final-3073-candidate-3",
+      "results_file": "final-3073-candidate-3/results.json",
+      "canvas": {
+        "width": 3073,
+        "height": 1920
+      },
+      "url": "http://127.0.0.1:8080/optimization-cpu/",
+      "browser": "154.0.8037.97",
+      "adapter": {
+        "vendor": "intel",
+        "architecture": "gen-12lp",
+        "isFallbackAdapter": false
+      },
+      "gameplay_smoke": "pointer lock, walk, jump, turn, escape, restart",
+      "errors": [],
+      "samples": [
+        {
+          "round": 1,
+          "view": "apartment",
+          "frames": 218,
+          "seconds": 15.006600000001491,
+          "fps": 14.526941479081094,
+          "unique_textures": 218,
+          "duplicate_acquisitions": 0,
+          "unique_texture_fps": 14.526941479081094,
+          "p95_ms": 72.80000000074506,
+          "leading_gap_ms": 29.899999998509884,
+          "trailing_gap_ms": 7.400000002235174,
+          "max_gap_ms": 87.80000000074506
+        },
+        {
+          "round": 1,
+          "view": "court-from-window",
+          "frames": 168,
+          "seconds": 15.004099999997765,
+          "fps": 11.196939503204126,
+          "unique_textures": 168,
+          "duplicate_acquisitions": 0,
+          "unique_texture_fps": 11.196939503204126,
+          "p95_ms": 93.10000000149012,
+          "leading_gap_ms": 26.599999997764826,
+          "trailing_gap_ms": 35.30000000074506,
+          "max_gap_ms": 101.90000000223517
+        }
+      ]
+    },
+    {
+      "role": "baseline",
+      "sequence_index": 4,
+      "directory": "final-3073-baseline-4",
+      "results_file": "final-3073-baseline-4/results.json",
+      "canvas": {
+        "width": 3073,
+        "height": 1920
+      },
+      "url": "http://127.0.0.1:8080/optimization-baseline/",
+      "browser": "154.0.8037.97",
+      "adapter": {
+        "vendor": "intel",
+        "architecture": "gen-12lp",
+        "isFallbackAdapter": false
+      },
+      "gameplay_smoke": "pointer lock, walk, jump, turn, escape, restart",
+      "errors": [],
+      "samples": [
+        {
+          "round": 1,
+          "view": "apartment",
+          "frames": 154,
+          "seconds": 15.004900000002236,
+          "fps": 10.263313984096998,
+          "unique_textures": 154,
+          "duplicate_acquisitions": 0,
+          "unique_texture_fps": 10.263313984096998,
+          "p95_ms": 102.39999999850988,
+          "leading_gap_ms": 86.30000000074506,
+          "trailing_gap_ms": 71.69999999925494,
+          "max_gap_ms": 116.19999999925494
+        },
+        {
+          "round": 1,
+          "view": "court-from-window",
+          "frames": 94,
+          "seconds": 15.004,
+          "fps": 6.2649960010663825,
+          "unique_textures": 94,
+          "duplicate_acquisitions": 0,
+          "unique_texture_fps": 6.2649960010663825,
+          "p95_ms": 167.90000000223517,
+          "leading_gap_ms": 112.19999999925494,
+          "trailing_gap_ms": 36.5,
+          "max_gap_ms": 176.39999999850988
+        }
+      ]
+    }
+  ],
+  "matrix": {
+    "purpose": "Screening only; fixed order does not establish final isolated gains",
+    "results_file": "matrix-1600/results.json",
+    "cases": [
+      {
+        "name": "stock-default",
+        "keys": [
+          "l",
+          "7"
+        ],
+        "shader": "stock",
+        "near": false,
+        "far": false
+      },
+      {
+        "name": "stock-far",
+        "keys": [
+          "8"
+        ],
+        "shader": "stock",
+        "near": false,
+        "far": true
+      },
+      {
+        "name": "stock-near",
+        "keys": [
+          "9"
+        ],
+        "shader": "stock",
+        "near": true,
+        "far": false
+      },
+      {
+        "name": "stock-combined",
+        "keys": [
+          "0"
+        ],
+        "shader": "stock",
+        "near": true,
+        "far": true
+      },
+      {
+        "name": "fast-far",
+        "keys": [
+          "l",
+          "8"
+        ],
+        "shader": "fast",
+        "near": false,
+        "far": true
+      },
+      {
+        "name": "fast-default",
+        "keys": [
+          "7"
+        ],
+        "shader": "fast",
+        "near": false,
+        "far": false
+      },
+      {
+        "name": "fast-combined",
+        "keys": [
+          "0"
+        ],
+        "shader": "fast",
+        "near": true,
+        "far": true
+      }
+    ],
+    "screenshots": 14,
+    "exact_png_identity_per_view": true,
+    "apartment_sha256": "f6e16af6dc5583b2409824aec8a06d78f70198fe164cdfaf0329d416a153eb4a",
+    "courtyard_sha256": "fe73d557e58d58a865bbb42c78661c73f9adb69019dd93ce757536dafed6ca42"
+  },
+  "visual_validation": {
+    "status": "complete native render-target comparisons; three changed pixels disclosed",
+    "primary_capture": "canvas.toDataURL after the timed sample; PNG dimensions equal the physical render target",
+    "compared_images": 13,
+    "exact_images": 10,
+    "compared_pixels": 27640320,
+    "changed_pixels": 3,
+    "max_channel_difference": 6,
+    "all_images_pixel_identical": false,
+    "changed_pixel_cause": "Not established; no rounding-only claim",
+    "native": [
+      {
+        "comparison_file": "native-comparison-1600.json",
+        "png_matches_canvas": true,
+        "images": [
+          {
+            "view": "apartment",
+            "width": 1600,
+            "height": 900,
+            "total_pixels": 1440000,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          },
+          {
+            "view": "bathroom-jump",
+            "width": 1600,
+            "height": 900,
+            "total_pixels": 1440000,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          },
+          {
+            "view": "bathroom-standing",
+            "width": 1600,
+            "height": 900,
+            "total_pixels": 1440000,
+            "changed_pixels": 1,
+            "max_channel_difference": 3
+          },
+          {
+            "view": "bedroom-left-edge",
+            "width": 1600,
+            "height": 900,
+            "total_pixels": 1440000,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          },
+          {
+            "view": "bedroom-right-edge",
+            "width": 1600,
+            "height": 900,
+            "total_pixels": 1440000,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          },
+          {
+            "view": "bedroom-window",
+            "width": 1600,
+            "height": 900,
+            "total_pixels": 1440000,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          },
+          {
+            "view": "court-from-window",
+            "width": 1600,
+            "height": 900,
+            "total_pixels": 1440000,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          },
+          {
+            "view": "east-window",
+            "width": 1600,
+            "height": 900,
+            "total_pixels": 1440000,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          },
+          {
+            "view": "entrance-wall",
+            "width": 1600,
+            "height": 900,
+            "total_pixels": 1440000,
+            "changed_pixels": 1,
+            "max_channel_difference": 4
+          },
+          {
+            "view": "kitchen-left-edge",
+            "width": 1600,
+            "height": 900,
+            "total_pixels": 1440000,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          },
+          {
+            "view": "kitchen-right-edge",
+            "width": 1600,
+            "height": 900,
+            "total_pixels": 1440000,
+            "changed_pixels": 1,
+            "max_channel_difference": 6
+          }
+        ]
+      },
+      {
+        "comparison_file": "native-comparison-3073.json",
+        "png_matches_canvas": true,
+        "images": [
+          {
+            "view": "apartment",
+            "width": 3073,
+            "height": 1920,
+            "total_pixels": 5900160,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          },
+          {
+            "view": "court-from-window",
+            "width": 3073,
+            "height": 1920,
+            "total_pixels": 5900160,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          }
+        ]
+      }
+    ],
+    "native_run_files": [
+      "native-visual-1600-baseline/results.json",
+      "native-visual-1600-candidate/results.json",
+      "native-visual-3073-baseline/results.json",
+      "native-visual-3073-candidate/results.json"
+    ],
+    "all_native_visual_runs_smoke_passed": true,
+    "all_native_visual_runs_browser_errors": 0,
+    "css_screenshots": {
+      "compared_images": 13,
+      "exact_images": 10,
+      "changed_pixels": 7,
+      "max_channel_difference": 3,
+      "standard": {
+        "comparison_file": "visual-comparison.json",
+        "canvas": {
+          "width": 1600,
+          "height": 900
+        },
+        "png": {
+          "width": 1280,
+          "height": 720
+        },
+        "images": [
+          {
+            "view": "apartment",
+            "width": 1280,
+            "height": 720,
+            "total_pixels": 921600,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          },
+          {
+            "view": "bathroom-jump",
+            "width": 1280,
+            "height": 720,
+            "total_pixels": 921600,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          },
+          {
+            "view": "bathroom-standing",
+            "width": 1280,
+            "height": 720,
+            "total_pixels": 921600,
+            "changed_pixels": 2,
+            "max_channel_difference": 2
+          },
+          {
+            "view": "bedroom-left-edge",
+            "width": 1280,
+            "height": 720,
+            "total_pixels": 921600,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          },
+          {
+            "view": "bedroom-right-edge",
+            "width": 1280,
+            "height": 720,
+            "total_pixels": 921600,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          },
+          {
+            "view": "bedroom-window",
+            "width": 1280,
+            "height": 720,
+            "total_pixels": 921600,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          },
+          {
+            "view": "court-from-window",
+            "width": 1280,
+            "height": 720,
+            "total_pixels": 921600,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          },
+          {
+            "view": "east-window",
+            "width": 1280,
+            "height": 720,
+            "total_pixels": 921600,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          },
+          {
+            "view": "entrance-wall",
+            "width": 1280,
+            "height": 720,
+            "total_pixels": 921600,
+            "changed_pixels": 2,
+            "max_channel_difference": 3
+          },
+          {
+            "view": "kitchen-left-edge",
+            "width": 1280,
+            "height": 720,
+            "total_pixels": 921600,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          },
+          {
+            "view": "kitchen-right-edge",
+            "width": 1280,
+            "height": 720,
+            "total_pixels": 921600,
+            "changed_pixels": 3,
+            "max_channel_difference": 2
+          }
+        ]
+      },
+      "large": {
+        "comparison_file": "visual-comparison-3073.json",
+        "canvas": {
+          "width": 3073,
+          "height": 1920
+        },
+        "png": {
+          "width": 2458,
+          "height": 1536
+        },
+        "images": [
+          {
+            "view": "apartment",
+            "width": 2458,
+            "height": 1536,
+            "total_pixels": 3775488,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          },
+          {
+            "view": "court-from-window",
+            "width": 2458,
+            "height": 1536,
+            "total_pixels": 3775488,
+            "changed_pixels": 0,
+            "max_channel_difference": 0
+          }
+        ]
+      },
+      "capture": "Browser screenshots downscaled from the physical canvas by desktop display scaling"
+    },
+    "full_render_target_validation": {
+      "status": "complete",
+      "views": 13,
+      "png_dimensions_verified": true
+    }
+  },
+  "presentation_validation": {
+    "status": "complete matched path-choice traces; one sample per path",
+    "configuration": "1600x900 courtyard; fast shader; 4096/24 clusters, first slice 1 m, far depth 2000 m",
+    "analysis_file": "trace-selected-analysis.json",
+    "parser": "evidence-tools/analyze_chrome_traces.py",
+    "compression_metadata": "trace-compression.json",
+    "samples": [
+      {
+        "path": "GPU clustering",
+        "results_file": "trace-selected-gpu/results.json",
+        "trace_file": "trace-selected-gpu/trace-round-1-court-from-window.json.gz",
+        "acquisitions_per_second": 25.588740953977705,
+        "successful_page_display_ids": 380,
+        "successful_page_display_ids_per_second": 25.321710668136657,
+        "max_acquisition_gap_ms": 64.40000000223517,
+        "cluster_gpu_calls": {
+          "compute": {
+            "clustering Z slicing pass": 384,
+            "clustering allocation local pass": 384,
+            "clustering allocation global pass": 384
+          },
+          "render": {
+            "clustering count pass": 384,
+            "clustering populate pass": 384
+          },
+          "metadata_map_async": 384
+        },
+        "gpu_process_webgpu_flushes_over_50ms": {
+          "count": 0,
+          "wall_sum_ms": 0,
+          "thread_cpu_sum_ms": 0.0,
+          "median_ms": null,
+          "p95_ms": null,
+          "max_ms": null
+        },
+        "begin_frame_decisions": {
+          "SendDefault": 489,
+          "SendFrameTiming": 272
+        }
+      },
+      {
+        "path": "CPU clustering",
+        "results_file": "trace-selected-cpu/results.json",
+        "trace_file": "trace-selected-cpu/trace-round-1-court-from-window.json.gz",
+        "acquisitions_per_second": 25.855634929099484,
+        "successful_page_display_ids": 384,
+        "successful_page_display_ids_per_second": 25.588529515169334,
+        "max_acquisition_gap_ms": 57,
+        "cluster_gpu_calls": {
+          "compute": {},
+          "render": {},
+          "metadata_map_async": 0
+        },
+        "gpu_process_webgpu_flushes_over_50ms": {
+          "count": 0,
+          "wall_sum_ms": 0,
+          "thread_cpu_sum_ms": 0.0,
+          "median_ms": null,
+          "p95_ms": null,
+          "max_ms": null
+        },
+        "begin_frame_decisions": {
+          "SendFrameTiming": 274,
+          "SendDefault": 498
+        }
+      }
+    ],
+    "isolated_cpu_speed_gain_claimed": false,
+    "causal_limit": "Neither matched trace has a WebGPU decoder flush over 50 ms; earlier waits cannot all be attributed to GPU clustering",
+    "baseline_exploratory_directories": [
+      "trace-default",
+      "trace-far"
+    ],
+    "baseline_exploratory_note": "Both directories used default clusters; no far-cluster improvement claim"
+  },
+  "checks": {
+    "rust_tests": 8,
+    "python_scene_export_tests": 4,
+    "benchmark_self_test": "passed",
+    "benchmark_syntax": "passed",
+    "cargo_fmt_check": "passed",
+    "git_diff_check": "passed",
+    "web_build": "cargo build --locked --offline --target wasm32-unknown-unknown --profile web-perf --features scene-review",
+    "web_build_seconds": 290,
+    "baseline_wasm_bytes": 153101013,
+    "candidate_wasm_bytes": 89206695,
+    "served_build_script": "tools/build-web.sh --locked --offline --features scene-review",
+    "served_wasm_equals_tested_candidate": true,
+    "served_js_equals_tested_candidate": true,
+    "served_asset_equals_tested_candidate": true,
+    "http_root_wasm_asset_report": 200,
+    "native_render_target_captures": 13,
+    "native_compared_pixels": 27640320,
+    "native_changed_pixels": 3,
+    "native_max_channel_difference": 6
+  },
+  "tested_source_sha256": {
+    "Cargo.toml": "fdf9af5ca4b7a1bf1c1b7cf06c3bedc89b72f8b53941777ff06b38b543bcb056",
+    "Cargo.lock": "872d3e810a52cee662bc3a61cddce0eae726aac930f4dfa0cb3c525fc70040d2",
+    "src/game/mod.rs": "a3d4e29031f1d36fcc0eb6b14c28bbcd3245a1126ca8bff93271433d58da57ff",
+    "src/game/camera.rs": "4924ac4430b1951acfff836f169e94cc5ee4156e4a82529b3653d8ebecfc593c",
+    "src/game/cluster_settings.rs": "d25bf15a234693cf54e2dcc14ffc155e15894e520a88cfef91043e1223ee416b",
+    "src/game/lighting_fast_path.rs": "15d5cdf77d1524cf52d3d9922942a03f7fd3738b57241bd42679c7a1010aeb33",
+    "src/game/review.rs": "9d8094f1401d7bd260b14f68ae2cdbab886e60ca175ce50065cd4dfd9c1ea1c4",
+    "assets/models/apartment_windows.glb": "3e3bda5ab7c5abdf6b95011af1af4d7302fd964f9d6ab7db2d2e89520f2ea6e3"
+  },
+  "excluded_experiments": [
+    {
+      "directories": [
+        "1600-far",
+        "1600-near",
+        "1600-combined",
+        "1600-far-repeat"
+      ],
+      "reason": "Initial cluster query matched zero cameras; claimed cluster comparisons invalid"
+    }
+  ],
+  "limitations": [
+    "One Intel integrated GPU and Chromium version; no native/browser/GPU comparison",
+    "Acquisition throughput is not successful fresh-game presentation",
+    "Successful page presentation feedback does not identify unique WebGPU textures reaching the display",
+    "GPU-process WebGPU decoder flush wall time includes driver/fence/interop waits and is not shader execution time",
+    "Fog remains ExponentialSquared density0.045; no fog-off gain claimed",
+    "Three of 27,640,320 compared native pixels differ, max channel difference 6/255, across three 1600x900 views. Cause unresolved; no universal pixel-identity claim. Earlier downscaled browser screenshots have seven changed pixels, max 3/255."
+  ]
+}

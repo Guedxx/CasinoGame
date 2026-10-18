@@ -1,0 +1,33 @@
+{
+  "before_dir": "/home/xigo/Projects/CasinoGame/art/review/performance/lighting-optimization/final-3073-baseline-1",
+  "after_dir": "/home/xigo/Projects/CasinoGame/art/review/performance/lighting-optimization/final-3073-candidate-2",
+  "expected_files": [
+    "apartment",
+    "court-from-window"
+  ],
+  "status": "complete",
+  "images": [
+    {
+      "view": "apartment",
+      "width": 2458,
+      "height": 1536,
+      "total_pixels": 3775488,
+      "changed_pixels": 0,
+      "max_channel_difference": 0
+    },
+    {
+      "view": "court-from-window",
+      "width": 2458,
+      "height": 1536,
+      "total_pixels": 3775488,
+      "changed_pixels": 0,
+      "max_channel_difference": 0
+    }
+  ],
+  "excluded_before": [],
+  "excluded_after": [],
+  "compared_views": 2,
+  "changed_pixels": 0,
+  "max_channel_difference": 0,
+  "all_equal": true
+}

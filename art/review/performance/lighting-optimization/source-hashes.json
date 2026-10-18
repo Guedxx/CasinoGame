@@ -1,0 +1,10 @@
+{
+  "Cargo.toml": "fdf9af5ca4b7a1bf1c1b7cf06c3bedc89b72f8b53941777ff06b38b543bcb056",
+  "Cargo.lock": "872d3e810a52cee662bc3a61cddce0eae726aac930f4dfa0cb3c525fc70040d2",
+  "src/game/mod.rs": "a3d4e29031f1d36fcc0eb6b14c28bbcd3245a1126ca8bff93271433d58da57ff",
+  "src/game/camera.rs": "4924ac4430b1951acfff836f169e94cc5ee4156e4a82529b3653d8ebecfc593c",
+  "src/game/cluster_settings.rs": "d25bf15a234693cf54e2dcc14ffc155e15894e520a88cfef91043e1223ee416b",
+  "src/game/lighting_fast_path.rs": "15d5cdf77d1524cf52d3d9922942a03f7fd3738b57241bd42679c7a1010aeb33",
+  "src/game/review.rs": "9d8094f1401d7bd260b14f68ae2cdbab886e60ca175ce50065cd4dfd9c1ea1c4",
+  "assets/models/apartment_windows.glb": "3e3bda5ab7c5abdf6b95011af1af4d7302fd964f9d6ab7db2d2e89520f2ea6e3"
+}

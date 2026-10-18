@@ -1,0 +1,21 @@
+{
+  "rust_tests": 8,
+  "python_scene_export_tests": 4,
+  "benchmark_self_test": "passed",
+  "benchmark_syntax": "passed",
+  "cargo_fmt_check": "passed",
+  "git_diff_check": "passed",
+  "web_build": "cargo build --locked --offline --target wasm32-unknown-unknown --profile web-perf --features scene-review",
+  "web_build_seconds": 290,
+  "baseline_wasm_bytes": 153101013,
+  "candidate_wasm_bytes": 89206695,
+  "served_build_script": "tools/build-web.sh --locked --offline --features scene-review",
+  "served_wasm_equals_tested_candidate": true,
+  "served_js_equals_tested_candidate": true,
+  "served_asset_equals_tested_candidate": true,
+  "http_root_wasm_asset_report": 200,
+  "native_render_target_captures": 13,
+  "native_compared_pixels": 27640320,
+  "native_changed_pixels": 3,
+  "native_max_channel_difference": 6
+}

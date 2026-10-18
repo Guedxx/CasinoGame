@@ -1,0 +1,102 @@
+{
+  "before_dir": "/home/xigo/Projects/CasinoGame/art/review/performance/lighting-optimization/visual-baseline",
+  "after_dir": "/home/xigo/Projects/CasinoGame/art/review/performance/lighting-optimization/visual-candidate",
+  "expected_count": 11,
+  "status": "complete",
+  "images": [
+    {
+      "view": "apartment",
+      "width": 1280,
+      "height": 720,
+      "total_pixels": 921600,
+      "changed_pixels": 0,
+      "max_channel_difference": 0
+    },
+    {
+      "view": "bathroom-jump",
+      "width": 1280,
+      "height": 720,
+      "total_pixels": 921600,
+      "changed_pixels": 0,
+      "max_channel_difference": 0
+    },
+    {
+      "view": "bathroom-standing",
+      "width": 1280,
+      "height": 720,
+      "total_pixels": 921600,
+      "changed_pixels": 2,
+      "max_channel_difference": 2
+    },
+    {
+      "view": "bedroom-left-edge",
+      "width": 1280,
+      "height": 720,
+      "total_pixels": 921600,
+      "changed_pixels": 0,
+      "max_channel_difference": 0
+    },
+    {
+      "view": "bedroom-right-edge",
+      "width": 1280,
+      "height": 720,
+      "total_pixels": 921600,
+      "changed_pixels": 0,
+      "max_channel_difference": 0
+    },
+    {
+      "view": "bedroom-window",
+      "width": 1280,
+      "height": 720,
+      "total_pixels": 921600,
+      "changed_pixels": 0,
+      "max_channel_difference": 0
+    },
+    {
+      "view": "court-from-window",
+      "width": 1280,
+      "height": 720,
+      "total_pixels": 921600,
+      "changed_pixels": 0,
+      "max_channel_difference": 0
+    },
+    {
+      "view": "east-window",
+      "width": 1280,
+      "height": 720,
+      "total_pixels": 921600,
+      "changed_pixels": 0,
+      "max_channel_difference": 0
+    },
+    {
+      "view": "entrance-wall",
+      "width": 1280,
+      "height": 720,
+      "total_pixels": 921600,
+      "changed_pixels": 2,
+      "max_channel_difference": 3
+    },
+    {
+      "view": "kitchen-left-edge",
+      "width": 1280,
+      "height": 720,
+      "total_pixels": 921600,
+      "changed_pixels": 0,
+      "max_channel_difference": 0
+    },
+    {
+      "view": "kitchen-right-edge",
+      "width": 1280,
+      "height": 720,
+      "total_pixels": 921600,
+      "changed_pixels": 3,
+      "max_channel_difference": 2
+    }
+  ],
+  "excluded_before": [],
+  "excluded_after": [],
+  "compared_views": 11,
+  "changed_pixels": 7,
+  "max_channel_difference": 3,
+  "all_equal": false
+}

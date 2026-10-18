@@ -30,7 +30,8 @@ impl Plugin for PlayerPlugin {
             .init_resource::<Controls>()
             .add_systems(OnEnter(GameState::Playing), loading)
             .add_systems(OnExit(GameState::Playing), release)
-            .add_systems(OnEnter(GameState::Menu), overview)
+            .add_systems(OnEnter(GameState::Playing), resume)
+            .add_systems(Update, loading_visibility)
             .add_systems(
                 Update,
                 prepare_apartment.run_if(in_state(GameState::Playing)),
@@ -94,11 +95,17 @@ impl Default for Controls {
     }
 }
 
-fn loading(mut commands: Commands, mut controls: ResMut<Controls>) {
+fn loading(
+    mut commands: Commands,
+    mut controls: ResMut<Controls>,
+    existing: Query<(), With<Loading>>,
+) {
+    if !existing.is_empty() {
+        return;
+    }
     *controls = default();
     commands.spawn((
         Loading,
-        DespawnOnExit(GameState::Playing),
         Node {
             width: percent(100),
             height: percent(100),
@@ -230,7 +237,6 @@ fn prepare_apartment(
         Collider::capsule_y(0.6, 0.3),
         RigidBody::KinematicPositionBased,
         character_controller(),
-        DespawnOnExit(GameState::Playing),
     ));
     info!("First-person player ready at {SPAWN:?}; static colliders registered");
     for mut text in &mut text {
@@ -278,7 +284,7 @@ fn input(
     mut controls: ResMut<Controls>,
     player: Query<(), With<Player>>,
     mut next: ResMut<NextState<GameState>>,
-    mut status: Query<&mut Node, With<Loading>>,
+    work: Option<Res<crate::graphics::TextureWork>>,
 ) {
     let Ok((window, mut cursor)) = window.single_mut() else {
         return;
@@ -286,7 +292,10 @@ fn input(
     if keys.just_pressed(KeyCode::Escape) || !window.focused {
         cursor.grab_mode = CursorGrabMode::None;
         cursor.visible = true;
-    } else if buttons.just_pressed(MouseButton::Left) && !player.is_empty() {
+    } else if buttons.just_pressed(MouseButton::Left)
+        && !player.is_empty()
+        && !work.as_ref().is_some_and(|w| w.busy())
+    {
         cursor.grab_mode = CursorGrabMode::Locked;
         cursor.visible = false;
     }
@@ -313,8 +322,8 @@ fn input(
         controls.jump |= keys.just_pressed(KeyCode::Space);
     }
     controls.captured = active;
-    for mut node in &mut status {
-        node.display = if active { Display::None } else { Display::Flex };
+    if !active {
+        cursor.visible = true;
     }
 }
 
@@ -374,17 +383,34 @@ fn camera(
 fn release(
     mut window: Query<&mut CursorOptions, With<PrimaryWindow>>,
     mut controls: ResMut<Controls>,
+    mut time: ResMut<Time<Virtual>>,
 ) {
+    time.pause();
     if let Ok(mut cursor) = window.single_mut() {
         cursor.grab_mode = CursorGrabMode::None;
         cursor.visible = true;
     }
-    *controls = default();
+    controls.movement = Vec2::ZERO;
+    controls.jump = false;
+    controls.sprint = false;
+    controls.captured = false;
 }
-fn overview(mut camera: Query<&mut Transform, With<Camera3d>>) {
-    for mut camera in &mut camera {
-        *camera =
-            Transform::from_xyz(100.0, 80.0, 130.0).looking_at(Vec3::new(0.0, 3.0, 0.0), Vec3::Y);
+fn resume(mut time: ResMut<Time<Virtual>>) {
+    time.unpause();
+    info!("Gameplay resumed");
+}
+
+fn loading_visibility(
+    state: Res<State<GameState>>,
+    controls: Res<Controls>,
+    mut nodes: Query<&mut Node, With<Loading>>,
+) {
+    for mut node in &mut nodes {
+        node.display = if *state.get() == GameState::Playing && !controls.captured {
+            Display::Flex
+        } else {
+            Display::None
+        };
     }
 }
 
@@ -653,40 +679,58 @@ mod tests {
         ));
     }
     #[test]
-    fn leaving_and_reentering_despawns_the_previous_player() {
+    fn pause_preserves_player_and_camera_direction() {
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, bevy::state::app::StatesPlugin))
             .init_state::<GameState>()
             .init_resource::<Controls>()
-            .add_systems(OnEnter(GameState::Playing), |mut commands: Commands| {
-                commands.spawn((
-                    Player {
-                        vertical_speed: 0.0,
-                        previous: SPAWN,
-                    },
-                    DespawnOnExit(GameState::Playing),
-                ));
-            })
-            .add_systems(OnExit(GameState::Playing), release);
+            .add_systems(OnExit(GameState::Playing), release)
+            .add_systems(OnEnter(GameState::Playing), resume);
+        let position = Vec3::new(2.0, 1.5, 6.0);
+        let entity = app
+            .world_mut()
+            .spawn((
+                Player {
+                    vertical_speed: 2.0,
+                    previous: position,
+                },
+                Transform::from_translation(position),
+            ))
+            .id();
+        app.update();
+        app.world_mut().resource_mut::<Controls>().yaw = 0.4;
         for _ in 0..3 {
-            app.update();
-            assert_eq!(
-                app.world_mut().query::<&Player>().iter(app.world()).count(),
-                1
-            );
             app.world_mut().resource_mut::<Controls>().jump = true;
             app.world_mut()
                 .resource_mut::<NextState<GameState>>()
                 .set(GameState::Menu);
             app.update();
+            assert!(app.world().resource::<Time<Virtual>>().is_paused());
             assert_eq!(
-                app.world_mut().query::<&Player>().iter(app.world()).count(),
-                0
+                app.world().get::<Transform>(entity).unwrap().translation,
+                position
             );
-            assert!(!app.world().resource::<Controls>().jump);
+            assert_eq!(
+                app.world().get::<Player>(entity).unwrap().vertical_speed,
+                2.0
+            );
+            let controls = app.world().resource::<Controls>();
+            assert!(!controls.jump && !controls.captured);
+            assert_eq!(controls.yaw, 0.4);
+            app.world_mut()
+                .resource_mut::<NextState<GameState>>()
+                .set(GameState::Settings);
+            app.update();
+            assert!(app.world().resource::<Time<Virtual>>().is_paused());
             app.world_mut()
                 .resource_mut::<NextState<GameState>>()
                 .set(GameState::Playing);
+            app.update();
+            assert!(!app.world().resource::<Time<Virtual>>().is_paused());
+            assert_eq!(
+                app.world_mut().query::<&Player>().iter(app.world()).count(),
+                1
+            );
         }
     }
 }

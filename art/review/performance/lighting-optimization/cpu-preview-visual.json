@@ -1,0 +1,33 @@
+{
+  "before_dir": "/home/xigo/Projects/CasinoGame/art/review/performance/lighting-optimization/1600-baseline-1",
+  "after_dir": "/home/xigo/Projects/CasinoGame/art/review/performance/lighting-optimization/1600-cpu-preview",
+  "expected_files": [
+    "apartment",
+    "court-from-window"
+  ],
+  "status": "complete",
+  "images": [
+    {
+      "view": "apartment",
+      "width": 1280,
+      "height": 720,
+      "total_pixels": 921600,
+      "changed_pixels": 0,
+      "max_channel_difference": 0
+    },
+    {
+      "view": "court-from-window",
+      "width": 1280,
+      "height": 720,
+      "total_pixels": 921600,
+      "changed_pixels": 0,
+      "max_channel_difference": 0
+    }
+  ],
+  "excluded_before": [],
+  "excluded_after": [],
+  "compared_views": 2,
+  "changed_pixels": 0,
+  "max_channel_difference": 0,
+  "all_equal": true
+}

@@ -1,0 +1,2758 @@
+{
+  "date": "2026-10-17T23:53:00.801Z",
+  "url": "http://127.0.0.1:8080/optimization-shader/",
+  "sampleMs": 1500,
+  "purpose": "Verify stock-shader cluster controls and metadata; not an FPS benchmark",
+  "results": [
+    {
+      "key": "7",
+      "config": "default",
+      "applied": "%cINFO%c src/game/review.rs:49%c Cluster review config applied near=false far=false color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+      "sample": {
+        "start": 10128.20000000298,
+        "clusterMetadata": [
+          {
+            "time": 10146.20000000298,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10187.800000000745,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10231.20000000298,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10273,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10313.20000000298,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10355.5,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10398.5,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10439.60000000149,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10485.400000002235,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10529.60000000149,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10572.400000002235,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10617.10000000149,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10663.20000000298,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10704.60000000149,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10750.70000000298,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10796.800000000745,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10839.400000002235,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10888.800000000745,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10938.400000002235,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 10988.10000000149,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 11038.60000000149,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 11086.900000002235,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 11132.300000000745,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 11174.10000000149,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 11217.70000000298,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 11264.70000000298,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 11305.400000002235,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 11351.60000000149,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 11398.20000000298,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 11440,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 11483.5,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 11529.800000000745,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 11571.70000000298,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 11616.5,
+            "z_slices": 86,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 4334,
+            "light_far_z": 13.54800033569336
+          }
+        ],
+        "clusterViewports": [
+          {
+            "time": 10160.20000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 10201.20000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 10245.300000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 10285.300000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 10327,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 10370.60000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 10412.70000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 10462.900000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 10507.300000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 10544.10000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 10589.10000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 10633.400000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 10678.300000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 10720.300000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 10765.900000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 10812.800000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 10857.70000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 10909.70000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 10959,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 11006.10000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 11055,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 11102.20000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 11148,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 11188.300000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 11232.20000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 11278.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 11321.20000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 11368.300000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 11412.10000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 11455.10000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 11498.800000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 11545.60000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 11587.800000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 11632.400000002235,
+            "width": 17,
+            "height": 9
+          }
+        ],
+        "clusterHookErrors": [],
+        "end": 11636.20000000298,
+        "clusterHookStats": {
+          "metadata_buffers": 5,
+          "count_passes": 186
+        }
+      },
+      "index_counts": [
+        4334
+      ],
+      "z_slice_counts": [
+        86
+      ],
+      "viewports": [
+        "17x9"
+      ],
+      "screenshot": "default.png"
+    },
+    {
+      "key": "8",
+      "config": "far",
+      "applied": "%cINFO%c src/game/review.rs:49%c Cluster review config applied near=false far=true color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+      "sample": {
+        "start": 15776.60000000149,
+        "clusterMetadata": [
+          {
+            "time": 15782.20000000298,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 15822.60000000149,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 15861.5,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 15900.5,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 15939.400000002235,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 15978.400000002235,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16015.60000000149,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16054.10000000149,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16094.10000000149,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16135,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16171.800000000745,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16210.5,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16247.5,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16284.800000000745,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16325.900000002235,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16364.800000000745,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16403.900000002235,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16442.70000000298,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16481.900000002235,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16520.800000000745,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16561.400000002235,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16599.70000000298,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16638.70000000298,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16677,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16716.800000000745,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16757.20000000298,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16797.900000002235,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16836.300000000745,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16874.900000002235,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16913.5,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16953.5,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 16997.800000000745,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 17039.400000002235,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 17080.400000002235,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 17122.20000000298,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 17165.60000000149,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 17207.900000002235,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 17249,
+            "z_slices": 21,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 1682,
+            "light_far_z": 13.54800033569336
+          }
+        ],
+        "clusterViewports": [
+          {
+            "time": 15796.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 15850.20000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 15874.800000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 15913,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 15952.400000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 15992,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16029.70000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16066.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16106.20000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16146.800000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16185.70000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16223.300000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16261.60000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16298.60000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16339.10000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16378,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16416.400000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16456.300000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16495.70000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16534.20000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16576.300000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16613,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16651.60000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16689.800000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16729.900000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16770.400000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16810.10000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16852.400000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16887.60000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16927.400000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 16967.900000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 17011,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 17052.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 17094.900000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 17137,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 17179.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 17220.10000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 17261.60000000149,
+            "width": 17,
+            "height": 9
+          }
+        ],
+        "clusterHookErrors": [],
+        "end": 17280.400000002235,
+        "clusterHookStats": {
+          "metadata_buffers": 5,
+          "count_passes": 312
+        }
+      },
+      "index_counts": [
+        1682
+      ],
+      "z_slice_counts": [
+        21
+      ],
+      "viewports": [
+        "17x9"
+      ],
+      "screenshot": "far.png"
+    },
+    {
+      "key": "9",
+      "config": "near",
+      "applied": "%cINFO%c src/game/review.rs:49%c Cluster review config applied near=true far=false color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+      "sample": {
+        "start": 21207.800000000745,
+        "clusterMetadata": [
+          {
+            "time": 21240,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21274.400000002235,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21308.10000000149,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21338.300000000745,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21370.900000002235,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21400.300000000745,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21430.60000000149,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21461,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21494.300000000745,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21526,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21557.300000000745,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21587.300000000745,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21619.900000002235,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21650,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21679.10000000149,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21710,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21741.5,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21770.60000000149,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21800.300000000745,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21833.800000000745,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21865.70000000298,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21896.10000000149,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21928.5,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21959.400000002235,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 21989,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22019.900000002235,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22050.60000000149,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22081.20000000298,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22112.800000000745,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22143,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22174.5,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22204.60000000149,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22236.900000002235,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22267.400000002235,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22296.5,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22329.70000000298,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22358.300000000745,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22387.400000002235,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22420.900000002235,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22456,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22487.70000000298,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22525.20000000298,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22557.10000000149,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22589.20000000298,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22624.900000002235,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22657.900000002235,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 22690.10000000149,
+            "z_slices": 119,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 7894,
+            "light_far_z": 13.54800033569336
+          }
+        ],
+        "clusterViewports": [
+          {
+            "time": 21218.800000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21253.10000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21287.800000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21320.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21349.60000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21382.900000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21410.70000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21445.400000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21473.800000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21506.20000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21538.800000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21571.60000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21599.10000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21633.400000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21661.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21691.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21723.20000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21752.900000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21782.900000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21812.800000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21852.20000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21877.400000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21907.800000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21941.900000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 21971.70000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22000.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22030.10000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22062.900000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22093.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22124.800000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22159.70000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22186.400000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22217.70000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22249.60000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22280.300000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22309.70000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22340.60000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22370.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22402,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22433.60000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22469.10000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22504.20000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22540.10000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22572.900000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22603,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22641.10000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22670.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 22704.60000000149,
+            "width": 17,
+            "height": 9
+          }
+        ],
+        "clusterHookErrors": [],
+        "end": 22713,
+        "clusterHookStats": {
+          "metadata_buffers": 7,
+          "count_passes": 465
+        }
+      },
+      "index_counts": [
+        7894
+      ],
+      "z_slice_counts": [
+        119
+      ],
+      "viewports": [
+        "17x9"
+      ],
+      "screenshot": "near.png"
+    },
+    {
+      "key": "0",
+      "config": "combined",
+      "applied": "%cINFO%c src/game/review.rs:49%c Cluster review config applied near=true far=true color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+      "sample": {
+        "start": 26693,
+        "clusterMetadata": [
+          {
+            "time": 26712,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 26745,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 26777.70000000298,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 26811.400000002235,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 26845,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 26878.5,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 26911.20000000298,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 26943.70000000298,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 26979.300000000745,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27013.20000000298,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27045.900000002235,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27078.70000000298,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27112.400000002235,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27145.60000000149,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27179.10000000149,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27212.60000000149,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27246.900000002235,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27283.70000000298,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27319.20000000298,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27354.5,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27391.400000002235,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27425.900000002235,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27462.10000000149,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27498,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27532.900000002235,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27565.20000000298,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27600.20000000298,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27633.400000002235,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27666.5,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27699.10000000149,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27731.5,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27765,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27797.60000000149,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27831.20000000298,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27864.5,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27899.10000000149,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27932.800000000745,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 27966.20000000298,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 28001.800000000745,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 28037,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 28073.10000000149,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 28109.20000000298,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 28162.900000002235,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          },
+          {
+            "time": 28180.60000000149,
+            "z_slices": 46,
+            "lights": 6,
+            "reflection_probes": 0,
+            "irradiance_volumes": 0,
+            "decals": 0,
+            "z_slice_capacity": 1024,
+            "index_count": 3682,
+            "light_far_z": 13.54800033569336
+          }
+        ],
+        "clusterViewports": [
+          {
+            "time": 26723.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 26756.900000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 26790.800000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 26823,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 26857.400000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 26892.70000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 26926.10000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 26957.800000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 26991.900000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27025.70000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27059.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27092.400000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27125.300000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27161.60000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27196.10000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27224.900000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27259.800000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27297.20000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27332.400000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27367.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27404.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27439,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27474.400000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27511.10000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27546.60000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27578.900000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27614,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27646.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27679.70000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27711.300000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27745.300000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27777.800000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27811,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27858.10000000149,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27878.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27912.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27946.20000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 27980.300000000745,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 28015.400000002235,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 28050.5,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 28087.20000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 28126.20000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 28159.70000000298,
+            "width": 17,
+            "height": 9
+          },
+          {
+            "time": 28195.10000000149,
+            "width": 17,
+            "height": 9
+          }
+        ],
+        "clusterHookErrors": [],
+        "end": 28198.800000000745,
+        "clusterHookStats": {
+          "metadata_buffers": 7,
+          "count_passes": 616
+        }
+      },
+      "index_counts": [
+        3682
+      ],
+      "z_slice_counts": [
+        46
+      ],
+      "viewports": [
+        "17x9"
+      ],
+      "screenshot": "combined.png"
+    }
+  ],
+  "errors": [],
+  "log": [
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_winit-0.19.1/src/system.rs:67%c Creating new window Casino Game (65v0) color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.19.1/src/renderer/mod.rs:288%c AdapterInfo { name: \"\", vendor: 0, device: 0, device_type: Other, device_pci_bus_id: \"\", driver: \"\", driver_info: \"\", backend: BrowserWebGpu, subgroup_min_size: 4, subgroup_max_size: 128, transient_saves_memory: false } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/cluster/mod.rs:87%c GPU clustering is supported on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.19.1/src/batching/gpu_preprocessing.rs:1372%c Some GPU preprocessing are limited on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cWARN%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/ssao/mod.rs:68%c ScreenSpaceAmbientOcclusionPlugin not loaded. GPU lacks support: Limits::max_storage_textures_per_shader_stage is less than 5. color: orange; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/light_probe/generate.rs:121%c Disabling EnvironmentMapGenerationPlugin because compute is not supported on this platform. This is safe to ignore if you are not using EnvironmentMapGenerationPlugin. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/lighting_fast_path.rs:71%c Exact-zero spotlight fast path installed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:235%c First-person player ready at Vec3(1.6, 0.92, 1.3); static colliders registered color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/lighting_fast_path.rs:62%c Exact-zero spotlight fast path disabled for review color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/review.rs:108%c City review camera 8 color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/review.rs:49%c Cluster review config applied near=false far=false color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/review.rs:49%c Cluster review config applied near=false far=true color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/review.rs:49%c Cluster review config applied near=true far=false color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/review.rs:49%c Cluster review config applied near=true far=true color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+  ],
+  "status": "passed",
+  "browser": "154.0.8037.97",
+  "shader": "%cINFO%c src/game/lighting_fast_path.rs:62%c Exact-zero spotlight fast path disabled for review color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+  "camera": "%cINFO%c src/game/review.rs:108%c City review camera 8 color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+  "canvas": {
+    "width": 1600,
+    "height": 900
+  }
+}

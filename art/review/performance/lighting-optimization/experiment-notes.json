@@ -1,0 +1,13 @@
+{
+  "excluded_as_cluster_comparisons": [
+    "1600-far",
+    "1600-near",
+    "1600-combined",
+    "1600-far-repeat",
+    "trace-far"
+  ],
+  "reason": "These first experimental controls queried a missing ClusterConfig component and changed no camera configuration. They are baseline repetitions only, not evidence of cluster optimization.",
+  "corrected_controls": "verified-controls",
+  "valid_screening": "matrix-1600",
+  "metric": "WebGPU canvas acquisitions / wall-clock second; not guaranteed presented FPS"
+}

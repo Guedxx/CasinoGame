@@ -1,0 +1,16 @@
+{
+  "before": {
+    "sha256": "655683722a11f618c779d7ff277fd957606dac2d389e33ee3c3213ebc399dd34",
+    "bytes": 6966244,
+    "nodes": 930,
+    "triangles": 38142,
+    "images": 78
+  },
+  "after": {
+    "sha256": "3e3bda5ab7c5abdf6b95011af1af4d7302fd964f9d6ab7db2d2e89520f2ea6e3",
+    "bytes": 6820564,
+    "nodes": 731,
+    "triangles": 32649,
+    "images": 78
+  }
+}

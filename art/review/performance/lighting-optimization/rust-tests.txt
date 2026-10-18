@@ -1,0 +1,16 @@
+   Compiling CasinoGame v0.1.0 (/home/xigo/Projects/CasinoGame)
+    Finished `test` profile [optimized + debuginfo] target(s) in 53.16s
+     Running unittests src/main.rs (target/debug/deps/CasinoGame-ffd56f11885f72d7)
+
+running 8 tests
+test game::lighting_fast_path::tests::rejects_missing_duplicate_and_reordered_patch_targets ... ok
+test game::lighting_fast_path::tests::preserves_positive_lighting_transmission_and_other_lights ... ok
+test game::camera::tests::camera_has_explicit_clusters_covering_its_projection ... ok
+test game::cluster_settings::tests::startup_preserves_device_capabilities_and_limits ... ok
+test game::player::tests::keyboard_diagonal_is_normalized_and_lock_loss_clears_controls ... ok
+test game::player::tests::leaving_and_reentering_despawns_the_previous_player ... ok
+test game::player::tests::grounded_jump_ceiling_reset_and_no_air_jump ... ok
+test game::player::tests::floor_wall_slide_furniture_and_closed_openings ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.46s
+

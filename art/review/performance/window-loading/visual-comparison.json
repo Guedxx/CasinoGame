@@ -1,0 +1,93 @@
+[
+  {
+    "view": "apartment",
+    "before": "1600-before/apartment.png",
+    "after": "1600-after/apartment.png",
+    "max_channel_delta": 0.0,
+    "changed_pixels": 0.0
+  },
+  {
+    "view": "bedroom-window",
+    "before": "1600-before/bedroom-window.png",
+    "after": "1600-after/bedroom-window.png",
+    "max_channel_delta": 3.0,
+    "changed_pixels": 1.0
+  },
+  {
+    "view": "court-from-window",
+    "before": "1600-before/court-from-window.png",
+    "after": "1600-after/court-from-window.png",
+    "max_channel_delta": 0.0,
+    "changed_pixels": 0.0
+  },
+  {
+    "view": "east-window",
+    "before": "1600-before/east-window.png",
+    "after": "1600-after/east-window.png",
+    "max_channel_delta": 0.0,
+    "changed_pixels": 0.0
+  },
+  {
+    "view": "entrance-wall",
+    "before": "1600-before/entrance-wall.png",
+    "after": "1600-after/entrance-wall.png",
+    "max_channel_delta": 0.0,
+    "changed_pixels": 0.0
+  },
+  {
+    "view": "bathroom-jump",
+    "before": "edges-before/bathroom-jump.png",
+    "after": "edges-after/bathroom-jump.png",
+    "max_channel_delta": 0.0,
+    "changed_pixels": 0.0
+  },
+  {
+    "view": "bathroom-standing",
+    "before": "edges-before/bathroom-standing.png",
+    "after": "edges-after/bathroom-standing.png",
+    "max_channel_delta": 0.0,
+    "changed_pixels": 0.0
+  },
+  {
+    "view": "bedroom-left-edge",
+    "before": "edges-before/bedroom-left-edge.png",
+    "after": "edges-after/bedroom-left-edge.png",
+    "max_channel_delta": 0.0,
+    "changed_pixels": 0.0
+  },
+  {
+    "view": "bedroom-right-edge",
+    "before": "edges-before/bedroom-right-edge.png",
+    "after": "edges-after/bedroom-right-edge.png",
+    "max_channel_delta": 0.0,
+    "changed_pixels": 0.0
+  },
+  {
+    "view": "kitchen-left-edge",
+    "before": "edges-before/kitchen-left-edge.png",
+    "after": "edges-after/kitchen-left-edge.png",
+    "max_channel_delta": 0.0,
+    "changed_pixels": 0.0
+  },
+  {
+    "view": "kitchen-right-edge",
+    "before": "edges-before/kitchen-right-edge.png",
+    "after": "edges-after/kitchen-right-edge.png",
+    "max_channel_delta": 0.0,
+    "changed_pixels": 0.0
+  },
+  {
+    "view": "apartment",
+    "before": "display-before/apartment.png",
+    "after": "display-after/apartment.png",
+    "max_channel_delta": 5.0,
+    "changed_pixels": 2.0
+  },
+  {
+    "view": "court-from-window",
+    "before": "display-before/court-from-window.png",
+    "after": "display-after/court-from-window.png",
+    "max_channel_delta": 0.0,
+    "changed_pixels": 0.0
+  }
+]

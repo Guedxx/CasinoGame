@@ -1,0 +1,30 @@
+{
+  "before_dir": "/home/xigo/Projects/CasinoGame/art/review/performance/lighting-optimization/native-visual-3073-candidate/canvas",
+  "after_dir": "/home/xigo/Projects/CasinoGame/art/review/performance/settings/visual-3073/canvas",
+  "expected_count": 2,
+  "status": "complete",
+  "images": [
+    {
+      "view": "apartment",
+      "width": 3073,
+      "height": 1920,
+      "total_pixels": 5900160,
+      "changed_pixels": 623,
+      "max_channel_difference": 11
+    },
+    {
+      "view": "court-from-window",
+      "width": 3073,
+      "height": 1920,
+      "total_pixels": 5900160,
+      "changed_pixels": 199,
+      "max_channel_difference": 30
+    }
+  ],
+  "excluded_before": [],
+  "excluded_after": [],
+  "compared_views": 2,
+  "changed_pixels": 822,
+  "max_channel_difference": 30,
+  "all_equal": false
+}

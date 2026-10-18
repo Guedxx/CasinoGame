@@ -1,0 +1,294 @@
+{
+  "baseline_wasm_sha256": "a3cc5574510dc776261885faaf439cfd12260a91d9a47a8ab649ff86fb2e17ba",
+  "depth_wasm_sha256": "2c3c99149d73495a465c1c4fc41c521ca52a4365ea85d3880c4a954e95b5210d",
+  "asset_sha256": "655683722a11f618c779d7ff277fd957606dac2d389e33ee3c3213ebc399dd34",
+  "canvas": {
+    "width": 1600,
+    "height": 900
+  },
+  "browser": "154.0.8037.97",
+  "gpu": [
+    {
+      "vendorId": 32902,
+      "deviceId": 18086,
+      "vendorString": "Google Inc. (Intel)",
+      "deviceString": "ANGLE (Intel, Mesa Intel(R) Iris(R) Xe Graphics (ADL GT2), OpenGL ES 3.2 Mesa 26.2.4-arch1.1)",
+      "driverVendor": "Mesa",
+      "driverVersion": "26.2.4"
+    }
+  ],
+  "method": "Two 6-second samples per view after 10-second initial and 3-second per-view warmup; FPS = total game canvas frame intervals / elapsed seconds. Screenshots at 1280x720 CSS viewport, canvas renders at 1600x900 due to desktop scaling.",
+  "views": [
+    {
+      "view": "apartment",
+      "baseline_fps": 16.34386136361927,
+      "depth_fps": 25.72682483899877,
+      "gain_fps": 9.382963475379501,
+      "gain_percent": 57.40971038989338,
+      "changed_screenshot_pixels": 0.0,
+      "baseline_samples": [
+        16.53729328383395,
+        16.151011961847285
+      ],
+      "depth_samples": [
+        25.379430895678592,
+        26.07452266801245
+      ],
+      "baseline_p95_ms": [
+        66.5,
+        66.59999999962747
+      ],
+      "depth_p95_ms": [
+        43,
+        43.20000000111759
+      ]
+    },
+    {
+      "view": "entrance-wall",
+      "baseline_fps": 18.007404914170312,
+      "depth_fps": 26.51607327162866,
+      "gain_fps": 8.508668357458347,
+      "gain_percent": 47.250941476651874,
+      "changed_screenshot_pixels": 0.0,
+      "baseline_samples": [
+        17.76288227901131,
+        18.25403532493873
+      ],
+      "depth_samples": [
+        26.353778493972232,
+        26.678299971474363
+      ],
+      "baseline_p95_ms": [
+        60.40000000037253,
+        57.899999998509884
+      ],
+      "depth_p95_ms": [
+        41,
+        40.90000000037253
+      ]
+    },
+    {
+      "view": "corridor",
+      "baseline_fps": 19.648180024350307,
+      "depth_fps": 27.460797200340807,
+      "gain_fps": 7.8126171759905,
+      "gain_percent": 39.76254882797387,
+      "changed_screenshot_pixels": 0.0,
+      "baseline_samples": [
+        19.64669532509649,
+        19.649664948018298
+      ],
+      "depth_samples": [
+        27.22414546432463,
+        27.6957472012314
+      ],
+      "baseline_p95_ms": [
+        55.09999999962747,
+        60.09999999962747
+      ],
+      "depth_p95_ms": [
+        39.40000000037253,
+        39.20000000111759
+      ]
+    },
+    {
+      "view": "east-window",
+      "baseline_fps": 21.630322694234103,
+      "depth_fps": 29.333378031812313,
+      "gain_fps": 7.70305533757821,
+      "gain_percent": 35.61229967055266,
+      "changed_screenshot_pixels": 0.0,
+      "baseline_samples": [
+        21.574431789671685,
+        21.686503933836377
+      ],
+      "depth_samples": [
+        29.32059981569909,
+        29.346167390535125
+      ],
+      "baseline_p95_ms": [
+        49.69999999925494,
+        50.09999999962747
+      ],
+      "depth_p95_ms": [
+        36.40000000037253,
+        37.5
+      ]
+    },
+    {
+      "view": "bedroom-window",
+      "baseline_fps": 20.314498532837977,
+      "depth_fps": 26.173851235522847,
+      "gain_fps": 5.85935270268487,
+      "gain_percent": 28.843206211629322,
+      "changed_screenshot_pixels": 0.0,
+      "baseline_samples": [
+        20.032385690196666,
+        20.59749480875633
+      ],
+      "depth_samples": [
+        25.912799251038127,
+        26.435108501060775
+      ],
+      "baseline_p95_ms": [
+        54,
+        52.09999999962747
+      ],
+      "depth_p95_ms": [
+        41.59999999962747,
+        40.30000000074506
+      ]
+    },
+    {
+      "view": "building-context",
+      "baseline_fps": 32.44065784302867,
+      "depth_fps": 39.45597565767171,
+      "gain_fps": 7.015317814643041,
+      "gain_percent": 21.625078777958873,
+      "changed_screenshot_pixels": 0.0,
+      "baseline_samples": [
+        32.35598252109408,
+        32.52577751697544
+      ],
+      "depth_samples": [
+        40.69651077457055,
+        38.209515510049144
+      ],
+      "baseline_p95_ms": [
+        34.29999999888241,
+        34.80000000074506
+      ],
+      "depth_p95_ms": [
+        28.59999999962747,
+        29.800000000745058
+      ]
+    },
+    {
+      "view": "court-from-window",
+      "baseline_fps": 15.53817831748454,
+      "depth_fps": 18.846969340020703,
+      "gain_fps": 3.3087910225361625,
+      "gain_percent": 21.294587788408247,
+      "changed_screenshot_pixels": 0.0,
+      "baseline_samples": [
+        15.532931503147818,
+        15.54342867762493
+      ],
+      "depth_samples": [
+        19.095256603074546,
+        18.600754084625052
+      ],
+      "baseline_p95_ms": [
+        69.5,
+        70.40000000037253
+      ],
+      "depth_p95_ms": [
+        57.29999999888241,
+        57.69999999925494
+      ]
+    },
+    {
+      "view": "court-detail",
+      "baseline_fps": 25.476962143740977,
+      "depth_fps": 35.13984992529324,
+      "gain_fps": 9.662887781552264,
+      "gain_percent": 37.9279433985664,
+      "changed_screenshot_pixels": 0.0,
+      "baseline_samples": [
+        25.53191489361702,
+        25.421886237060672
+      ],
+      "depth_samples": [
+        34.865874816493225,
+        35.414195746951144
+      ],
+      "baseline_p95_ms": [
+        44.600000001490116,
+        42.59999999962747
+      ],
+      "depth_p95_ms": [
+        32.19999999925494,
+        31.59999999962747
+      ]
+    },
+    {
+      "view": "stair-landing",
+      "baseline_fps": 42.94068504594821,
+      "depth_fps": 49.490489980889706,
+      "gain_fps": 6.549804934941498,
+      "gain_percent": 15.253144955496056,
+      "changed_screenshot_pixels": 0.0,
+      "baseline_samples": [
+        43.048070345213475,
+        42.83300148912141
+      ],
+      "depth_samples": [
+        48.793529844258714,
+        50.185904596768324
+      ],
+      "baseline_p95_ms": [
+        26.299999998882413,
+        26.40000000037253
+      ],
+      "depth_p95_ms": [
+        24.800000000745058,
+        23
+      ]
+    },
+    {
+      "view": "occupied-exterior",
+      "baseline_fps": 26.834977428523658,
+      "depth_fps": 30.211480362538705,
+      "gain_fps": 3.376502934015047,
+      "gain_percent": 12.582469812052333,
+      "changed_screenshot_pixels": 0.0,
+      "baseline_samples": [
+        26.538037854256117,
+        27.1329514621663
+      ],
+      "depth_samples": [
+        30.133087804469742,
+        30.289845371178004
+      ],
+      "baseline_p95_ms": [
+        43.59999999962747,
+        40.30000000074506
+      ],
+      "depth_p95_ms": [
+        36,
+        35.70000000111759
+      ]
+    }
+  ],
+  "baseline_recheck": [
+    {
+      "view": "apartment",
+      "fps": 15.921431923306988,
+      "drift_percent": -2.5846367080217036
+    },
+    {
+      "view": "corridor",
+      "fps": 20.075917334458033,
+      "drift_percent": 2.1769818353538417
+    },
+    {
+      "view": "east-window",
+      "fps": 21.551724137925667,
+      "drift_percent": -0.36337209305429274
+    },
+    {
+      "view": "building-context",
+      "fps": 32.74197320504233,
+      "drift_percent": 0.928820135126851
+    }
+  ],
+  "checks": {
+    "cargo_fmt": "passed",
+    "cargo_check_all_features": "passed",
+    "cargo_test": "4 passed",
+    "web_build_scene_review": "passed",
+    "browser_errors": 0,
+    "matched_screenshots": 10,
+    "changed_screenshot_pixels": 0
+  }
+}

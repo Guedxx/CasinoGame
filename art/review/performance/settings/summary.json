@@ -1,0 +1,269 @@
+{
+  "metric": "WebGPU canvas acquisitions per second; not presented frames",
+  "hardware": "Intel Iris Xe, Chromium, real WebGPU",
+  "samples": "Two 15-second samples per preset, viewpoint and resolution, no tracing or concurrent builds",
+  "rows": [
+    {
+      "canvas": {
+        "width": 1600,
+        "height": 900
+      },
+      "view": "apartment",
+      "fps": {
+        "high": 34.04206241021187,
+        "medium": 59.025938801009616,
+        "low": 59.289530531854425
+      },
+      "range": {
+        "high": [
+          33.65051441974686,
+          34.43361040067688
+        ],
+        "medium": [
+          59.024562478768075,
+          59.027315123251164
+        ],
+        "low": [
+          58.98859553820181,
+          59.59046552550704
+        ]
+      },
+      "gain_percent": {
+        "medium": 73.39119495681065,
+        "low": 74.16550682918925
+      }
+    },
+    {
+      "canvas": {
+        "width": 1600,
+        "height": 900
+      },
+      "view": "court-from-window",
+      "fps": {
+        "high": 28.05955383421469,
+        "medium": 59.01886351607378,
+        "low": 59.84611953153106
+      },
+      "range": {
+        "high": [
+          27.927189351674578,
+          28.191918316754798
+        ],
+        "medium": [
+          59.00765900765901,
+          59.03006802448855
+        ],
+        "low": [
+          59.844723601346175,
+          59.84751546171594
+        ]
+      },
+      "gain_percent": {
+        "medium": 110.33429064758882,
+        "low": 113.28250579151087
+      }
+    },
+    {
+      "canvas": {
+        "width": 3073,
+        "height": 1920
+      },
+      "view": "apartment",
+      "fps": {
+        "high": 15.125155887864475,
+        "medium": 35.3822460286672,
+        "low": 57.14820868117765
+      },
+      "range": {
+        "high": [
+          15.060843140651533,
+          15.189468635077416
+        ],
+        "medium": [
+          35.1730340072611,
+          35.591458050073285
+        ],
+        "low": [
+          55.32079395337606,
+          58.97562340897924
+        ]
+      },
+      "gain_percent": {
+        "medium": 133.92979411905307,
+        "low": 277.8355020263294
+      }
+    },
+    {
+      "canvas": {
+        "width": 3073,
+        "height": 1920
+      },
+      "view": "court-from-window",
+      "fps": {
+        "high": 11.430620887335126,
+        "medium": 24.693498600877767,
+        "low": 55.110555097160024
+      },
+      "range": {
+        "high": [
+          11.264488865487126,
+          11.596752909183126
+        ],
+        "medium": [
+          24.326846174353506,
+          25.060151027402032
+        ],
+        "low": [
+          55.10394456289979,
+          55.11716563142026
+        ]
+      },
+      "gain_percent": {
+        "medium": 116.02937271970602,
+        "low": 382.1308977032149
+      }
+    }
+  ],
+  "visuals": {
+    "1600": {
+      "before_dir": "/home/xigo/Projects/CasinoGame/art/review/performance/lighting-optimization/native-visual-1600-candidate/canvas",
+      "after_dir": "/home/xigo/Projects/CasinoGame/art/review/performance/settings/visual-1600/canvas",
+      "expected_count": 11,
+      "status": "complete",
+      "images": [
+        {
+          "view": "apartment",
+          "width": 1600,
+          "height": 900,
+          "total_pixels": 1440000,
+          "changed_pixels": 0,
+          "max_channel_difference": 0
+        },
+        {
+          "view": "bathroom-jump",
+          "width": 1600,
+          "height": 900,
+          "total_pixels": 1440000,
+          "changed_pixels": 0,
+          "max_channel_difference": 0
+        },
+        {
+          "view": "bathroom-standing",
+          "width": 1600,
+          "height": 900,
+          "total_pixels": 1440000,
+          "changed_pixels": 1,
+          "max_channel_difference": 3
+        },
+        {
+          "view": "bedroom-left-edge",
+          "width": 1600,
+          "height": 900,
+          "total_pixels": 1440000,
+          "changed_pixels": 0,
+          "max_channel_difference": 0
+        },
+        {
+          "view": "bedroom-right-edge",
+          "width": 1600,
+          "height": 900,
+          "total_pixels": 1440000,
+          "changed_pixels": 0,
+          "max_channel_difference": 0
+        },
+        {
+          "view": "bedroom-window",
+          "width": 1600,
+          "height": 900,
+          "total_pixels": 1440000,
+          "changed_pixels": 0,
+          "max_channel_difference": 0
+        },
+        {
+          "view": "court-from-window",
+          "width": 1600,
+          "height": 900,
+          "total_pixels": 1440000,
+          "changed_pixels": 0,
+          "max_channel_difference": 0
+        },
+        {
+          "view": "east-window",
+          "width": 1600,
+          "height": 900,
+          "total_pixels": 1440000,
+          "changed_pixels": 1,
+          "max_channel_difference": 5
+        },
+        {
+          "view": "entrance-wall",
+          "width": 1600,
+          "height": 900,
+          "total_pixels": 1440000,
+          "changed_pixels": 0,
+          "max_channel_difference": 0
+        },
+        {
+          "view": "kitchen-left-edge",
+          "width": 1600,
+          "height": 900,
+          "total_pixels": 1440000,
+          "changed_pixels": 0,
+          "max_channel_difference": 0
+        },
+        {
+          "view": "kitchen-right-edge",
+          "width": 1600,
+          "height": 900,
+          "total_pixels": 1440000,
+          "changed_pixels": 1,
+          "max_channel_difference": 6
+        }
+      ],
+      "excluded_before": [],
+      "excluded_after": [],
+      "compared_views": 11,
+      "changed_pixels": 3,
+      "max_channel_difference": 6,
+      "all_equal": false
+    },
+    "3073": {
+      "before_dir": "/home/xigo/Projects/CasinoGame/art/review/performance/lighting-optimization/native-visual-3073-candidate/canvas",
+      "after_dir": "/home/xigo/Projects/CasinoGame/art/review/performance/settings/visual-3073/canvas",
+      "expected_count": 2,
+      "status": "complete",
+      "images": [
+        {
+          "view": "apartment",
+          "width": 3073,
+          "height": 1920,
+          "total_pixels": 5900160,
+          "changed_pixels": 623,
+          "max_channel_difference": 11
+        },
+        {
+          "view": "court-from-window",
+          "width": 3073,
+          "height": 1920,
+          "total_pixels": 5900160,
+          "changed_pixels": 199,
+          "max_channel_difference": 30
+        }
+      ],
+      "excluded_before": [],
+      "excluded_after": [],
+      "compared_views": 2,
+      "changed_pixels": 822,
+      "max_channel_difference": 30,
+      "all_equal": false
+    }
+  },
+  "checks": [
+    "Low preview changes the 3D target to 800\u00d7450 and uploads and binds reduced scene textures without saving",
+    "Cancel restored 80 original texture uploads byte-for-byte",
+    "Mouse selection, keyboard navigation, Space activation and Save persist Medium",
+    "Individual setting produces Custom; Cancel preserves saved Medium; small-window scrolling exercised",
+    "Invalid saved JSON falls back to High",
+    "Storage write failure keeps session settings and displays a nonblocking notice"
+  ]
+}

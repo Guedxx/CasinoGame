@@ -27,6 +27,6 @@ pub fn run() {
             ..default()
         })
         .init_state::<GameState>()
-        .add_plugins((GamePlugin, ScreensPlugin))
+        .add_plugins((crate::graphics::GraphicsPlugin, GamePlugin, ScreensPlugin))
         .run();
 }

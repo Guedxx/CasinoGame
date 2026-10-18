@@ -1,0 +1,573 @@
+{
+  "status": "Both trace-default and trace-far are DEFAULT cluster configuration repetitions; setup key 8 did not affect ClusterConfig in this build. No cluster comparison is valid.",
+  "metric_limits": [
+    "Acquisitions are producer throughput, not physical presentation.",
+    "PipelineReporter normal and FORKED records can describe the same displayed frame; deduplicate display_trace_id.",
+    "Successful page presentation feedback is compositor evidence, not a unique WebGPU texture-to-photon measurement.",
+    "Display::FrameDisplayed is emitted even for failed/sanitized presentation feedback; never use its raw count as game FPS.",
+    "GPUTask/WebGPU/decoder flush spans describe GPU-process CPU/driver processing and waiting, not direct GPU shader execution times.",
+    "Trace recording perturbs execution; use separate untraced runs for throughput comparisons."
+  ],
+  "runs": [
+    {
+      "directory": "trace-default",
+      "view": "apartment",
+      "path": "art/review/performance/lighting-optimization/trace-default/trace-round-1-apartment.json",
+      "canvas": {
+        "width": 1600,
+        "height": 900
+      },
+      "conditions": [
+        {
+          "time": 18435.60000000149,
+          "visibility": "visible",
+          "focused": true
+        },
+        {
+          "time": 33440.10000000149,
+          "visibility": "visible",
+          "focused": true
+        }
+      ],
+      "sample_trace_duration_ms": 15004.862,
+      "renderer_pid": 534101,
+      "layer_tree_id": 1,
+      "acquisition_metrics": {
+        "round": 1,
+        "view": "apartment",
+        "frames": 406,
+        "seconds": 15.004699999999255,
+        "fps": 27.05818843429193,
+        "unique_textures": 406,
+        "duplicate_acquisitions": 0,
+        "unique_texture_fps": 27.05818843429193,
+        "p95_ms": 44.80000000074506,
+        "leading_gap_ms": 5.600000001490116,
+        "trailing_gap_ms": 132.5,
+        "max_gap_ms": 752.0999999977648
+      },
+      "page_compositor_draws": 406,
+      "page_compositor_draw_unique_sequences": 406,
+      "page_dropped_event_count": 698,
+      "page_dropped_unique_sequences": 617,
+      "pipeline_reporter_end_state_counts": {
+        "STATE_DROPPED": 698,
+        "STATE_PRESENTED_PARTIAL": 321,
+        "STATE_PRESENTED_ALL": 321
+      },
+      "page_successful_unique_display_ids": 321,
+      "page_successful_display_ids_per_second": 21.393065794273884,
+      "raw_browser_display_feedback_events": 403,
+      "begin_frame_decision_reasons": {
+        "SendDefault": 382,
+        "SendFrameTiming": 331
+      },
+      "game_main_tasks": {
+        "count": 6813,
+        "wall_sum_ms": 7186.11,
+        "thread_cpu_sum_ms": 6995.11,
+        "median_ms": 0.025,
+        "p95_ms": 14.293,
+        "max_ms": 45.705
+      },
+      "game_raf_callbacks": {
+        "count": 406,
+        "wall_sum_ms": 6417.452,
+        "thread_cpu_sum_ms": 6286.965,
+        "median_ms": 14.9725,
+        "p95_ms": 21.609,
+        "max_ms": 30.498
+      },
+      "gpu_process_webgpu_flushes_over_50ms": {
+        "count": 7,
+        "wall_sum_ms": 2103.165,
+        "thread_cpu_sum_ms": 31.885,
+        "median_ms": 265.985,
+        "p95_ms": 514.273,
+        "max_ms": 514.273
+      },
+      "gpu_process_long_flush_wall_clipped_to_sample_ms": 2025.179,
+      "worst_acquisition_gaps": [
+        {
+          "gap_ms": 752.0999999977648,
+          "sample_offset_ms": 12225.3,
+          "overlapping_webgpu_flushes": [
+            {
+              "sample_offset_ms": 12191.58,
+              "wall_ms": 262.876,
+              "thread_cpu_ms": 3.017,
+              "overlap_ms": 229.156
+            },
+            {
+              "sample_offset_ms": 12457.34,
+              "wall_ms": 514.273,
+              "thread_cpu_ms": 7.418,
+              "overlap_ms": 514.273
+            },
+            {
+              "sample_offset_ms": 12974.598,
+              "wall_ms": 30.561,
+              "thread_cpu_ms": 3.939,
+              "overlap_ms": 2.802
+            }
+          ]
+        },
+        {
+          "gap_ms": 279.5,
+          "sample_offset_ms": 14042.0,
+          "overlapping_webgpu_flushes": [
+            {
+              "sample_offset_ms": 14025.911,
+              "wall_ms": 279.61,
+              "thread_cpu_ms": 2.345,
+              "overlap_ms": 263.521
+            }
+          ]
+        },
+        {
+          "gap_ms": 276.30000000074506,
+          "sample_offset_ms": 11813.9,
+          "overlapping_webgpu_flushes": [
+            {
+              "sample_offset_ms": 11780.731,
+              "wall_ms": 292.427,
+              "thread_cpu_ms": 4.035,
+              "overlap_ms": 259.258
+            }
+          ]
+        },
+        {
+          "gap_ms": 252.60000000149012,
+          "sample_offset_ms": 13645.1,
+          "overlapping_webgpu_flushes": [
+            {
+              "sample_offset_ms": 13618.7,
+              "wall_ms": 265.985,
+              "thread_cpu_ms": 3.194,
+              "overlap_ms": 239.585
+            }
+          ]
+        },
+        {
+          "gap_ms": 220.30000000074506,
+          "sample_offset_ms": 14503.2,
+          "overlapping_webgpu_flushes": [
+            {
+              "sample_offset_ms": 14460.512,
+              "wall_ms": 249.439,
+              "thread_cpu_ms": 9.048,
+              "overlap_ms": 206.751
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "directory": "trace-default",
+      "view": "court-from-window",
+      "path": "art/review/performance/lighting-optimization/trace-default/trace-round-1-court-from-window.json",
+      "canvas": {
+        "width": 1600,
+        "height": 900
+      },
+      "conditions": [
+        {
+          "time": 50209,
+          "visibility": "visible",
+          "focused": true
+        },
+        {
+          "time": 65215.60000000149,
+          "visibility": "visible",
+          "focused": true
+        }
+      ],
+      "sample_trace_duration_ms": 15006.875,
+      "renderer_pid": 534101,
+      "layer_tree_id": 1,
+      "acquisition_metrics": {
+        "round": 1,
+        "view": "court-from-window",
+        "frames": 288,
+        "seconds": 15.006699999999254,
+        "fps": 19.191427828904043,
+        "unique_textures": 288,
+        "duplicate_acquisitions": 0,
+        "unique_texture_fps": 19.191427828904043,
+        "p95_ms": 320.6000000014901,
+        "leading_gap_ms": 4.399999998509884,
+        "trailing_gap_ms": 297.69999999925494,
+        "max_gap_ms": 995.3999999985099
+      },
+      "page_compositor_draws": 287,
+      "page_compositor_draw_unique_sequences": 287,
+      "page_dropped_event_count": 691,
+      "page_dropped_unique_sequences": 691,
+      "pipeline_reporter_end_state_counts": {
+        "STATE_DROPPED": 693,
+        "STATE_PRESENTED_PARTIAL": 285,
+        "STATE_PRESENTED_ALL": 285
+      },
+      "page_successful_unique_display_ids": 286,
+      "page_successful_display_ids_per_second": 19.05793178126692,
+      "raw_browser_display_feedback_events": 284,
+      "begin_frame_decision_reasons": {
+        "SendDefault": 107,
+        "SendFrameTiming": 201
+      },
+      "game_main_tasks": {
+        "count": 5371,
+        "wall_sum_ms": 4044.586,
+        "thread_cpu_sum_ms": 3945.31,
+        "median_ms": 0.017,
+        "p95_ms": 10.996,
+        "max_ms": 28.676
+      },
+      "game_raf_callbacks": {
+        "count": 288,
+        "wall_sum_ms": 3602.245,
+        "thread_cpu_sum_ms": 3539.554,
+        "median_ms": 12.073,
+        "p95_ms": 16.464,
+        "max_ms": 21.019
+      },
+      "gpu_process_webgpu_flushes_over_50ms": {
+        "count": 34,
+        "wall_sum_ms": 11880.609,
+        "thread_cpu_sum_ms": 70.794,
+        "median_ms": 335.8025,
+        "p95_ms": 397.996,
+        "max_ms": 677.504
+      },
+      "gpu_process_long_flush_wall_clipped_to_sample_ms": 11880.609,
+      "worst_acquisition_gaps": [
+        {
+          "gap_ms": 995.3999999985099,
+          "sample_offset_ms": 13174.0,
+          "overlapping_webgpu_flushes": [
+            {
+              "sample_offset_ms": 13150.44,
+              "wall_ms": 330.103,
+              "thread_cpu_ms": 1.356,
+              "overlap_ms": 306.543
+            },
+            {
+              "sample_offset_ms": 13482.428,
+              "wall_ms": 677.504,
+              "thread_cpu_ms": 6.565,
+              "overlap_ms": 677.504
+            },
+            {
+              "sample_offset_ms": 14166.015,
+              "wall_ms": 40.122,
+              "thread_cpu_ms": 3.275,
+              "overlap_ms": 3.385
+            }
+          ]
+        },
+        {
+          "gap_ms": 385.80000000074506,
+          "sample_offset_ms": 1527.0,
+          "overlapping_webgpu_flushes": [
+            {
+              "sample_offset_ms": 1499.795,
+              "wall_ms": 397.996,
+              "thread_cpu_ms": 2.91,
+              "overlap_ms": 370.791
+            }
+          ]
+        },
+        {
+          "gap_ms": 380.5999999977648,
+          "sample_offset_ms": 582.0,
+          "overlapping_webgpu_flushes": [
+            {
+              "sample_offset_ms": 557.722,
+              "wall_ms": 390.924,
+              "thread_cpu_ms": 2.287,
+              "overlap_ms": 366.646
+            }
+          ]
+        },
+        {
+          "gap_ms": 362.30000000074506,
+          "sample_offset_ms": 1070.2,
+          "overlapping_webgpu_flushes": [
+            {
+              "sample_offset_ms": 1039.245,
+              "wall_ms": 378.615,
+              "thread_cpu_ms": 1.403,
+              "overlap_ms": 347.66
+            }
+          ]
+        },
+        {
+          "gap_ms": 349.19999999925494,
+          "sample_offset_ms": 133.7,
+          "overlapping_webgpu_flushes": [
+            {
+              "sample_offset_ms": 103.07,
+              "wall_ms": 368.987,
+              "thread_cpu_ms": 1.561,
+              "overlap_ms": 338.357
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "directory": "trace-far",
+      "view": "apartment",
+      "path": "art/review/performance/lighting-optimization/trace-far/trace-round-1-apartment.json",
+      "canvas": {
+        "width": 1600,
+        "height": 900
+      },
+      "conditions": [
+        {
+          "time": 18143.800000000745,
+          "visibility": "visible",
+          "focused": true
+        },
+        {
+          "time": 33158.099999997765,
+          "visibility": "visible",
+          "focused": true
+        }
+      ],
+      "sample_trace_duration_ms": 15014.626,
+      "renderer_pid": 536873,
+      "layer_tree_id": 1,
+      "acquisition_metrics": {
+        "round": 1,
+        "view": "apartment",
+        "frames": 388,
+        "seconds": 15.01439999999851,
+        "fps": 25.84185848252601,
+        "unique_textures": 388,
+        "duplicate_acquisitions": 0,
+        "unique_texture_fps": 25.84185848252601,
+        "p95_ms": 46.80000000074506,
+        "leading_gap_ms": 5.5,
+        "trailing_gap_ms": 9.899999998509884,
+        "max_gap_ms": 113.80000000074506
+      },
+      "page_compositor_draws": 387,
+      "page_compositor_draw_unique_sequences": 387,
+      "page_dropped_event_count": 575,
+      "page_dropped_unique_sequences": 549,
+      "pipeline_reporter_end_state_counts": {
+        "STATE_DROPPED": 572,
+        "STATE_PRESENTED_PARTIAL": 356,
+        "STATE_PRESENTED_ALL": 356
+      },
+      "page_successful_unique_display_ids": 356,
+      "page_successful_display_ids_per_second": 23.710214293716007,
+      "raw_browser_display_feedback_events": 384,
+      "begin_frame_decision_reasons": {
+        "SendDefault": 462,
+        "SendFrameTiming": 305
+      },
+      "game_main_tasks": {
+        "count": 6530,
+        "wall_sum_ms": 7230.959,
+        "thread_cpu_sum_ms": 7035.823,
+        "median_ms": 0.029,
+        "p95_ms": 14.212,
+        "max_ms": 39.646
+      },
+      "game_raf_callbacks": {
+        "count": 388,
+        "wall_sum_ms": 6435.108,
+        "thread_cpu_sum_ms": 6297.471,
+        "median_ms": 15.6695,
+        "p95_ms": 24.217,
+        "max_ms": 37.123
+      },
+      "gpu_process_webgpu_flushes_over_50ms": {
+        "count": 1,
+        "wall_sum_ms": 97.014,
+        "thread_cpu_sum_ms": 4.469,
+        "median_ms": 97.014,
+        "p95_ms": 97.014,
+        "max_ms": 97.014
+      },
+      "gpu_process_long_flush_wall_clipped_to_sample_ms": 97.014,
+      "worst_acquisition_gaps": [
+        {
+          "gap_ms": 113.80000000074506,
+          "sample_offset_ms": 5658.9,
+          "overlapping_webgpu_flushes": [
+            {
+              "sample_offset_ms": 5667.521,
+              "wall_ms": 97.014,
+              "thread_cpu_ms": 4.469,
+              "overlap_ms": 97.014
+            }
+          ]
+        },
+        {
+          "gap_ms": 111.90000000223517,
+          "sample_offset_ms": 13958.9,
+          "overlapping_webgpu_flushes": []
+        },
+        {
+          "gap_ms": 86.5,
+          "sample_offset_ms": 13547.8,
+          "overlapping_webgpu_flushes": []
+        },
+        {
+          "gap_ms": 62.599999997764826,
+          "sample_offset_ms": 6638.5,
+          "overlapping_webgpu_flushes": []
+        },
+        {
+          "gap_ms": 59.099999997764826,
+          "sample_offset_ms": 7390.8,
+          "overlapping_webgpu_flushes": []
+        }
+      ]
+    },
+    {
+      "directory": "trace-far",
+      "view": "court-from-window",
+      "path": "art/review/performance/lighting-optimization/trace-far/trace-round-1-court-from-window.json",
+      "canvas": {
+        "width": 1600,
+        "height": 900
+      },
+      "conditions": [
+        {
+          "time": 49036.5,
+          "visibility": "visible",
+          "focused": true
+        },
+        {
+          "time": 64043.099999997765,
+          "visibility": "visible",
+          "focused": true
+        }
+      ],
+      "sample_trace_duration_ms": 15006.848,
+      "renderer_pid": 536873,
+      "layer_tree_id": 1,
+      "acquisition_metrics": {
+        "round": 1,
+        "view": "court-from-window",
+        "frames": 266,
+        "seconds": 15.006599999997764,
+        "fps": 17.72553409833271,
+        "unique_textures": 266,
+        "duplicate_acquisitions": 0,
+        "unique_texture_fps": 17.72553409833271,
+        "p95_ms": 360.6000000014901,
+        "leading_gap_ms": 7.099999997764826,
+        "trailing_gap_ms": 12.399999998509884,
+        "max_gap_ms": 380.5999999977648
+      },
+      "page_compositor_draws": 266,
+      "page_compositor_draw_unique_sequences": 266,
+      "page_dropped_event_count": 700,
+      "page_dropped_unique_sequences": 700,
+      "pipeline_reporter_end_state_counts": {
+        "STATE_DROPPED": 700,
+        "STATE_PRESENTED_PARTIAL": 263,
+        "STATE_PRESENTED_ALL": 264
+      },
+      "page_successful_unique_display_ids": 264,
+      "page_successful_display_ids_per_second": 17.59196867989867,
+      "raw_browser_display_feedback_events": 264,
+      "begin_frame_decision_reasons": {
+        "SendDefault": 105,
+        "SendFrameTiming": 182
+      },
+      "game_main_tasks": {
+        "count": 5380,
+        "wall_sum_ms": 3813.594,
+        "thread_cpu_sum_ms": 3712.389,
+        "median_ms": 0.017,
+        "p95_ms": 10.633,
+        "max_ms": 27.562
+      },
+      "game_raf_callbacks": {
+        "count": 266,
+        "wall_sum_ms": 3386.083,
+        "thread_cpu_sum_ms": 3322.569,
+        "median_ms": 12.06,
+        "p95_ms": 17.581,
+        "max_ms": 21.707
+      },
+      "gpu_process_webgpu_flushes_over_50ms": {
+        "count": 33,
+        "wall_sum_ms": 12327.897,
+        "thread_cpu_sum_ms": 76.728,
+        "median_ms": 373.029,
+        "p95_ms": 390.085,
+        "max_ms": 397.444
+      },
+      "gpu_process_long_flush_wall_clipped_to_sample_ms": 12221.301,
+      "worst_acquisition_gaps": [
+        {
+          "gap_ms": 380.5999999977648,
+          "sample_offset_ms": 10878.0,
+          "overlapping_webgpu_flushes": [
+            {
+              "sample_offset_ms": 10845.755,
+              "wall_ms": 397.444,
+              "thread_cpu_ms": 9.433,
+              "overlap_ms": 365.199
+            }
+          ]
+        },
+        {
+          "gap_ms": 374.0,
+          "sample_offset_ms": 14069.9,
+          "overlapping_webgpu_flushes": [
+            {
+              "sample_offset_ms": 14043.311,
+              "wall_ms": 388.228,
+              "thread_cpu_ms": 2.765,
+              "overlap_ms": 361.639
+            }
+          ]
+        },
+        {
+          "gap_ms": 371.4000000022352,
+          "sample_offset_ms": 4472.799999996185,
+          "overlapping_webgpu_flushes": [
+            {
+              "sample_offset_ms": 4446.955,
+              "wall_ms": 385.575,
+              "thread_cpu_ms": 2.198,
+              "overlap_ms": 359.7300000038147
+            }
+          ]
+        },
+        {
+          "gap_ms": 371.1000000014901,
+          "sample_offset_ms": 6272.9,
+          "overlapping_webgpu_flushes": [
+            {
+              "sample_offset_ms": 6245.681,
+              "wall_ms": 383.565,
+              "thread_cpu_ms": 2.181,
+              "overlap_ms": 356.346
+            }
+          ]
+        },
+        {
+          "gap_ms": 368.5,
+          "sample_offset_ms": 7228.9,
+          "overlapping_webgpu_flushes": [
+            {
+              "sample_offset_ms": 7196.848,
+              "wall_ms": 386.05,
+              "thread_cpu_ms": 2.772,
+              "overlap_ms": 353.998
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

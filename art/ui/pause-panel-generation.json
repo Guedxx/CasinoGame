@@ -1,0 +1,31 @@
+{
+  "generator": "Built-in image_gen tool",
+  "prompt": "Create a production game UI texture asset, not a screenshot or complete interface. Square 1024 x 1024, perfectly front-facing orthographic rectangular pause-menu panel, almost filling the canvas with a very small transparent margin. Style: grounded late-1990s/early-2000s textured 3D apartment/urban game, photographic low-resolution diffuse texture aesthetic. Match muted grey painted industrial vent metal with fine scratches, chipped paint, restrained brown rust in seams, and warm aged brown wood tones from an ordinary worn apartment. A thin weathered dark bronze/olive-grey metal perimeter frame, slightly worn edges and tiny old recessed fasteners at the corners; broad very dark desaturated warm charcoal interior, almost flat and quiet with subtle fine material grain so cream game UI text will be highly legible. Keep the entire central 85 percent completely empty, plain, uniform and dark. Frame detail confined to the outer 6 percent of each edge; straight parallel edges and matching corners suitable for nine-slice scaling. Flat diffuse ambient shading baked into the material only, no dramatic spotlight, no perspective, no environment, no objects behind or around the panel. No writing, letters, numbers, symbols, buttons, logos, fantasy ornament, neon, glossy glass, bright glow, gradients, or drop shadow extending beyond the asset. Actual transparent alpha outside the rectangular frame. This single reusable lightweight texture will skin a centered pause panel and its buttons; readability and compatibility with gritty small game textures matter more than decoration.",
+  "style_references": "Existing apartment MetalPlatesBare_01, WoodFine and Urban_vents textures inspected before generation; appearance described in the prompt.",
+  "source": "/home/xigo/.codex/generated_images/01a14b76-0248-74c2-89f0-3530594b4ecb/exec-7e3700f7-e636-4317-84e2-219ce044634e.png",
+  "source_dimensions": [
+    1254,
+    1254
+  ],
+  "source_bytes": 3034262,
+  "asset": "assets/ui/pause-panel.png",
+  "dimensions": [
+    512,
+    512
+  ],
+  "file_bytes": 97946,
+  "rgba_gpu_bytes": 1048576,
+  "compression": "ImageMagick resize to 512x512, strip metadata, 128-color palette without dithering, PNG compression level 9, preserve transparency",
+  "usage": "One image handle reused for panel and button nine-slicing; live text and controls are rendered separately. RGBA memory excludes CPU copy and font atlases.",
+  "font": {
+    "file": "assets/fonts/LiberationSans-Bold.ttf",
+    "license": "assets/fonts/LiberationSans-LICENSE.txt",
+    "modified": false,
+    "sizes_px": [
+      18,
+      24,
+      48
+    ],
+    "atlas_note": "Three shared text sizes limit glyph-atlas allocations; Bevy allocates a minimum 512x512 atlas per font size."
+  }
+}

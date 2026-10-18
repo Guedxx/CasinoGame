@@ -11,14 +11,20 @@ impl Plugin for PlayingPlugin {
     }
 }
 
-fn setup(mut commands: Commands, assets: Res<AssetServer>) {
+fn setup(
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    apartment: Query<(), With<crate::game::player::Apartment>>,
+) {
+    if !apartment.is_empty() {
+        return;
+    }
     commands.spawn((
-        Name::new("Apartment and service court"),
+        Name::new("Apartment and window scenery"),
         crate::game::player::Apartment,
         WorldAssetRoot(
-            assets.load(GltfAssetLabel::Scene(0).from_asset("models/apartment_city.glb")),
+            assets.load(GltfAssetLabel::Scene(0).from_asset("models/apartment_windows.glb")),
         ),
-        DespawnOnExit(GameState::Playing),
     ));
     commands.spawn((
         DirectionalLight {
@@ -35,12 +41,12 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
         }
         .build(),
         Transform::from_xyz(-3.0, 8.0, -2.0).looking_at(Vec3::ZERO, Vec3::Y),
-        DespawnOnExit(GameState::Playing),
     ));
     for position in [
         Vec3::new(1.761, 2.48, -0.491),
         Vec3::new(1.761, 2.48, 4.773),
         Vec3::new(1.761, 2.48, 7.848),
+        // Preserve the warm light at the closed door seam without loading the corridor.
         Vec3::new(-1.25, 2.48, -2.5),
         Vec3::new(-1.25, 2.48, 3.5),
         Vec3::new(-1.25, 2.48, 7.5),
@@ -56,7 +62,6 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
                 ..default()
             },
             Transform::from_translation(position).looking_to(Vec3::NEG_Y, Vec3::Z),
-            DespawnOnExit(GameState::Playing),
         ));
     }
 }

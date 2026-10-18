@@ -1,0 +1,66 @@
+{
+  "apartment": {
+    "baseline": {
+      "fps": 10.463597344777305,
+      "frame_ms": 95.5694267516066,
+      "samples": 2
+    },
+    "no-fog": {
+      "fps": 10.529472526740195,
+      "frame_ms": 94.97151898734178,
+      "samples": 1
+    },
+    "no-spot-shadows": {
+      "fps": 16.263956007332112,
+      "frame_ms": 61.48565573770492,
+      "samples": 1
+    },
+    "no-shadow-receiving": {
+      "fps": 15.394663183426687,
+      "frame_ms": 64.95757575758866,
+      "samples": 1
+    },
+    "no-shadow-casters": {
+      "fps": 11.26373809476035,
+      "frame_ms": 88.78047337279429,
+      "samples": 1
+    },
+    "no-spotlights": {
+      "fps": 24.524504511711555,
+      "frame_ms": 40.775543478256814,
+      "samples": 1
+    }
+  },
+  "court-from-window": {
+    "baseline": {
+      "fps": 6.131800383236763,
+      "frame_ms": 163.08423913045502,
+      "samples": 2
+    },
+    "no-fog": {
+      "fps": 6.531548043534118,
+      "frame_ms": 153.103061224505,
+      "samples": 1
+    },
+    "no-spot-shadows": {
+      "fps": 10.130564312420265,
+      "frame_ms": 98.71118421053612,
+      "samples": 1
+    },
+    "no-shadow-receiving": {
+      "fps": 11.594589191710535,
+      "frame_ms": 86.24712643678161,
+      "samples": 1
+    },
+    "no-shadow-casters": {
+      "fps": 8.197431471470644,
+      "frame_ms": 121.98943089433317,
+      "samples": 1
+    },
+    "no-spotlights": {
+      "fps": 18.79248300679728,
+      "frame_ms": 53.21276595744681,
+      "samples": 1
+    }
+  }
+}

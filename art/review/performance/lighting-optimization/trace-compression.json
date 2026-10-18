@@ -1,0 +1,14 @@
+[
+  {
+    "file": "trace-selected-gpu/trace-round-1-court-from-window.json.gz",
+    "uncompressed_bytes": 71930192,
+    "gzip_bytes": 8340319,
+    "uncompressed_sha256": "0f9c6f6ba19762c60889d1cedc960dca3e77c0001cc224b9d9977374a73e1117"
+  },
+  {
+    "file": "trace-selected-cpu/trace-round-1-court-from-window.json.gz",
+    "uncompressed_bytes": 70844237,
+    "gzip_bytes": 8264145,
+    "uncompressed_sha256": "d1eb4d251ddf17635677dcec1e846bc90dc896c5d03d64c320607005513e1e20"
+  }
+]
