@@ -74,7 +74,7 @@ async function main() {
     if (preset) {
       assert(['low', 'medium', 'high'].includes(preset));
       await page.addInitScript(preset => localStorage.setItem('casino-game.graphics.v1', JSON.stringify({
-        version: 1, graphics: { lighting: preset, textures: preset, render_scale: preset, msaa: preset === 'high' }
+        version: 2, graphics: { lighting: preset, anti_aliasing: { low: 'off', medium: 'fxaa', high: 'msaa4' }[preset] }
       })), preset);
     }
     const errors = [];

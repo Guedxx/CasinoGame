@@ -1,0 +1,239 @@
+{
+  "deviceScaleFactor": 1.25,
+  "checks": [
+    "Off, FXAA, SMAA and 4x MSAA execute the expected GPU passes, remain exclusive and preserve full-resolution rendering and identical menu heading pixels",
+    "Save and reload preserve SMAA; Cancel restores it after an FXAA preview",
+    "Legacy low-resolution/low-texture save migrates lighting and AA only, renders at full resolution and saves without removed fields",
+    "Medium enables FXAA; small-window keyboard and wheel scrolling keep settings usable",
+    "Invalid storage defaults to High; failed writes keep settings usable for this session"
+  ],
+  "modes": [
+    {
+      "mode": "off",
+      "target": {
+        "width": 1600,
+        "height": 900,
+        "samples": 1
+      },
+      "activePasses": [
+        "shadow_spot_light_0",
+        "shadow_spot_light_1",
+        "shadow_spot_light_2",
+        "shadow_spot_light_3",
+        "shadow_spot_light_4",
+        "shadow_spot_light_5",
+        "early prepass",
+        "shadow_directional_light_0_cascade_0",
+        "main_opaque_pass_3d",
+        "main_transparent_pass_3d",
+        "ui",
+        "upscaling"
+      ]
+    },
+    {
+      "mode": "fxaa",
+      "target": {
+        "width": 1600,
+        "height": 900,
+        "samples": 1
+      },
+      "activePasses": [
+        "shadow_spot_light_0",
+        "shadow_spot_light_1",
+        "shadow_spot_light_2",
+        "shadow_spot_light_3",
+        "shadow_spot_light_4",
+        "shadow_spot_light_5",
+        "early prepass",
+        "shadow_directional_light_0_cascade_0",
+        "main_opaque_pass_3d",
+        "main_transparent_pass_3d",
+        "fxaa",
+        "ui",
+        "upscaling"
+      ]
+    },
+    {
+      "mode": "smaa",
+      "target": {
+        "width": 1600,
+        "height": 900,
+        "samples": 1
+      },
+      "activePasses": [
+        "shadow_spot_light_0",
+        "shadow_spot_light_1",
+        "shadow_spot_light_2",
+        "shadow_spot_light_3",
+        "shadow_spot_light_4",
+        "shadow_spot_light_5",
+        "early prepass",
+        "shadow_directional_light_0_cascade_0",
+        "main_opaque_pass_3d",
+        "main_transparent_pass_3d",
+        "SMAA edge detection pass",
+        "SMAA blending weight calculation pass",
+        "SMAA neighborhood blending pass",
+        "ui",
+        "upscaling"
+      ]
+    },
+    {
+      "mode": "msaa4",
+      "target": {
+        "width": 1600,
+        "height": 900,
+        "samples": 4
+      },
+      "activePasses": [
+        "shadow_spot_light_0",
+        "shadow_spot_light_1",
+        "shadow_spot_light_2",
+        "shadow_spot_light_3",
+        "shadow_spot_light_4",
+        "shadow_spot_light_5",
+        "early prepass",
+        "shadow_directional_light_0_cascade_0",
+        "main_opaque_pass_3d",
+        "main_transparent_pass_3d",
+        "ui",
+        "upscaling"
+      ]
+    },
+    {
+      "mode": "fxaa",
+      "target": {
+        "width": 1600,
+        "height": 900,
+        "samples": 1
+      },
+      "activePasses": [
+        "shadow_spot_light_0",
+        "shadow_spot_light_1",
+        "shadow_spot_light_2",
+        "shadow_spot_light_3",
+        "shadow_spot_light_4",
+        "shadow_spot_light_5",
+        "early prepass",
+        "shadow_directional_light_0_cascade_0",
+        "main_opaque_pass_3d",
+        "main_transparent_pass_3d",
+        "fxaa",
+        "ui",
+        "upscaling"
+      ]
+    },
+    {
+      "mode": "off",
+      "target": {
+        "width": 1600,
+        "height": 900,
+        "samples": 1
+      },
+      "activePasses": [
+        "shadow_spot_light_0",
+        "shadow_spot_light_1",
+        "shadow_spot_light_2",
+        "shadow_spot_light_3",
+        "shadow_spot_light_4",
+        "shadow_spot_light_5",
+        "early prepass",
+        "shadow_directional_light_0_cascade_0",
+        "main_opaque_pass_3d",
+        "main_transparent_pass_3d",
+        "ui",
+        "upscaling"
+      ]
+    },
+    {
+      "mode": "smaa",
+      "target": {
+        "width": 1600,
+        "height": 900,
+        "samples": 1
+      },
+      "activePasses": [
+        "shadow_spot_light_0",
+        "shadow_spot_light_1",
+        "shadow_spot_light_2",
+        "shadow_spot_light_3",
+        "shadow_spot_light_4",
+        "shadow_spot_light_5",
+        "early prepass",
+        "shadow_directional_light_0_cascade_0",
+        "main_opaque_pass_3d",
+        "main_transparent_pass_3d",
+        "SMAA edge detection pass",
+        "SMAA blending weight calculation pass",
+        "SMAA neighborhood blending pass",
+        "ui",
+        "upscaling"
+      ]
+    }
+  ],
+  "errors": [],
+  "logs": [
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_winit-0.19.1/src/system.rs:67%c Creating new window Casino Game (65v0) color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.19.1/src/renderer/mod.rs:288%c AdapterInfo { name: \"\", vendor: 0, device: 0, device_type: Other, device_pci_bus_id: \"\", driver: \"\", driver_info: \"\", backend: BrowserWebGpu, subgroup_min_size: 4, subgroup_max_size: 128, transient_saves_memory: false } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/cluster/mod.rs:87%c GPU clustering is supported on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.19.1/src/batching/gpu_preprocessing.rs:1372%c Some GPU preprocessing are limited on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cWARN%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/ssao/mod.rs:68%c ScreenSpaceAmbientOcclusionPlugin not loaded. GPU lacks support: Limits::max_storage_textures_per_shader_stage is less than 5. color: orange; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/light_probe/generate.rs:121%c Disabling EnvironmentMapGenerationPlugin because compute is not supported on this platform. This is safe to ignore if you are not using EnvironmentMapGenerationPlugin. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:396%c Gameplay resumed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics.rs:245%c Graphics quality High: GraphicsSettings { lighting: High, anti_aliasing: Msaa4 } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/lighting_fast_path.rs:61%c Exact-zero spotlight fast path installed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:241%c First-person player ready at Vec3(1.6, 0.92, 1.3); static colliders registered color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/review.rs:66%c City review camera 8 color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics.rs:245%c Graphics quality Custom: GraphicsSettings { lighting: High, anti_aliasing: Off } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics.rs:245%c Graphics quality Custom: GraphicsSettings { lighting: High, anti_aliasing: Fxaa } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics.rs:245%c Graphics quality Custom: GraphicsSettings { lighting: High, anti_aliasing: Smaa } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics.rs:245%c Graphics quality High: GraphicsSettings { lighting: High, anti_aliasing: Msaa4 } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics.rs:245%c Graphics quality Custom: GraphicsSettings { lighting: High, anti_aliasing: Fxaa } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics.rs:245%c Graphics quality Custom: GraphicsSettings { lighting: High, anti_aliasing: Off } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics.rs:245%c Graphics quality Custom: GraphicsSettings { lighting: High, anti_aliasing: Smaa } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_winit-0.19.1/src/system.rs:67%c Creating new window Casino Game (65v0) color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.19.1/src/renderer/mod.rs:288%c AdapterInfo { name: \"\", vendor: 0, device: 0, device_type: Other, device_pci_bus_id: \"\", driver: \"\", driver_info: \"\", backend: BrowserWebGpu, subgroup_min_size: 4, subgroup_max_size: 128, transient_saves_memory: false } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/cluster/mod.rs:87%c GPU clustering is supported on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.19.1/src/batching/gpu_preprocessing.rs:1372%c Some GPU preprocessing are limited on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cWARN%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/ssao/mod.rs:68%c ScreenSpaceAmbientOcclusionPlugin not loaded. GPU lacks support: Limits::max_storage_textures_per_shader_stage is less than 5. color: orange; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/light_probe/generate.rs:121%c Disabling EnvironmentMapGenerationPlugin because compute is not supported on this platform. This is safe to ignore if you are not using EnvironmentMapGenerationPlugin. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:396%c Gameplay resumed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics.rs:245%c Graphics quality Custom: GraphicsSettings { lighting: High, anti_aliasing: Smaa } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/lighting_fast_path.rs:61%c Exact-zero spotlight fast path installed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:241%c First-person player ready at Vec3(1.6, 0.92, 1.3); static colliders registered color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/review.rs:66%c City review camera 8 color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics.rs:245%c Graphics quality Custom: GraphicsSettings { lighting: High, anti_aliasing: Fxaa } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics.rs:245%c Graphics quality Custom: GraphicsSettings { lighting: High, anti_aliasing: Smaa } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:396%c Gameplay resumed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_winit-0.19.1/src/system.rs:67%c Creating new window Casino Game (65v0) color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.19.1/src/renderer/mod.rs:288%c AdapterInfo { name: \"\", vendor: 0, device: 0, device_type: Other, device_pci_bus_id: \"\", driver: \"\", driver_info: \"\", backend: BrowserWebGpu, subgroup_min_size: 4, subgroup_max_size: 128, transient_saves_memory: false } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/cluster/mod.rs:87%c GPU clustering is supported on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.19.1/src/batching/gpu_preprocessing.rs:1372%c Some GPU preprocessing are limited on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cWARN%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/ssao/mod.rs:68%c ScreenSpaceAmbientOcclusionPlugin not loaded. GPU lacks support: Limits::max_storage_textures_per_shader_stage is less than 5. color: orange; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/light_probe/generate.rs:121%c Disabling EnvironmentMapGenerationPlugin because compute is not supported on this platform. This is safe to ignore if you are not using EnvironmentMapGenerationPlugin. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:396%c Gameplay resumed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics.rs:245%c Graphics quality Custom: GraphicsSettings { lighting: Medium, anti_aliasing: Off } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/lighting_fast_path.rs:61%c Exact-zero spotlight fast path installed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:241%c First-person player ready at Vec3(1.6, 0.92, 1.3); static colliders registered color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/review.rs:66%c City review camera 8 color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:396%c Gameplay resumed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics.rs:245%c Graphics quality Medium: GraphicsSettings { lighting: Medium, anti_aliasing: Fxaa } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "Calling [RenderPassEncoder \"ui\"].Draw with an index count of 0 is unusual.",
+    "%cINFO%c src/graphics.rs:245%c Graphics quality Custom: GraphicsSettings { lighting: Medium, anti_aliasing: Msaa4 } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics.rs:245%c Graphics quality Custom: GraphicsSettings { lighting: Medium, anti_aliasing: Off } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:396%c Gameplay resumed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_winit-0.19.1/src/system.rs:67%c Creating new window Casino Game (65v0) color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.19.1/src/renderer/mod.rs:288%c AdapterInfo { name: \"\", vendor: 0, device: 0, device_type: Other, device_pci_bus_id: \"\", driver: \"\", driver_info: \"\", backend: BrowserWebGpu, subgroup_min_size: 4, subgroup_max_size: 128, transient_saves_memory: false } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/cluster/mod.rs:87%c GPU clustering is supported on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.19.1/src/batching/gpu_preprocessing.rs:1372%c Some GPU preprocessing are limited on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cWARN%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/ssao/mod.rs:68%c ScreenSpaceAmbientOcclusionPlugin not loaded. GPU lacks support: Limits::max_storage_textures_per_shader_stage is less than 5. color: orange; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/light_probe/generate.rs:121%c Disabling EnvironmentMapGenerationPlugin because compute is not supported on this platform. This is safe to ignore if you are not using EnvironmentMapGenerationPlugin. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:396%c Gameplay resumed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics.rs:245%c Graphics quality High: GraphicsSettings { lighting: High, anti_aliasing: Msaa4 } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/lighting_fast_path.rs:61%c Exact-zero spotlight fast path installed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:241%c First-person player ready at Vec3(1.6, 0.92, 1.3); static colliders registered color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/review.rs:66%c City review camera 8 color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "Calling [RenderPassEncoder \"ui\"].Draw with an index count of 0 is unusual.",
+    "%cWARN%c src/graphics.rs:157%c Cannot save graphics settings: JsValue(SecurityError: Storage disabled\nundefined) color: orange; background: #444 color: gray; font-style: italic color: inherit"
+  ]
+}

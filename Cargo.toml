@@ -10,7 +10,6 @@ scene-review = []
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-image = { version = "0.25.10", default-features = false }
 bevy = { version = "=0.19.1", default-features = false, features = ["3d", "ui", "keyboard", "mouse", "jpeg"] }
 
 bevy_rapier3d = { version = "0.35", default-features = false, features = ["dim3", "async-collider"] }

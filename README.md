@@ -47,14 +47,19 @@ Presets can be adjusted individually; unmatched combinations display **Custom**.
 | Setting | Low | Medium | High |
 | --- | --- | --- | --- |
 | Lighting | Shadows off | 1024px shadows, hardware filtering | Original 2048px shadows, Gaussian filtering |
-| Texture dimensions | ¼ original | ½ original | Original |
-| 3D render resolution | 50% | 75% | 100% |
-| Anti-aliasing | Off | Off | 4× MSAA |
+| Anti-aliasing | Off | FXAA | 4× MSAA |
 
-All lights, fog and scene geometry stay present at every setting. Lower presets deliberately
-trade image detail for speed. Menus stay at native resolution. Changes preview immediately;
+All lights, fog, scene geometry and original texture dimensions stay present at every setting.
+Rendering always uses the full window resolution; there is no scaling camera or texture-resizing queue.
+Anti-aliasing can also be selected individually: **Off, FXAA, SMAA (High), or 4× MSAA**.
+FXAA is a fast post-process; SMAA preserves edges more accurately at additional processing cost.
+The web supports only 1×/4× MSAA, so 2×/8× are not offered. FXAA/SMAA turn MSAA off and are mutually exclusive.
+Implementation follows [Bevy 0.19.1 FXAA](https://raw.githubusercontent.com/bevyengine/bevy/v0.19.1/crates/bevy_anti_alias/src/fxaa/mod.rs) and
+[SMAA](https://raw.githubusercontent.com/bevyengine/bevy/v0.19.1/crates/bevy_anti_alias/src/smaa/mod.rs).
+Changes preview immediately;
 **Save settings** commits them, while **Cancel / Escape** restores the last saved settings.
-Texture changes are processed in batches; Save and Resume wait until those batches finish.
+Version-one saved preferences migrate lighting and anti-aliasing only; removed texture and resolution values are discarded.
+New saves use schema version two in the existing storage location.
 
 Settings are stored in browser localStorage (`casino-game.graphics.v1`), or in
 `CasinoGame/casino-game.graphics.v1.json` under the native user configuration directory
@@ -250,12 +255,13 @@ WGSL. An unrecognized shader keeps the original source and logs a warning. Reche
 the patch and browser screenshots when upgrading Bevy. Remeasure CPU clustering if
 the scene grows substantially beyond its current six spotlights.
 
-The [settings report](art/review/performance/settings/index.html) contains the preset
-measurements, High-quality pixel comparisons and browser interaction checks. Reproduce
+The [original settings report](art/review/performance/settings/index.html) is historical: its preset FPS measurements include the removed texture and resolution reductions.
+Current presets retain full resolution and original textures, so those figures do not describe current preset performance.
+The [anti-aliasing checks](art/review/performance/antialiasing/interaction/results.json) cover actual GPU passes, fixed scene/UI size, migration, saving and cancellation. Reproduce
 the settings checks against a running `scene-review` build with Playwright on `NODE_PATH`:
 
 ```sh
-node tools/test-settings.cjs art/review/performance/settings/interaction http://127.0.0.1:8080/
+node tools/test-settings.cjs art/review/performance/antialiasing/interaction http://127.0.0.1:8080/
 ```
 
 ## Checks

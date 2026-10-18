@@ -8,7 +8,7 @@ use bevy::{
 };
 
 use crate::{
-    graphics::{ApplyGraphics, GraphicsOptions, GraphicsSettings, Quality, TextureWork},
+    graphics::{AntiAliasing, ApplyGraphics, GraphicsOptions, GraphicsSettings, Quality},
     state::GameState,
 };
 
@@ -43,18 +43,14 @@ enum Action {
     Reset,
     Preset(Quality),
     Lighting(Quality),
-    Textures(Quality),
-    Scale(Quality),
-    Msaa(bool),
+    AntiAliasing(AntiAliasing),
 }
 impl Action {
     fn selected(self, settings: GraphicsSettings) -> bool {
         match self {
             Self::Preset(q) => settings == GraphicsSettings::preset(q),
             Self::Lighting(q) => settings.lighting == q,
-            Self::Textures(q) => settings.textures == q,
-            Self::Scale(q) => settings.render_scale == q,
-            Self::Msaa(on) => settings.msaa == on,
+            Self::AntiAliasing(mode) => settings.anti_aliasing == mode,
             _ => false,
         }
     }
@@ -62,14 +58,9 @@ impl Action {
         match self {
             Self::Preset(_) => Some("Quality preset"),
             Self::Lighting(_) => Some("Lighting quality"),
-            Self::Textures(_) => Some("Texture resolution"),
-            Self::Scale(_) => Some("Render resolution"),
-            Self::Msaa(_) => Some("Anti-aliasing"),
+            Self::AntiAliasing(_) => Some("Anti-aliasing"),
             _ => None,
         }
-    }
-    fn waits_for_textures(self) -> bool {
-        matches!(self, Self::Resume | Self::Save)
     }
 }
 #[derive(Component)]
@@ -189,6 +180,8 @@ fn choices(
             });
             row.spawn(Node {
                 column_gap: px(8),
+                row_gap: px(8),
+                flex_wrap: FlexWrap::Wrap,
                 flex_basis: percent(55),
                 min_width: px(320),
                 max_width: percent(100),
@@ -332,35 +325,16 @@ fn setup(
                                         choices(
                                             body,
                                             &skin,
-                                            "Textures",
-                                            "1/4 size / 1/2 size / original",
-                                            &[
-                                                ("Low", Action::Textures(Quality::Low)),
-                                                ("Medium", Action::Textures(Quality::Medium)),
-                                                ("High", Action::Textures(Quality::High)),
-                                            ],
-                                            &mut index,
-                                        );
-                                        choices(
-                                            body,
-                                            &skin,
-                                            "Render resolution",
-                                            "Lower values improve speed.",
-                                            &[
-                                                ("50%", Action::Scale(Quality::Low)),
-                                                ("75%", Action::Scale(Quality::Medium)),
-                                                ("100%", Action::Scale(Quality::High)),
-                                            ],
-                                            &mut index,
-                                        );
-                                        choices(
-                                            body,
-                                            &skin,
                                             "Anti-aliasing",
-                                            "Smooths the edges of objects.",
+                                            "FXAA: fast. SMAA: sharper edges.",
                                             &[
-                                                ("Off", Action::Msaa(false)),
-                                                ("4x MSAA", Action::Msaa(true)),
+                                                ("Off", Action::AntiAliasing(AntiAliasing::Off)),
+                                                ("FXAA", Action::AntiAliasing(AntiAliasing::Fxaa)),
+                                                ("SMAA", Action::AntiAliasing(AntiAliasing::Smaa)),
+                                                (
+                                                    "4x MSAA",
+                                                    Action::AntiAliasing(AntiAliasing::Msaa4),
+                                                ),
                                             ],
                                             &mut index,
                                         );
@@ -478,7 +452,6 @@ fn actions(
     keys: Res<ButtonInput<KeyCode>>,
     state: Res<State<GameState>>,
     mut options: ResMut<GraphicsOptions>,
-    work: Res<TextureWork>,
     mut next: ResMut<NextState<GameState>>,
     buttons: Query<(Entity, &Action, &Interaction), With<Button>>,
     changed: Query<(Entity, &Action, &Interaction), (With<Button>, Changed<Interaction>)>,
@@ -504,9 +477,6 @@ fn actions(
             })
     };
     let Some(action) = action else { return };
-    if action.waits_for_textures() && work.busy() {
-        return;
-    }
     match action {
         Action::Resume => next.set(GameState::Playing),
         Action::Settings => {
@@ -524,15 +494,12 @@ fn actions(
         Action::Reset => options.current = GraphicsSettings::default(),
         Action::Preset(q) => options.current = GraphicsSettings::preset(q),
         Action::Lighting(q) => options.current.lighting = q,
-        Action::Textures(q) => options.current.textures = q,
-        Action::Scale(q) => options.current.render_scale = q,
-        Action::Msaa(on) => options.current.msaa = on,
+        Action::AntiAliasing(mode) => options.current.anti_aliasing = mode,
     }
 }
 fn appearance(
     mut commands: Commands,
     options: Res<GraphicsOptions>,
-    work: Res<TextureWork>,
     focus: Res<InputFocus>,
     mut buttons: Query<(
         Entity,
@@ -540,23 +507,13 @@ fn appearance(
         &Interaction,
         &mut ImageNode,
         &mut BorderColor,
-        Has<bevy::ui::InteractionDisabled>,
         Option<&mut bevy::a11y::AccessibilityNode>,
         Has<bevy::ui::Checkable>,
         Has<bevy::ui::Checked>,
     )>,
 ) {
-    for (
-        entity,
-        action,
-        interaction,
-        mut image,
-        mut border,
-        was_disabled,
-        accessible,
-        checkable,
-        checked,
-    ) in &mut buttons
+    for (entity, action, interaction, mut image, mut border, accessible, checkable, checked) in
+        &mut buttons
     {
         if let Some(mut accessible) = accessible
             && let Some(name) = action.setting_name()
@@ -573,21 +530,7 @@ fn appearance(
                 }
             }
         }
-        let disabled = action.waits_for_textures() && work.busy();
-        if disabled != was_disabled {
-            if disabled {
-                commands
-                    .entity(entity)
-                    .insert(bevy::ui::InteractionDisabled);
-            } else {
-                commands
-                    .entity(entity)
-                    .remove::<bevy::ui::InteractionDisabled>();
-            }
-        }
-        image.color = if disabled {
-            Color::linear_rgb(0.5, 0.5, 0.5)
-        } else if action.selected(options.current) {
+        image.color = if action.selected(options.current) {
             Color::linear_rgb(3.5, 2.8, 1.7)
         } else if *interaction != Interaction::None || focus.get() == Some(entity) {
             Color::linear_rgb(2.0, 2.0, 1.8)
@@ -607,7 +550,6 @@ fn status(
     time: Res<Time<Real>>,
     state: Res<State<GameState>>,
     options: Res<GraphicsOptions>,
-    work: Res<TextureWork>,
     mut sample: Local<(u32, f64, f64)>,
     mut texts: Query<(&mut Text, Has<Status>, Has<Fps>)>,
 ) {
@@ -620,14 +562,7 @@ fn status(
     }
     for (mut text, status, fps) in &mut texts {
         if status {
-            **text = if work.busy() {
-                format!(
-                    "Updating textures... {} remaining. Cancel is available.",
-                    work.remaining()
-                )
-            } else if let Some(problem) = &work.problem {
-                problem.clone()
-            } else if !options.notice.is_empty() {
+            **text = if !options.notice.is_empty() {
                 options.notice.clone()
             } else if *state.get() == GameState::Settings {
                 "Live preview. Esc cancels.".into()

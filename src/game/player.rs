@@ -284,7 +284,6 @@ fn input(
     mut controls: ResMut<Controls>,
     player: Query<(), With<Player>>,
     mut next: ResMut<NextState<GameState>>,
-    work: Option<Res<crate::graphics::TextureWork>>,
 ) {
     let Ok((window, mut cursor)) = window.single_mut() else {
         return;
@@ -292,10 +291,7 @@ fn input(
     if keys.just_pressed(KeyCode::Escape) || !window.focused {
         cursor.grab_mode = CursorGrabMode::None;
         cursor.visible = true;
-    } else if buttons.just_pressed(MouseButton::Left)
-        && !player.is_empty()
-        && !work.as_ref().is_some_and(|w| w.busy())
-    {
+    } else if buttons.just_pressed(MouseButton::Left) && !player.is_empty() {
         cursor.grab_mode = CursorGrabMode::Locked;
         cursor.visible = false;
     }
