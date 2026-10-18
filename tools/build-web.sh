@@ -14,9 +14,11 @@ wasm-bindgen --target web --no-typescript --out-dir dist target/wasm32-unknown-u
 cp web/index.html dist/index.html
 mkdir -p dist/assets/models
 cp assets/models/apartment_windows.glb dist/assets/models/
+cp assets/models/menu_sleeper.glb dist/assets/models/
 cp -R assets/ui assets/fonts dist/assets/
 if [ -d art/review ]; then
     cp -R art/review dist/
 fi
 test -s dist/CasinoGame_bg.wasm
 test -s dist/assets/models/apartment_windows.glb
+test -s dist/assets/models/menu_sleeper.glb

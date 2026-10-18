@@ -27,4 +27,8 @@ Take the first option that fully works:
 
 Never cut: validation at trust boundaries, error handling that prevents data loss, security, accessibility, the calibration real hardware needs, anything the user asked for.
 
+UI and graphics checks
+
+Run UI and graphics test suites, browser regression scripts, and graphics benchmarks only when the user explicitly asks for them. Do not rerun these suites after routine changes. For a visual or asset adjustment, use only a focused inspection of the affected view and relevant asset assertions; skip unrelated checks.
+
 (Yes, this file also applies to agents working on the ponytail repo itself. Especially to them.)

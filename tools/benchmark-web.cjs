@@ -129,8 +129,11 @@ async function main() {
         return texture;
       };
     });
+    const titleReady = page.waitForEvent('console', { predicate: m => m.text().includes('Title screen ready'), timeout: 180000 });
     const ready = page.waitForEvent('console', { predicate: m => m.text().includes('First-person player ready'), timeout: 180000 });
     await page.goto(url);
+    await titleReady;
+    await page.keyboard.press('Enter');
     await ready;
     await page.bringToFront();
     await page.waitForTimeout(10000);

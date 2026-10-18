@@ -42,8 +42,9 @@ async function main() {
   const key = async key => { await page.keyboard.press(key, { delay: 100 }); await page.waitForTimeout(250); };
   const screenshot = name => page.screenshot({ path: `${directory}/${name}.png` });
   const ready = async () => {
+    const titleReady = page.waitForEvent('console', { predicate: m => m.text().includes('Title screen ready'), timeout: 180000 });
     const loaded = page.waitForEvent('console', { predicate: m => m.text().includes('First-person player ready'), timeout: 180000 });
-    await page.goto(url); await loaded; await page.waitForTimeout(5000);
+    await page.goto(url); await titleReady; await page.keyboard.press('Enter'); await loaded; await page.waitForTimeout(5000);
     await key('F9');
   };
   let focus = 0;

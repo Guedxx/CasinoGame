@@ -1,0 +1,22 @@
+{
+  "deviceScaleFactor": 1.25,
+  "checks": [
+    "Launch shows the title; Escape does not start gameplay; title Settings saves and returns without spawning a player",
+    "Clicking Start enters gameplay; mouse capture, pause, settings cancellation and resume preserve the same player"
+  ],
+  "errors": [],
+  "logs": [
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_winit-0.19.1/src/system.rs:67%c Creating new window Let It Ride (65v0) color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.19.1/src/renderer/mod.rs:288%c AdapterInfo { name: \"\", vendor: 0, device: 0, device_type: Other, device_pci_bus_id: \"\", driver: \"\", driver_info: \"\", backend: BrowserWebGpu, subgroup_min_size: 4, subgroup_max_size: 128, transient_saves_memory: false } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/cluster/mod.rs:87%c GPU clustering is supported on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.19.1/src/batching/gpu_preprocessing.rs:1372%c Some GPU preprocessing are limited on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cWARN%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/ssao/mod.rs:68%c ScreenSpaceAmbientOcclusionPlugin not loaded. GPU lacks support: Limits::max_storage_textures_per_shader_stage is less than 5. color: orange; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/light_probe/generate.rs:121%c Disabling EnvironmentMapGenerationPlugin because compute is not supported on this platform. This is safe to ignore if you are not using EnvironmentMapGenerationPlugin. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/lighting_fast_path.rs:61%c Exact-zero spotlight fast path installed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics.rs:245%c Graphics quality High: GraphicsSettings { lighting: High, anti_aliasing: Msaa4 } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/screens/menu.rs:199%c Title screen ready color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:396%c Gameplay resumed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:241%c First-person player ready at Vec3(1.6, 0.92, 1.3); static colliders registered color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:396%c Gameplay resumed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+  ]
+}

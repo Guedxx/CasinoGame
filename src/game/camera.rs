@@ -38,7 +38,7 @@ fn spawn_camera(mut commands: Commands, clear_color: Res<ClearColor>) {
             far,
             ..default()
         }),
-        Transform::from_xyz(100.0, 80.0, 130.0).looking_at(Vec3::new(0.0, 3.0, 0.0), Vec3::Y),
+        Transform::from_xyz(0.90, 1.35, -2.60).looking_at(Vec3::new(3.0, 0.70, 1.0), Vec3::Y),
     ));
 }
 

@@ -1,4 +1,4 @@
-# Casino Game
+# Let It Ride
 
 A Rust / Bevy 0.19.1 project with a furnished first-person apartment and a dense urban exterior.
 
@@ -8,7 +8,9 @@ A Rust / Bevy 0.19.1 project with a furnished first-person apartment and a dense
 cargo run
 ```
 
-The game starts inside the furnished apartment, two storeys above a narrow service court. Wait for loading, then **click** to capture the mouse.
+The game opens on the apartment couch with a sleeping man, a subtle chest-breathing animation,
+and **Start / Settings** on the right. **Start** enters the furnished apartment, two storeys
+above a narrow service court. Wait for loading, then **click** to capture the mouse.
 Use **WASD** to walk, **Shift** to sprint, **Space** to jump, and the **mouse** to look.
 **Escape** pauses the game and opens the menu. Resume keeps your position and view; click to recapture the mouse.
 Use **Tab / Shift+Tab** to navigate the menu and **Enter / Space** to select.
@@ -40,7 +42,8 @@ quicker development builds. Release linking takes longer but produces a smaller 
 
 ## Graphics settings
 
-Press **Escape → Settings**. Both screens are centered over the paused game.
+Choose **Settings** on the title screen, or **Escape → Settings** during play.
+Settings returns to the screen it was opened from. The pause and settings panels are centered over the scene.
 High is the default and preserves the original appearance.
 Presets can be adjusted individually; unmatched combinations display **Custom**.
 
@@ -71,7 +74,8 @@ The centered panels and buttons share one generated, nine-sliced texture:
 `assets/ui/pause-panel.png` (512×512, 97,946 bytes on disk, 1 MiB decoded RGBA on the GPU).
 This reduces texture GPU storage by 83% versus the generated 1254×1254 source. Text stays
 native-resolution using the included, unmodified Liberation Sans Bold font and its OFL license.
-Three shared text sizes limit font-atlas allocations. These texture figures exclude the CPU image copy and font atlases. The generation prompt,
+Pause and settings share three text sizes; the title heading scales with window width.
+These texture figures exclude the CPU image copy and font atlases. The generation prompt,
 style notes and compression details are in `art/ui/pause-panel-generation.json`.
 
 The settings page's FPS counter measures game rendering cadence. Browser performance reports use
@@ -91,7 +95,7 @@ src/
     player.rs         First-person controls, static collision, and physics checks
   screens/
     mod.rs            Screen plugins
-    menu.rs           Pause menu, settings, and keyboard input
+    menu.rs           Title menu, pause menu, settings, and keyboard input
     playing.rs        Apartment scene, sunlight, and input
 assets/
   audio/
@@ -108,6 +112,21 @@ that should be removed when a screen closes.
 
 Asset paths are relative to `assets/`, for example
 `asset_server.load("textures/cards.png")`.
+
+The title uses the existing apartment and its single camera. Its character is baked from
+`base/Characters_psx/Models/Male/Character_01.fbx` with the matching source texture.
+`assets/models/menu_sleeper.glb` contains a seated, head-back pose and one `Breath` morph;
+the chest rises and expands over a four-second breathing cycle, including in title settings.
+Start removes the sleeper; the existing pause menu preserves the player's view and position.
+Rebuild the character with `blender --background --factory-startup --python tools/build_menu_character.py`.
+The exporter keeps the enlarged character seated on the cushion, adjusts his knee bend
+to rest the flat soles on the carpet with 1 mm clearance, and checks textures, seated height,
+wall clearance, and the exported morph.
+If a system Blender picks up an incompatible Python installation, launch it with
+`--python-use-system-env` and set `PYTHONPATH` to that Blender installation's matching
+standard-library, `lib-dynload`, and `site-packages` directories.
+Check the title and pause flow against a running browser build with Playwright on `NODE_PATH`:
+`node tools/test-menu.cjs`. Screenshots and results are saved in `art/review/title-menu/`.
 
 ## Apartment and city assets
 

@@ -12,7 +12,7 @@ pub fn run() {
                 })
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        title: "Casino Game".into(),
+                        title: "Let It Ride".into(),
                         resolution: (1280, 720).into(),
                         fit_canvas_to_parent: true,
                         ..default()

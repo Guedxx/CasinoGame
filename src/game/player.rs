@@ -678,7 +678,7 @@ mod tests {
     fn pause_preserves_player_and_camera_direction() {
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, bevy::state::app::StatesPlugin))
-            .init_state::<GameState>()
+            .insert_state(GameState::Playing)
             .init_resource::<Controls>()
             .add_systems(OnExit(GameState::Playing), release)
             .add_systems(OnEnter(GameState::Playing), resume);

@@ -6,7 +6,7 @@ pub struct PlayingPlugin;
 
 impl Plugin for PlayingPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Playing), setup)
+        app.add_systems(Startup, setup)
             .add_systems(Update, return_to_menu.run_if(in_state(GameState::Playing)));
     }
 }

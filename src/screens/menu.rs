@@ -1,10 +1,12 @@
 use bevy::{
+    asset::{LoadState, RecursiveDependencyLoadState},
     input::mouse::{MouseScrollUnit, MouseWheel},
     input_focus::{
         FocusCause, InputFocus,
         tab_navigation::{TabGroup, TabIndex, TabNavigationPlugin},
     },
     prelude::*,
+    world_serialization::{WorldInstance, WorldInstanceSpawner},
 };
 
 use crate::{
@@ -16,14 +18,26 @@ pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(TabNavigationPlugin)
-            .add_systems(Startup, load_skin)
+            .init_resource::<SettingsOrigin>()
+            .init_resource::<MenuSkin>()
+            .add_systems(Startup, spawn_sleeper)
+            .add_systems(OnEnter(GameState::Title), setup_title)
             .add_systems(OnEnter(GameState::Menu), setup)
             .add_systems(OnEnter(GameState::Settings), setup)
+            .add_systems(OnEnter(GameState::Playing), remove_sleeper)
             .add_systems(
                 Update,
                 (
                     actions.before(ApplyGraphics),
-                    (appearance, status, scroll).after(ApplyGraphics),
+                    (
+                        appearance,
+                        status,
+                        scroll,
+                        breathe,
+                        title_loading,
+                        frame_title,
+                    )
+                        .after(ApplyGraphics),
                 )
                     .run_if(not(in_state(GameState::Playing))),
             );
@@ -36,6 +50,7 @@ const ACCENT: Color = Color::srgb(0.79, 0.64, 0.40);
 
 #[derive(Component, Clone, Copy)]
 enum Action {
+    Start,
     Resume,
     Settings,
     Save,
@@ -69,17 +84,136 @@ struct ScrollPanel;
 struct Status;
 #[derive(Component)]
 struct Fps;
+#[derive(Component)]
+struct Sleeper;
+#[derive(Component)]
+struct TitleStatus;
+#[derive(Component)]
+struct TitleHeading;
+
+#[derive(Resource)]
+struct SettingsOrigin(GameState);
+impl Default for SettingsOrigin {
+    fn default() -> Self {
+        Self(GameState::Title)
+    }
+}
+
+fn spawn_sleeper(mut commands: Commands, assets: Res<AssetServer>) {
+    commands.spawn((
+        Name::new("Title sleeper"),
+        Sleeper,
+        WorldAssetRoot(assets.load(GltfAssetLabel::Scene(0).from_asset("models/menu_sleeper.glb"))),
+    ));
+}
+
+fn remove_sleeper(
+    mut commands: Commands,
+    sleepers: Query<Entity, With<Sleeper>>,
+    mut projections: Query<&mut Projection, With<Camera3d>>,
+) {
+    for entity in &sleepers {
+        commands.entity(entity).despawn();
+    }
+    for mut projection in &mut projections {
+        if let Projection::Perspective(projection) = &mut *projection {
+            projection.fov = 75.0_f32.to_radians();
+        }
+    }
+}
+
+fn breath_weight(seconds: f32) -> f32 {
+    (1.0 - (seconds * std::f32::consts::TAU / 4.0).cos()) * 0.5
+}
+
+fn frame_title(
+    sleepers: Query<(), With<Sleeper>>,
+    windows: Query<&Window, With<bevy::window::PrimaryWindow>>,
+    mut projections: Query<&mut Projection, With<Camera3d>>,
+    mut headings: Query<&mut TextFont, With<TitleHeading>>,
+) {
+    let Ok(window) = windows.single() else { return };
+    if sleepers.is_empty() {
+        return;
+    }
+    // Preserve the horizontal composition when the window aspect ratio changes.
+    for mut projection in &mut projections {
+        if let Projection::Perspective(projection) = &mut *projection {
+            projection.fov = 2.0
+                * ((70.0_f32.to_radians() / 2.0).tan() * (16.0 / 9.0) * window.height()
+                    / window.width().max(1.0))
+                .atan();
+        }
+    }
+    for mut heading in &mut headings {
+        heading.font_size = FontSize::Px((window.width() * 0.05).clamp(32.0, 64.0));
+    }
+}
+
+fn breathe(
+    time: Res<Time<Real>>,
+    sleepers: Query<Entity, With<Sleeper>>,
+    children: Query<&Children>,
+    mut weights: Query<&mut bevy::mesh::morph::MorphWeights>,
+) {
+    for root in &sleepers {
+        for entity in children.iter_descendants(root) {
+            if let Ok(mut weights) = weights.get_mut(entity) {
+                weights.weights_mut()[0] = breath_weight(time.elapsed_secs());
+            }
+        }
+    }
+}
+
+fn title_loading(
+    assets: Res<AssetServer>,
+    spawner: Res<WorldInstanceSpawner>,
+    scenes: Query<
+        (&WorldAssetRoot, Option<&WorldInstance>),
+        Or<(With<Sleeper>, With<crate::game::player::Apartment>)>,
+    >,
+    mut texts: Query<&mut Text, With<TitleStatus>>,
+    mut announced: Local<bool>,
+) {
+    if texts.is_empty() {
+        return;
+    }
+    let mut message = "";
+    for (root, instance) in &scenes {
+        match assets.get_load_states(root.0.id()) {
+            Some((LoadState::Failed(_), _, _))
+            | Some((_, _, RecursiveDependencyLoadState::Failed(_))) => {
+                message = "Could not load the title scene. Restart the game to retry.";
+                break;
+            }
+            _ if instance.is_none_or(|id| !spawner.instance_is_ready(**id)) => {
+                message = "Loading apartment…";
+            }
+            _ => {}
+        }
+    }
+    for mut text in &mut texts {
+        **text = message.into();
+    }
+    if message.is_empty() && !*announced {
+        info!("Title screen ready");
+        *announced = true;
+    }
+}
 
 #[derive(Resource)]
 struct MenuSkin {
     panel: Handle<Image>,
     font: Handle<Font>,
 }
-fn load_skin(mut commands: Commands, assets: Res<AssetServer>) {
-    commands.insert_resource(MenuSkin {
-        panel: assets.load("ui/pause-panel.png"),
-        font: assets.load("fonts/LiberationSans-Bold.ttf"),
-    });
+impl FromWorld for MenuSkin {
+    fn from_world(world: &mut World) -> Self {
+        let assets = world.resource::<AssetServer>();
+        Self {
+            panel: assets.load("ui/pause-panel.png"),
+            font: assets.load("fonts/LiberationSans-Bold.ttf"),
+        }
+    }
 }
 impl MenuSkin {
     fn font(&self, size: f32) -> TextFont {
@@ -112,7 +246,7 @@ fn button(
     action: Action,
     index: &mut i32,
 ) -> Entity {
-    let main = matches!(action, Action::Resume | Action::Settings);
+    let main = matches!(action, Action::Start | Action::Resume | Action::Settings);
     let entity = parent
         .spawn((
             Button,
@@ -195,6 +329,75 @@ fn choices(
             });
         });
 }
+// The apartment is the title art: sleeper left, warm ivory type and familiar controls right.
+fn setup_title(mut commands: Commands, skin: Res<MenuSkin>, mut focus: ResMut<InputFocus>) {
+    let mut index = 0;
+    let mut first = None;
+    commands
+        .spawn((
+            DespawnOnExit(GameState::Title),
+            GlobalZIndex(100),
+            TabGroup::modal(),
+            BackgroundGradient(vec![
+                LinearGradient::to_right(vec![
+                    ColorStop::new(Color::NONE, percent(30)),
+                    ColorStop::new(Color::srgba(0.015, 0.018, 0.016, 0.90), percent(65)),
+                    ColorStop::new(Color::srgba(0.015, 0.018, 0.016, 0.96), percent(100)),
+                ])
+                .into(),
+            ]),
+            Node {
+                width: percent(100),
+                height: percent(100),
+                justify_content: JustifyContent::End,
+                ..default()
+            },
+        ))
+        .with_children(|overlay| {
+            overlay
+                .spawn(Node {
+                    width: percent(45),
+                    height: percent(100),
+                    padding: UiRect::axes(vw(3), px(24)),
+                    justify_content: JustifyContent::Center,
+                    flex_direction: FlexDirection::Column,
+                    row_gap: px(32),
+                    ..default()
+                })
+                .with_children(|panel| {
+                    panel.spawn((
+                        Text::new("Let It Ride"),
+                        TitleHeading,
+                        skin.font(64.0),
+                        TextColor(INK),
+                        TextShadow::default(),
+                    ));
+                    panel
+                        .spawn(Node {
+                            width: percent(100),
+                            max_width: px(360),
+                            flex_direction: FlexDirection::Column,
+                            row_gap: px(14),
+                            ..default()
+                        })
+                        .with_children(|buttons| {
+                            first =
+                                Some(button(buttons, &skin, "Start", Action::Start, &mut index));
+                            button(buttons, &skin, "Settings", Action::Settings, &mut index);
+                        });
+                    panel.spawn((
+                        TitleStatus,
+                        Text::new("Loading apartment…"),
+                        skin.font(18.0),
+                        TextColor(INK),
+                    ));
+                });
+        });
+    if let Some(entity) = first {
+        focus.set(entity, FocusCause::Navigated);
+    }
+}
+
 fn setup(
     mut commands: Commands,
     state: Res<State<GameState>>,
@@ -451,17 +654,18 @@ fn actions(
     mut focus: ResMut<InputFocus>,
     keys: Res<ButtonInput<KeyCode>>,
     state: Res<State<GameState>>,
+    mut origin: ResMut<SettingsOrigin>,
     mut options: ResMut<GraphicsOptions>,
     mut next: ResMut<NextState<GameState>>,
     buttons: Query<(Entity, &Action, &Interaction), With<Button>>,
     changed: Query<(Entity, &Action, &Interaction), (With<Button>, Changed<Interaction>)>,
 ) {
     let action = if keys.just_pressed(KeyCode::Escape) {
-        Some(if *state.get() == GameState::Settings {
-            Action::Cancel
-        } else {
-            Action::Resume
-        })
+        match *state.get() {
+            GameState::Settings => Some(Action::Cancel),
+            GameState::Menu => Some(Action::Resume),
+            _ => None,
+        }
     } else if keys.just_pressed(KeyCode::Enter) || keys.just_pressed(KeyCode::Space) {
         focus
             .get()
@@ -478,18 +682,19 @@ fn actions(
     };
     let Some(action) = action else { return };
     match action {
-        Action::Resume => next.set(GameState::Playing),
+        Action::Start | Action::Resume => next.set(GameState::Playing),
         Action::Settings => {
             options.cancel();
+            origin.0 = *state.get();
             next.set(GameState::Settings);
         }
         Action::Save => {
             options.save();
-            next.set(GameState::Menu);
+            next.set(origin.0);
         }
         Action::Cancel => {
             options.cancel();
-            next.set(GameState::Menu);
+            next.set(origin.0);
         }
         Action::Reset => options.current = GraphicsSettings::default(),
         Action::Preset(q) => options.current = GraphicsSettings::preset(q),
@@ -610,6 +815,155 @@ fn scroll(
         scroll.y = scroll.y.clamp(
             0.0,
             ((node.content_size().y - node.size().y) * node.inverse_scale_factor()).max(0.0),
+        );
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn initial_title_can_enter_before_startup() {
+        let mut app = App::new();
+        app.add_plugins((
+            MinimalPlugins,
+            bevy::asset::AssetPlugin::default(),
+            bevy::state::app::StatesPlugin,
+        ))
+        .init_asset::<Image>()
+        .init_asset::<Font>()
+        .init_resource::<InputFocus>()
+        .init_state::<GameState>()
+        .add_plugins(MenuPlugin);
+        app.world_mut().run_schedule(OnEnter(GameState::Title));
+        assert!(app.world().contains_resource::<MenuSkin>());
+        assert_eq!(
+            app.world_mut()
+                .query_filtered::<Entity, With<TitleHeading>>()
+                .iter(app.world())
+                .count(),
+            1
+        );
+        assert_eq!(
+            app.world_mut()
+                .query::<&Action>()
+                .iter(app.world())
+                .filter(|a| matches!(a, Action::Start))
+                .count(),
+            1
+        );
+    }
+
+    fn app(state: GameState) -> App {
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, bevy::state::app::StatesPlugin))
+            .insert_state(state)
+            .init_resource::<InputFocus>()
+            .init_resource::<ButtonInput<KeyCode>>()
+            .init_resource::<SettingsOrigin>()
+            .insert_resource(GraphicsOptions {
+                current: GraphicsSettings::default(),
+                saved: GraphicsSettings::default(),
+                notice: String::new(),
+            })
+            .add_systems(Update, actions)
+            .add_systems(OnEnter(GameState::Playing), remove_sleeper);
+        app.update();
+        app
+    }
+
+    fn key(app: &mut App, key: KeyCode) {
+        app.world_mut()
+            .resource_mut::<ButtonInput<KeyCode>>()
+            .press(key);
+        app.update();
+        app.world_mut()
+            .resource_mut::<ButtonInput<KeyCode>>()
+            .clear();
+        app.update();
+    }
+
+    fn select(app: &mut App, action: Action) {
+        let button = app
+            .world_mut()
+            .spawn((Button, action, Interaction::None))
+            .id();
+        app.world_mut()
+            .resource_mut::<InputFocus>()
+            .set(button, FocusCause::Navigated);
+        key(app, KeyCode::Enter);
+    }
+
+    #[test]
+    fn title_requires_start_and_removes_only_the_sleeper() {
+        assert_eq!(GameState::default(), GameState::Title);
+        let mut app = app(GameState::Title);
+        let sleeper = app.world_mut().spawn(Sleeper).id();
+        let apartment = app.world_mut().spawn(crate::game::player::Apartment).id();
+        key(&mut app, KeyCode::Escape);
+        assert_eq!(
+            *app.world().resource::<State<GameState>>().get(),
+            GameState::Title
+        );
+        select(&mut app, Action::Start);
+        assert_eq!(
+            *app.world().resource::<State<GameState>>().get(),
+            GameState::Playing
+        );
+        assert!(app.world().get_entity(sleeper).is_err());
+        assert!(app.world().get_entity(apartment).is_ok());
+    }
+
+    #[test]
+    fn settings_cancel_restores_saved_values_and_returns_to_its_origin() {
+        for origin in [GameState::Title, GameState::Menu] {
+            let mut app = app(origin);
+            select(&mut app, Action::Settings);
+            assert_eq!(
+                *app.world().resource::<State<GameState>>().get(),
+                GameState::Settings
+            );
+            app.world_mut().resource_mut::<GraphicsOptions>().current =
+                GraphicsSettings::preset(Quality::Low);
+            key(&mut app, KeyCode::Escape);
+            assert_eq!(*app.world().resource::<State<GameState>>().get(), origin);
+            assert_eq!(
+                app.world().resource::<GraphicsOptions>().current,
+                GraphicsSettings::default()
+            );
+        }
+    }
+
+    #[test]
+    fn chest_breathes_smoothly_within_one_morph_over_four_seconds() {
+        assert_eq!(breath_weight(0.0), 0.0);
+        assert_eq!(breath_weight(2.0), 1.0);
+        assert!(breath_weight(4.0).abs() < 0.00001);
+        for step in 0..400 {
+            assert!((0.0..=1.0).contains(&breath_weight(step as f32 / 100.0)));
+        }
+        let mut app = App::new();
+        app.init_resource::<Time<Real>>()
+            .add_systems(Update, breathe);
+        let root = app.world_mut().spawn(Sleeper).id();
+        let chest = app
+            .world_mut()
+            .spawn((
+                ChildOf(root),
+                bevy::mesh::morph::MorphWeights::new(vec![0.0], None).unwrap(),
+            ))
+            .id();
+        app.world_mut()
+            .resource_mut::<Time<Real>>()
+            .advance_by(std::time::Duration::from_secs(2));
+        app.update();
+        assert_eq!(
+            app.world()
+                .get::<bevy::mesh::morph::MorphWeights>(chest)
+                .unwrap()
+                .weights(),
+            &[1.0]
         );
     }
 }
