@@ -9,13 +9,36 @@ cargo run
 ```
 
 The game opens on the apartment couch with a sleeping man, a subtle chest-breathing animation,
-and **Start / Settings** on the right. **Start** enters the furnished apartment, two storeys
-above a narrow service court. Wait for loading, then **click** to capture the mouse.
+and **Continue / New Game / Settings** on the right. New Game starts Alex's ten-day campaign;
+replacing existing progress requires confirmation. Continue restores the retained campaign,
+including a daily report or ending. Wait for loading, then **click** to capture the mouse.
 Use **WASD** to walk, **Shift** to sprint, **Space** to jump, and the **mouse** to look.
-**Escape** pauses the game and opens the menu. Resume keeps your position and view; click to recapture the mouse.
+**P** pauses with the mouse captured. The in-game cursor operates the phone, household panels,
+reports, pause menu and settings; closing them resumes control immediately.
+**Escape** closes an overlay first on native. In the browser, Escape releases pointer lock and
+pauses with the current phone page preserved; after Resume, click once to capture again.
 Use **Tab / Shift+Tab** to navigate the menu and **Enter / Space** to select.
 Losing window focus or browser pointer lock also opens the menu. The closed door, windows,
 furniture, walls, floor, and ceiling are solid.
+
+Use **E** near an object for household actions and **Tab** to raise or lower the phone.
+The phone contains fictional betting games, banking, financial/betting history and saved daily
+reports, exact status, contacts, support, and food options. **1–9** select visible phone choices,
+**H** returns home, **Backspace** goes back, and the wheel or **PageUp / PageDown** scrolls.
+Walking and looking stop while an overlay is open. Use **Tab** or its Close button to lower the
+phone without releasing capture. Actual window focus or browser pointer-lock loss still pauses safely.
+
+Each day has six shared action points (PA). Work, meals and other activities spend PA;
+exploration, reading, bill payments and support information are free. Sleep at the bed opens
+the daily report; unused PA still elapse for needs and scheduled commitments. Only the current
+report's explicit Continue advances the campaign. Betting is voluntary. Endings stop gameplay
+and keep history/reports readable, with Return to Title available.
+
+Meaningful actions autosave one local campaign separately from graphics settings, using
+`casino-game.campaign.v1` in browser localStorage or the native user configuration directory.
+A storage failure keeps session progress and shows a retry notice; retry saving before closing.
+Unreadable saves are preserved until an explicitly confirmed New Game replaces them.
+The approved gameplay contract and focused verification record are in [IMPLEMENTATION.md](IMPLEMENTATION.md).
 The first build compiles the engine and can take several minutes.
 Install the native dependencies for your platform from the
 [Bevy setup guide](https://bevy.org/learn/quick-start/getting-started/setup/).
@@ -42,7 +65,7 @@ quicker development builds. Release linking takes longer but produces a smaller 
 
 ## Graphics settings
 
-Choose **Settings** on the title screen, or **Escape → Settings** during play.
+Choose **Settings** on the title screen, or **P → Settings** during play.
 Settings returns to the screen it was opened from. The pause and settings panels are centered over the scene.
 High is the default and preserves the original appearance.
 Presets can be adjusted individually; unmatched combinations display **Custom**.
@@ -60,7 +83,9 @@ The web supports only 1×/4× MSAA, so 2×/8× are not offered. FXAA/SMAA turn M
 Implementation follows [Bevy 0.19.1 FXAA](https://raw.githubusercontent.com/bevyengine/bevy/v0.19.1/crates/bevy_anti_alias/src/fxaa/mod.rs) and
 [SMAA](https://raw.githubusercontent.com/bevyengine/bevy/v0.19.1/crates/bevy_anti_alias/src/smaa/mod.rs).
 Changes preview immediately;
-**Save settings** commits them, while **Cancel / Escape** restores the last saved settings.
+**Save settings** commits them, while **Cancel** restores the last saved settings. Escape also
+cancels on native or with the browser mouse already unlocked; the first browser Escape while
+captured releases the mouse and keeps settings open.
 Version-one saved preferences migrate lighting and anti-aliasing only; removed texture and resolution values are discarded.
 New saves use schema version two in the existing storage location.
 
@@ -93,6 +118,14 @@ src/
     mod.rs            Shared gameplay plugins
     camera.rs         Persistent 3D camera
     player.rs         First-person controls, static collision, and physics checks
+    campaign.rs       Authoritative ten-day state, actions, clock, ledger, and reports
+    campaign_save.rs  Validated versioned autosave and retained session
+    routine.rs        World interactions, reports, endings, and read-only records
+    phone.rs          Physical phone, apps, amount entry, and settled-result presentation
+    betting.rs        Exact fictional wagering, saved outcomes, and shared sessions
+    obligations.rs    Bills, rent extension, contacts, and commitments
+    support.rs        Gradual care, planning, voluntary caps, and app block
+    household.rs      Permanent sales, Pipoca, food/waste, and state-derived atmosphere
   screens/
     mod.rs            Screen plugins
     menu.rs           Title menu, pause menu, settings, and keyboard input
@@ -117,7 +150,8 @@ The title uses the existing apartment and its single camera. Its character is ba
 `base/Characters_psx/Models/Male/Character_01.fbx` with the matching source texture.
 `assets/models/menu_sleeper.glb` contains a seated, head-back pose and one `Breath` morph;
 the chest rises and expands over a four-second breathing cycle, including in title settings.
-Start removes the sleeper; the existing pause menu preserves the player's view and position.
+Entering play removes the sleeper; Return to Title restores him and the original couch framing.
+The existing pause menu preserves the player's view and position.
 Rebuild the character with `blender --background --factory-startup --python tools/build_menu_character.py`.
 The exporter keeps the enlarged character seated on the cushion, adjusts his knee bend
 to rest the flat soles on the carpet with 1 mm clearance, and checks textures, seated height,

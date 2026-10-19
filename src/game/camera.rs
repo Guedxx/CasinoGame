@@ -4,6 +4,9 @@ use bevy::{
     prelude::*,
 };
 
+#[derive(Component)]
+pub(crate) struct MainCamera;
+
 pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
@@ -16,6 +19,8 @@ fn spawn_camera(mut commands: Commands, clear_color: Res<ClearColor>) {
     let far = 2000.0;
     commands.spawn((
         Camera3d::default(),
+        MainCamera,
+        IsDefaultUiCamera,
         DepthPrepass,
         // Separate nearby indoor lights while keeping distant scenery out of their last cluster.
         ClusterConfig::FixedZ {

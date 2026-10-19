@@ -152,7 +152,7 @@ impl GraphicsOptions {
         .map_err(|e| e.to_string())
         .and_then(|json| write_settings(&json));
         self.notice = match result {
-            Ok(()) => "Graphics settings saved on this device.".into(),
+            Ok(()) => String::new(),
             Err(error) => {
                 warn!("Cannot save graphics settings: {error}");
                 "Settings kept for this session only; local storage is unavailable.".into()
@@ -229,7 +229,7 @@ fn apply_graphics(
     options: Res<GraphicsOptions>,
     mut previous: Local<Option<GraphicsSettings>>,
     mut shadows: ResMut<DirectionalLightShadowMap>,
-    cameras: Query<(Entity, Ref<Camera3d>)>,
+    cameras: Query<(Entity, Ref<Camera3d>), With<crate::game::camera::MainCamera>>,
     mut spots: Query<&mut SpotLight>,
     mut suns: Query<&mut DirectionalLight>,
 ) {
@@ -366,7 +366,11 @@ mod tests {
             .add_systems(Update, apply_graphics);
         let camera = app
             .world_mut()
-            .spawn((Camera3d::default(), DepthPrepass))
+            .spawn((
+                Camera3d::default(),
+                DepthPrepass,
+                crate::game::camera::MainCamera,
+            ))
             .id();
         for mode in [
             AntiAliasing::Msaa4,

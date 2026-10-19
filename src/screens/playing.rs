@@ -42,7 +42,7 @@ fn setup(
         .build(),
         Transform::from_xyz(-3.0, 8.0, -2.0).looking_at(Vec3::ZERO, Vec3::Y),
     ));
-    for position in [
+    for (index, position) in [
         Vec3::new(1.761, 2.48, -0.491),
         Vec3::new(1.761, 2.48, 4.773),
         Vec3::new(1.761, 2.48, 7.848),
@@ -50,8 +50,11 @@ fn setup(
         Vec3::new(-1.25, 2.48, -2.5),
         Vec3::new(-1.25, 2.48, 3.5),
         Vec3::new(-1.25, 2.48, 7.5),
-    ] {
-        commands.spawn((
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let mut light = commands.spawn((
             SpotLight {
                 color: Color::srgb(1.0, 0.84, 0.62),
                 intensity: 40_000.0,
@@ -63,11 +66,18 @@ fn setup(
             },
             Transform::from_translation(position).looking_to(Vec3::NEG_Y, Vec3::Z),
         ));
+        if index < 3 {
+            light.insert(crate::game::household::InteriorLight);
+        }
     }
 }
 
-fn return_to_menu(keys: Res<ButtonInput<KeyCode>>, mut next: ResMut<NextState<GameState>>) {
-    if keys.just_pressed(KeyCode::Escape) {
+fn return_to_menu(
+    keys: Res<ButtonInput<KeyCode>>,
+    overlay: Res<crate::game::routine::GameplayOverlay>,
+    mut next: ResMut<NextState<GameState>>,
+) {
+    if keys.just_pressed(KeyCode::Escape) && !overlay.escape_consumed && !overlay.blocks_world() {
         next.set(GameState::Menu);
     }
 }

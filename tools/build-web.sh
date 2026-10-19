@@ -9,12 +9,16 @@ else
     RUSTC_BOOTSTRAP=1 cargo build -Z build-std=std,panic_abort --target wasm32-unknown-unknown --profile web-perf "$@"
 fi
 python3 tools/build_window_scene.py
+python3 tools/build_household.py
 mkdir -p dist
 wasm-bindgen --target web --no-typescript --out-dir dist target/wasm32-unknown-unknown/web-perf/CasinoGame.wasm
 cp web/index.html dist/index.html
 mkdir -p dist/assets/models
 cp assets/models/apartment_windows.glb dist/assets/models/
 cp assets/models/menu_sleeper.glb dist/assets/models/
+cp assets/models/phone_hand.glb dist/assets/models/
+cp assets/models/{pipoca,food_portion,waste_paper,waste_meal,waste_bag}.glb dist/assets/models/
+cp -R assets/audio dist/assets/
 cp -R assets/ui assets/fonts dist/assets/
 if [ -d art/review ]; then
     cp -R art/review dist/
@@ -22,3 +26,8 @@ fi
 test -s dist/CasinoGame_bg.wasm
 test -s dist/assets/models/apartment_windows.glb
 test -s dist/assets/models/menu_sleeper.glb
+test -s dist/assets/models/phone_hand.glb
+for model in pipoca food_portion waste_paper waste_meal waste_bag; do
+    test -s "dist/assets/models/$model.glb"
+done
+test -s dist/assets/audio/pressure.wav

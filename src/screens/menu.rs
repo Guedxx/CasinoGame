@@ -19,9 +19,9 @@ impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(TabNavigationPlugin)
             .init_resource::<SettingsOrigin>()
+            .init_resource::<NewGameConfirmation>()
             .init_resource::<MenuSkin>()
-            .add_systems(Startup, spawn_sleeper)
-            .add_systems(OnEnter(GameState::Title), setup_title)
+            .add_systems(OnEnter(GameState::Title), (spawn_sleeper, setup_title))
             .add_systems(OnEnter(GameState::Menu), setup)
             .add_systems(OnEnter(GameState::Settings), setup)
             .add_systems(OnEnter(GameState::Playing), remove_sleeper)
@@ -35,6 +35,7 @@ impl Plugin for MenuPlugin {
                         scroll,
                         breathe,
                         title_loading,
+                        title_controls,
                         frame_title,
                     )
                         .after(ApplyGraphics),
@@ -51,6 +52,10 @@ const ACCENT: Color = Color::srgb(0.79, 0.64, 0.40);
 #[derive(Component, Clone, Copy)]
 enum Action {
     Start,
+    NewGame,
+    ConfirmNewGame,
+    CancelNewGame,
+    RetryCampaignSave,
     Resume,
     Settings,
     Save,
@@ -90,6 +95,10 @@ struct Sleeper;
 struct TitleStatus;
 #[derive(Component)]
 struct TitleHeading;
+#[derive(Component)]
+struct TitleControls;
+#[derive(Resource, Default)]
+struct NewGameConfirmation(bool);
 
 #[derive(Resource)]
 struct SettingsOrigin(GameState);
@@ -99,18 +108,31 @@ impl Default for SettingsOrigin {
     }
 }
 
-fn spawn_sleeper(mut commands: Commands, assets: Res<AssetServer>) {
-    commands.spawn((
-        Name::new("Title sleeper"),
-        Sleeper,
-        WorldAssetRoot(assets.load(GltfAssetLabel::Scene(0).from_asset("models/menu_sleeper.glb"))),
-    ));
+fn spawn_sleeper(
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    sleepers: Query<(), With<Sleeper>>,
+    mut cameras: Query<&mut Transform, With<crate::game::camera::MainCamera>>,
+) {
+    if sleepers.is_empty() {
+        commands.spawn((
+            Name::new("Title sleeper"),
+            Sleeper,
+            WorldAssetRoot(
+                assets.load(GltfAssetLabel::Scene(0).from_asset("models/menu_sleeper.glb")),
+            ),
+        ));
+    }
+    for mut camera in &mut cameras {
+        *camera =
+            Transform::from_xyz(0.90, 1.35, -2.60).looking_at(Vec3::new(3.0, 0.70, 1.0), Vec3::Y);
+    }
 }
 
 fn remove_sleeper(
     mut commands: Commands,
     sleepers: Query<Entity, With<Sleeper>>,
-    mut projections: Query<&mut Projection, With<Camera3d>>,
+    mut projections: Query<&mut Projection, With<crate::game::camera::MainCamera>>,
 ) {
     for entity in &sleepers {
         commands.entity(entity).despawn();
@@ -129,7 +151,7 @@ fn breath_weight(seconds: f32) -> f32 {
 fn frame_title(
     sleepers: Query<(), With<Sleeper>>,
     windows: Query<&Window, With<bevy::window::PrimaryWindow>>,
-    mut projections: Query<&mut Projection, With<Camera3d>>,
+    mut projections: Query<&mut Projection, With<crate::game::camera::MainCamera>>,
     mut headings: Query<&mut TextFont, With<TitleHeading>>,
 ) {
     let Ok(window) = windows.single() else { return };
@@ -172,6 +194,7 @@ fn title_loading(
         (&WorldAssetRoot, Option<&WorldInstance>),
         Or<(With<Sleeper>, With<crate::game::player::Apartment>)>,
     >,
+    campaign: Res<crate::game::campaign_save::CampaignStore>,
     mut texts: Query<&mut Text, With<TitleStatus>>,
     mut announced: Local<bool>,
 ) {
@@ -193,7 +216,11 @@ fn title_loading(
         }
     }
     for mut text in &mut texts {
-        **text = message.into();
+        **text = if campaign.notice.is_empty() {
+            message.into()
+        } else {
+            campaign.notice.clone()
+        };
     }
     if message.is_empty() && !*announced {
         info!("Title screen ready");
@@ -246,7 +273,14 @@ fn button(
     action: Action,
     index: &mut i32,
 ) -> Entity {
-    let main = matches!(action, Action::Start | Action::Resume | Action::Settings);
+    let main = matches!(
+        action,
+        Action::Start
+            | Action::NewGame
+            | Action::ConfirmNewGame
+            | Action::Resume
+            | Action::Settings
+    );
     let entity = parent
         .spawn((
             Button,
@@ -285,7 +319,6 @@ fn choices(
     parent: &mut ChildSpawnerCommands,
     skin: &MenuSkin,
     title: &str,
-    detail: &str,
     items: &[(&str, Action)],
     index: &mut i32,
 ) {
@@ -310,7 +343,6 @@ fn choices(
             })
             .with_children(|copy| {
                 label(copy, skin, title, 24.0, INK);
-                label(copy, skin, detail, 18.0, MUTED);
             });
             row.spawn(Node {
                 column_gap: px(8),
@@ -373,16 +405,25 @@ fn setup_title(mut commands: Commands, skin: Res<MenuSkin>, mut focus: ResMut<In
                         TextShadow::default(),
                     ));
                     panel
-                        .spawn(Node {
-                            width: percent(100),
-                            max_width: px(360),
-                            flex_direction: FlexDirection::Column,
-                            row_gap: px(14),
-                            ..default()
-                        })
+                        .spawn((
+                            TitleControls,
+                            Node {
+                                width: percent(100),
+                                max_width: px(360),
+                                flex_direction: FlexDirection::Column,
+                                row_gap: px(14),
+                                ..default()
+                            },
+                        ))
                         .with_children(|buttons| {
-                            first =
-                                Some(button(buttons, &skin, "Start", Action::Start, &mut index));
+                            first = Some(button(
+                                buttons,
+                                &skin,
+                                "Continue",
+                                Action::Start,
+                                &mut index,
+                            ));
+                            button(buttons, &skin, "New Game", Action::NewGame, &mut index);
                             button(buttons, &skin, "Settings", Action::Settings, &mut index);
                         });
                     panel.spawn((
@@ -395,6 +436,55 @@ fn setup_title(mut commands: Commands, skin: Res<MenuSkin>, mut focus: ResMut<In
         });
     if let Some(entity) = first {
         focus.set(entity, FocusCause::Navigated);
+    }
+}
+
+fn title_controls(
+    mut commands: Commands,
+    skin: Res<MenuSkin>,
+    store: Res<crate::game::campaign_save::CampaignStore>,
+    confirmation: Res<NewGameConfirmation>,
+    roots: Query<(Entity, &Children), With<TitleControls>>,
+    mut focus: ResMut<InputFocus>,
+    mut previous: Local<String>,
+) {
+    for (entity, children) in &roots {
+        let signature = format!(
+            "{entity:?}{}{}{:?}{}",
+            confirmation.0,
+            store.campaign().is_some(),
+            store.snapshot_state(),
+            store.notice.is_empty()
+        );
+        if *previous == signature {
+            continue;
+        }
+        *previous = signature;
+        for child in children.iter() {
+            commands.entity(child).despawn();
+        }
+        let mut first = None;
+        let mut index = 0;
+        commands.entity(entity).with_children(|buttons| {
+            if confirmation.0 {
+                label(buttons, &skin, "Replace the existing campaign? This permanently replaces saved and unsaved progress, including an unreadable save.", 21.0, INK);
+                first = Some(button(buttons, &skin, "Keep existing campaign", Action::CancelNewGame, &mut index));
+                button(buttons, &skin, "Replace / New Game", Action::ConfirmNewGame, &mut index);
+            } else {
+                if store.campaign().is_some() {
+                    first = Some(button(buttons, &skin, "Continue", Action::Start, &mut index));
+                }
+                let new = button(buttons, &skin, "New Game", Action::NewGame, &mut index);
+                first.get_or_insert(new);
+                button(buttons, &skin, "Settings", Action::Settings, &mut index);
+                if store.campaign().is_some() && !store.notice.is_empty() {
+                    button(buttons, &skin, "Retry campaign save", Action::RetryCampaignSave, &mut index);
+                }
+            }
+        });
+        if let Some(first) = first {
+            focus.set(first, FocusCause::Navigated);
+        }
     }
 }
 
@@ -517,7 +607,6 @@ fn setup(
                                             body,
                                             &skin,
                                             "Lighting",
-                                            "Low disables shadows. All lights stay on.",
                                             &[
                                                 ("Low", Action::Lighting(Quality::Low)),
                                                 ("Medium", Action::Lighting(Quality::Medium)),
@@ -529,7 +618,6 @@ fn setup(
                                             body,
                                             &skin,
                                             "Anti-aliasing",
-                                            "FXAA: fast. SMAA: sharper edges.",
                                             &[
                                                 ("Off", Action::AntiAliasing(AntiAliasing::Off)),
                                                 ("FXAA", Action::AntiAliasing(AntiAliasing::Fxaa)),
@@ -639,7 +727,7 @@ fn setup(
                                                 ..default()
                                             })
                                             .with_children(|hint| {
-                                                label(hint, &skin, "ESC to resume", 18.0, MUTED);
+                                                label(hint, &skin, if cfg!(target_arch = "wasm32") { "Select Resume to continue. Esc releases mouse." } else { "ESC to resume" }, 18.0, MUTED);
                                             });
                                     }
                                 });
@@ -651,17 +739,25 @@ fn setup(
     }
 }
 fn actions(
+    mut commands: Commands,
+    mut confirmation: ResMut<NewGameConfirmation>,
     mut focus: ResMut<InputFocus>,
     keys: Res<ButtonInput<KeyCode>>,
     state: Res<State<GameState>>,
     mut origin: ResMut<SettingsOrigin>,
     mut options: ResMut<GraphicsOptions>,
     mut next: ResMut<NextState<GameState>>,
+    mut campaign: ResMut<crate::game::campaign_save::CampaignStore>,
+    windows: Query<&Window, With<bevy::window::PrimaryWindow>>,
     buttons: Query<(Entity, &Action, &Interaction), With<Button>>,
     changed: Query<(Entity, &Action, &Interaction), (With<Button>, Changed<Interaction>)>,
 ) {
+    if !windows.single().is_ok_and(|window| window.focused) {
+        return;
+    }
     let action = if keys.just_pressed(KeyCode::Escape) {
         match *state.get() {
+            GameState::Title if confirmation.0 => Some(Action::CancelNewGame),
             GameState::Settings => Some(Action::Cancel),
             GameState::Menu => Some(Action::Resume),
             _ => None,
@@ -681,8 +777,41 @@ fn actions(
             })
     };
     let Some(action) = action else { return };
+    if confirmation.0 && !matches!(action, Action::ConfirmNewGame | Action::CancelNewGame) {
+        return;
+    }
     match action {
-        Action::Start | Action::Resume => next.set(GameState::Playing),
+        Action::Start => {
+            // Retained session-only progress is newer than a failed/older snapshot.
+            if campaign.campaign().is_some() {
+                next.set(GameState::Playing);
+            } else if campaign.notice.is_empty() {
+                campaign.notice = "No campaign to continue. Choose New Game.".into();
+            }
+        }
+        Action::NewGame | Action::ConfirmNewGame => {
+            let confirmed = matches!(action, Action::ConfirmNewGame) && confirmation.0;
+            if matches!(action, Action::ConfirmNewGame) && !confirmed {
+                return;
+            }
+            if campaign.needs_replace_confirmation() && !confirmed {
+                confirmation.0 = true;
+            } else {
+                match campaign.new_campaign(confirmed) {
+                    Ok(_) => {
+                        confirmation.0 = false;
+                        commands.trigger(crate::game::campaign_save::CampaignReplaced);
+                        next.set(GameState::Playing);
+                    }
+                    Err(error) => campaign.notice = error,
+                }
+            }
+        }
+        Action::CancelNewGame => confirmation.0 = false,
+        Action::RetryCampaignSave => {
+            let _ = campaign.save();
+        }
+        Action::Resume => next.set(GameState::Playing),
         Action::Settings => {
             options.cancel();
             origin.0 = *state.get();
@@ -755,6 +884,7 @@ fn status(
     time: Res<Time<Real>>,
     state: Res<State<GameState>>,
     options: Res<GraphicsOptions>,
+    campaign: Res<crate::game::campaign_save::CampaignStore>,
     mut sample: Local<(u32, f64, f64)>,
     mut texts: Query<(&mut Text, Has<Status>, Has<Fps>)>,
 ) {
@@ -767,10 +897,17 @@ fn status(
     }
     for (mut text, status, fps) in &mut texts {
         if status {
-            **text = if !options.notice.is_empty() {
+            **text = if !campaign.notice.is_empty() {
+                campaign.notice.clone()
+            } else if !options.notice.is_empty() {
                 options.notice.clone()
             } else if *state.get() == GameState::Settings {
-                "Live preview. Esc cancels.".into()
+                if cfg!(target_arch = "wasm32") {
+                    "Live preview. Cancel restores saved settings. Esc releases mouse."
+                } else {
+                    "Live preview. Esc cancels."
+                }
+                .into()
             } else {
                 String::new()
             };
@@ -833,6 +970,7 @@ mod tests {
         ))
         .init_asset::<Image>()
         .init_asset::<Font>()
+        .init_asset::<bevy::world_serialization::WorldAsset>()
         .init_resource::<InputFocus>()
         .init_state::<GameState>()
         .add_plugins(MenuPlugin);
@@ -862,6 +1000,11 @@ mod tests {
             .init_resource::<InputFocus>()
             .init_resource::<ButtonInput<KeyCode>>()
             .init_resource::<SettingsOrigin>()
+            .init_resource::<NewGameConfirmation>()
+            .insert_resource(crate::game::campaign_save::CampaignStore::for_test(
+                Some(crate::game::campaign::Campaign::new(5)),
+                crate::game::campaign_save::SnapshotState::Available,
+            ))
             .insert_resource(GraphicsOptions {
                 current: GraphicsSettings::default(),
                 saved: GraphicsSettings::default(),
@@ -869,6 +1012,13 @@ mod tests {
             })
             .add_systems(Update, actions)
             .add_systems(OnEnter(GameState::Playing), remove_sleeper);
+        app.world_mut().spawn((
+            Window {
+                focused: true,
+                ..default()
+            },
+            bevy::window::PrimaryWindow,
+        ));
         app.update();
         app
     }
@@ -880,7 +1030,7 @@ mod tests {
         app.update();
         app.world_mut()
             .resource_mut::<ButtonInput<KeyCode>>()
-            .clear();
+            .reset(key);
         app.update();
     }
 
@@ -913,6 +1063,180 @@ mod tests {
         );
         assert!(app.world().get_entity(sleeper).is_err());
         assert!(app.world().get_entity(apartment).is_ok());
+    }
+
+    #[test]
+    fn title_reentry_restores_one_sleeper_and_world_framing_without_touching_auxiliary_camera() {
+        use crate::game::camera::MainCamera;
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, bevy::asset::AssetPlugin::default()))
+            .init_asset::<bevy::world_serialization::WorldAsset>()
+            .add_systems(Update, spawn_sleeper);
+        let main = app
+            .world_mut()
+            .spawn((MainCamera, Transform::from_xyz(9.0, 9.0, 9.0), Msaa::Off))
+            .id();
+        let auxiliary = app
+            .world_mut()
+            .spawn((Camera3d::default(), Transform::from_xyz(7.0, 8.0, 9.0)))
+            .id();
+        let expected =
+            Transform::from_xyz(0.90, 1.35, -2.60).looking_at(Vec3::new(3.0, 0.70, 1.0), Vec3::Y);
+        for _ in 0..2 {
+            app.update();
+            app.update();
+            assert_eq!(app.world().get::<Transform>(main).unwrap(), &expected);
+            assert_eq!(*app.world().get::<Msaa>(main).unwrap(), Msaa::Off);
+            assert_eq!(
+                app.world().get::<Transform>(auxiliary).unwrap().translation,
+                Vec3::new(7.0, 8.0, 9.0)
+            );
+            let sleepers: Vec<_> = app
+                .world_mut()
+                .query_filtered::<Entity, With<Sleeper>>()
+                .iter(app.world())
+                .collect();
+            assert_eq!(sleepers.len(), 1);
+            app.world_mut().despawn(sleepers[0]);
+            app.world_mut()
+                .get_mut::<Transform>(main)
+                .unwrap()
+                .translation = Vec3::ONE;
+        }
+    }
+
+    #[test]
+    fn protected_start_preserves_snapshot_and_loaded_start_preserves_progress() {
+        use crate::game::{
+            campaign::Campaign,
+            campaign_save::{CampaignStore, SnapshotState},
+        };
+        let mut app = app(GameState::Title);
+        app.insert_resource(CampaignStore::for_test(None, SnapshotState::Protected));
+        select(&mut app, Action::Start);
+        assert_eq!(
+            *app.world().resource::<State<GameState>>().get(),
+            GameState::Title
+        );
+        assert_eq!(
+            app.world().resource::<CampaignStore>().snapshot_state(),
+            SnapshotState::Protected
+        );
+        assert!(app.world().resource::<CampaignStore>().campaign().is_none());
+        assert!(!app.world().resource::<CampaignStore>().notice.is_empty());
+        let mut campaign = Campaign::new(5);
+        campaign.apply(crate::game::campaign::Action::Wait).unwrap();
+        app.insert_resource(CampaignStore::for_test(
+            Some(campaign.clone()),
+            SnapshotState::Available,
+        ));
+        let main = app
+            .world_mut()
+            .spawn((
+                crate::game::camera::MainCamera,
+                Projection::Perspective(PerspectiveProjection {
+                    fov: 0.5,
+                    ..default()
+                }),
+            ))
+            .id();
+        let extra = app
+            .world_mut()
+            .spawn((
+                Camera3d::default(),
+                Projection::Perspective(PerspectiveProjection {
+                    fov: 0.4,
+                    ..default()
+                }),
+            ))
+            .id();
+        select(&mut app, Action::Start);
+        assert_eq!(
+            *app.world().resource::<State<GameState>>().get(),
+            GameState::Playing
+        );
+        assert_eq!(
+            app.world().resource::<CampaignStore>().campaign(),
+            Some(&campaign)
+        );
+        let Projection::Perspective(main) = app.world().get::<Projection>(main).unwrap() else {
+            panic!()
+        };
+        let Projection::Perspective(extra) = app.world().get::<Projection>(extra).unwrap() else {
+            panic!()
+        };
+        assert_eq!(main.fov, 75.0_f32.to_radians());
+        assert_eq!(extra.fov, 0.4);
+    }
+
+    #[test]
+    fn new_game_requires_confirmation_for_protected_or_live_progress_and_cancel_preserves_it() {
+        use crate::game::{
+            campaign::Campaign,
+            campaign_save::{CampaignStore, SnapshotState},
+        };
+        for live in [None, Some(Campaign::new(7))] {
+            let mut app = app(GameState::Title);
+            app.insert_resource(CampaignStore::for_test(
+                live.clone(),
+                SnapshotState::Protected,
+            ));
+            select(&mut app, Action::ConfirmNewGame);
+            assert!(!app.world().resource::<NewGameConfirmation>().0);
+            select(&mut app, Action::NewGame);
+            assert!(app.world().resource::<NewGameConfirmation>().0);
+            assert_eq!(
+                *app.world().resource::<State<GameState>>().get(),
+                GameState::Title
+            );
+            key(&mut app, KeyCode::Escape);
+            assert!(!app.world().resource::<NewGameConfirmation>().0);
+            assert_eq!(
+                app.world().resource::<CampaignStore>().campaign(),
+                live.as_ref()
+            );
+            assert_eq!(
+                app.world().resource::<CampaignStore>().snapshot_state(),
+                SnapshotState::Protected
+            );
+        }
+    }
+
+    #[test]
+    fn continue_retains_unsaved_progress_and_restores_report_and_ending_stage() {
+        use crate::game::{
+            campaign::{Action as CampaignAction, Campaign, CampaignStage},
+            campaign_save::{CampaignStore, SnapshotState},
+        };
+        for report in [false, true] {
+            let mut campaign = Campaign::new(7);
+            if report {
+                campaign.apply(CampaignAction::Sleep).unwrap();
+            } else {
+                campaign.support.rent_negotiated = true;
+                campaign.bills[1].due_day = 10;
+                for _ in 1..=10 {
+                    campaign.apply(CampaignAction::Sleep).unwrap();
+                    campaign.apply(CampaignAction::AcknowledgeReport).unwrap();
+                }
+            }
+            assert_ne!(campaign.stage, CampaignStage::Playing);
+            let mut app = app(GameState::Title);
+            let mut store =
+                CampaignStore::for_test(Some(campaign.clone()), SnapshotState::Protected);
+            store.notice = "Progress kept only for this session".into();
+            app.insert_resource(store);
+            select(&mut app, Action::Start);
+            assert_eq!(
+                *app.world().resource::<State<GameState>>().get(),
+                GameState::Playing
+            );
+            assert_eq!(
+                app.world().resource::<CampaignStore>().campaign(),
+                Some(&campaign)
+            );
+            assert!(!app.world().resource::<CampaignStore>().notice.is_empty());
+        }
     }
 
     #[test]

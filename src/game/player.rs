@@ -3,21 +3,30 @@ use bevy::{
     gltf::GltfMaterialName,
     input::mouse::AccumulatedMouseMotion,
     prelude::*,
-    window::{CursorGrabMode, CursorOptions, PrimaryWindow},
     world_serialization::{WorldInstance, WorldInstanceSpawner},
 };
 use bevy_rapier3d::prelude::*;
 
+use super::{
+    camera::MainCamera,
+    cursor::GameCursor,
+    routine::{GameplayOverlay, OverlayInput},
+};
 use crate::state::GameState;
 
 const SPAWN: Vec3 = Vec3::new(1.6, 0.92, 1.3);
 const DT: f32 = 1.0 / 60.0;
 const EYE_OFFSET: f32 = 0.75;
+// Internal-edge correction assumes outward winding, but the apartment has two-sided surfaces.
+const COLLIDER_FLAGS: TriMeshFlags = TriMeshFlags::MERGE_DUPLICATE_VERTICES;
 
 pub struct PlayerPlugin;
 
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub(super) struct PlayerCamera;
+
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub(crate) struct PlayerInput;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
@@ -27,7 +36,9 @@ impl Plugin for PlayerPlugin {
                 dt: DT,
                 substeps: 1,
             })
+            .add_observer(reset_new_campaign)
             .init_resource::<Controls>()
+            .init_resource::<GameplayOverlay>()
             .add_systems(OnEnter(GameState::Playing), loading)
             .add_systems(OnExit(GameState::Playing), release)
             .add_systems(OnEnter(GameState::Playing), resume)
@@ -39,7 +50,9 @@ impl Plugin for PlayerPlugin {
             .add_systems(
                 PreUpdate,
                 input
+                    .in_set(PlayerInput)
                     .after(bevy::input::InputSystems)
+                    .after(OverlayInput)
                     .run_if(in_state(GameState::Playing)),
             )
             .add_systems(
@@ -68,8 +81,8 @@ struct CollisionFailed;
 struct Loading;
 #[derive(Component)]
 struct StatusText;
-#[derive(Component)]
-struct Player {
+#[derive(Component, Default)]
+pub(crate) struct Player {
     vertical_speed: f32,
     previous: Vec3,
 }
@@ -92,6 +105,24 @@ impl Default for Controls {
             jump: false,
             captured: false,
         }
+    }
+}
+
+fn reset_new_campaign(
+    _: On<super::campaign_save::CampaignReplaced>,
+    mut controls: ResMut<Controls>,
+    mut players: Query<(
+        &mut Transform,
+        &mut Player,
+        &mut KinematicCharacterController,
+    )>,
+) {
+    *controls = Controls::default();
+    for (mut transform, mut player, mut controller) in &mut players {
+        transform.translation = SPAWN;
+        player.previous = SPAWN;
+        player.vertical_speed = 0.0;
+        controller.translation = Some(Vec3::ZERO);
     }
 }
 
@@ -177,12 +208,9 @@ fn prepare_apartment(
                 continue;
             }
             let Some(mesh) = meshes.get(mesh) else { return };
-            if let Some(collider) = Collider::from_bevy_mesh(
-                mesh,
-                &ComputedColliderShape::TriMesh(
-                    TriMeshFlags::MERGE_DUPLICATE_VERTICES | TriMeshFlags::FIX_INTERNAL_EDGES,
-                ),
-            ) {
+            if let Some(collider) =
+                Collider::from_bevy_mesh(mesh, &ComputedColliderShape::TriMesh(COLLIDER_FLAGS))
+            {
                 commands.entity(entity).insert(collider);
             } else {
                 failed = true;
@@ -240,7 +268,8 @@ fn prepare_apartment(
     ));
     info!("First-person player ready at {SPAWN:?}; static colliders registered");
     for mut text in &mut text {
-        **text = "Click to play | WASD move | Shift sprint | Space jump | Esc menu".into();
+        **text =
+            "Click to play | WASD move | Shift sprint | Space jump | E interact | Tab phone | P pause | Esc release/menu".into();
     }
 }
 
@@ -261,69 +290,41 @@ fn character_controller() -> KinematicCharacterController {
     }
 }
 
-fn pointer_locked(cursor: &CursorOptions) -> bool {
-    #[cfg(target_arch = "wasm32")]
-    {
-        let _ = cursor;
-        web_sys::window()
-            .and_then(|window| window.document())
-            .and_then(|document| document.pointer_lock_element())
-            .is_some()
-    }
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        cursor.grab_mode != CursorGrabMode::None
-    }
-}
-
 fn input(
-    mut keys: ResMut<ButtonInput<KeyCode>>,
-    buttons: Res<ButtonInput<MouseButton>>,
+    overlay: Res<GameplayOverlay>,
+    keys: Res<ButtonInput<KeyCode>>,
     motion: Res<AccumulatedMouseMotion>,
-    mut window: Query<(&Window, &mut CursorOptions), With<PrimaryWindow>>,
+    mouse: Res<GameCursor>,
     mut controls: ResMut<Controls>,
-    player: Query<(), With<Player>>,
-    mut next: ResMut<NextState<GameState>>,
+    next: Res<NextState<GameState>>,
 ) {
-    let Ok((window, mut cursor)) = window.single_mut() else {
-        return;
-    };
-    if keys.just_pressed(KeyCode::Escape) || !window.focused {
-        cursor.grab_mode = CursorGrabMode::None;
-        cursor.visible = true;
-    } else if buttons.just_pressed(MouseButton::Left) && !player.is_empty() {
-        cursor.grab_mode = CursorGrabMode::Locked;
-        cursor.visible = false;
-    }
-    let active = window.focused && pointer_locked(&cursor) && !keys.just_pressed(KeyCode::Escape);
-    if !active {
+    controls.captured = mouse.captured;
+    if !mouse.captured
+        || overlay.blocks_world()
+        || overlay.escape_consumed
+        || matches!(*next, NextState::Pending(s) | NextState::PendingIfNeq(s) if s != GameState::Playing)
+    {
         controls.movement = Vec2::ZERO;
         controls.jump = false;
-        if controls.captured {
-            cursor.grab_mode = CursorGrabMode::None;
-            cursor.visible = true;
-            keys.reset_all();
-            next.set(GameState::Menu);
-        }
-    } else {
+        controls.sprint = false;
+        return;
+    }
+    if !mouse.suppress_look {
         controls.yaw -= motion.delta.x * 0.002;
         controls.pitch = (controls.pitch - motion.delta.y * 0.002)
             .clamp(-85.0_f32.to_radians(), 85.0_f32.to_radians());
-        controls.movement = Vec2::new(
-            (keys.pressed(KeyCode::KeyD) as i8 - keys.pressed(KeyCode::KeyA) as i8) as f32,
-            (keys.pressed(KeyCode::KeyW) as i8 - keys.pressed(KeyCode::KeyS) as i8) as f32,
-        )
-        .normalize_or_zero();
-        controls.sprint = keys.pressed(KeyCode::ShiftLeft) || keys.pressed(KeyCode::ShiftRight);
-        controls.jump |= keys.just_pressed(KeyCode::Space);
     }
-    controls.captured = active;
-    if !active {
-        cursor.visible = true;
-    }
+    controls.movement = Vec2::new(
+        (keys.pressed(KeyCode::KeyD) as i8 - keys.pressed(KeyCode::KeyA) as i8) as f32,
+        (keys.pressed(KeyCode::KeyW) as i8 - keys.pressed(KeyCode::KeyS) as i8) as f32,
+    )
+    .normalize_or_zero();
+    controls.sprint = keys.pressed(KeyCode::ShiftLeft) || keys.pressed(KeyCode::ShiftRight);
+    controls.jump |= keys.just_pressed(KeyCode::Space);
 }
 
 fn move_player(
+    overlay: Res<GameplayOverlay>,
     mut controls: ResMut<Controls>,
     mut query: Query<(
         &Transform,
@@ -336,6 +337,10 @@ fn move_player(
         return;
     };
     player.previous = transform.translation;
+    if overlay.blocks_world() || overlay.escape_consumed {
+        controller.translation = Some(Vec3::ZERO);
+        return;
+    }
     let grounded = output.is_some_and(|output| output.grounded);
     if grounded && player.vertical_speed < 0.0 {
         player.vertical_speed = 0.0;
@@ -363,8 +368,8 @@ fn move_player(
 fn camera(
     time: Res<Time<Fixed>>,
     controls: Res<Controls>,
-    player: Query<(&Transform, &Player), Without<Camera3d>>,
-    mut camera: Query<&mut Transform, With<Camera3d>>,
+    player: Query<(&Transform, &Player), Without<MainCamera>>,
+    mut camera: Query<&mut Transform, With<MainCamera>>,
 ) {
     let (Ok((transform, player)), Ok(mut camera)) = (player.single(), camera.single_mut()) else {
         return;
@@ -376,16 +381,8 @@ fn camera(
     camera.rotation = Quat::from_euler(EulerRot::YXZ, controls.yaw, controls.pitch, 0.0);
 }
 
-fn release(
-    mut window: Query<&mut CursorOptions, With<PrimaryWindow>>,
-    mut controls: ResMut<Controls>,
-    mut time: ResMut<Time<Virtual>>,
-) {
+fn release(mut controls: ResMut<Controls>, mut time: ResMut<Time<Virtual>>) {
     time.pause();
-    if let Ok(mut cursor) = window.single_mut() {
-        cursor.grab_mode = CursorGrabMode::None;
-        cursor.visible = true;
-    }
     controls.movement = Vec2::ZERO;
     controls.jump = false;
     controls.sprint = false;
@@ -399,10 +396,14 @@ fn resume(mut time: ResMut<Time<Virtual>>) {
 fn loading_visibility(
     state: Res<State<GameState>>,
     controls: Res<Controls>,
+    overlay: Res<GameplayOverlay>,
     mut nodes: Query<&mut Node, With<Loading>>,
 ) {
     for mut node in &mut nodes {
-        node.display = if *state.get() == GameState::Playing && !controls.captured {
+        node.display = if *state.get() == GameState::Playing
+            && !controls.captured
+            && !overlay.blocks_world()
+        {
             Display::Flex
         } else {
             Display::None
@@ -413,6 +414,7 @@ fn loading_visibility(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bevy::window::{CursorGrabMode, CursorOptions, PrimaryWindow};
 
     fn room() -> (App, Entity) {
         let mut app = App::new();
@@ -427,6 +429,7 @@ mod tests {
             substeps: 1,
         })
         .init_resource::<Controls>()
+        .init_resource::<GameplayOverlay>()
         .add_systems(FixedUpdate, move_player.before(PhysicsSet::SyncBackend));
         // Hollow triangle surfaces exercise the same collider type as the GLB, not a solid room box.
         for vertices in [
@@ -466,7 +469,7 @@ mod tests {
                 Collider::trimesh_with_flags(
                     vertices.to_vec(),
                     vec![[0, 2, 1], [0, 3, 2]],
-                    TriMeshFlags::FIX_INTERNAL_EDGES,
+                    COLLIDER_FLAGS,
                 )
                 .unwrap(),
             ));
@@ -514,6 +517,98 @@ mod tests {
             .vertical_speed = 0.0;
         app.world_mut().resource_mut::<Controls>().movement = Vec2::ZERO;
         step(app, 1);
+    }
+
+    #[test]
+    fn apartment_long_session_preserves_walking_and_jumping() {
+        let (mut app, player) = room();
+        let colliders: Vec<_> = app
+            .world_mut()
+            .query_filtered::<Entity, (With<Collider>, Without<Player>)>()
+            .iter(app.world())
+            .collect();
+        for entity in colliders {
+            app.world_mut().despawn(entity);
+        }
+        let bytes = std::fs::read("assets/models/apartment_windows.glb").unwrap();
+        let gltf = bevy::gltf::gltf::Gltf::from_slice(&bytes).unwrap();
+        for node in gltf.nodes() {
+            let Some(mesh) = node.mesh() else { continue };
+            for primitive in mesh.primitives() {
+                if primitive
+                    .material()
+                    .name()
+                    .is_some_and(|name| name.starts_with("Urban_"))
+                {
+                    continue;
+                }
+                let reader = primitive.reader(|_| gltf.blob.as_deref());
+                let vertices = reader.read_positions().unwrap().map(Vec3::from).collect();
+                let indices: Vec<_> = reader.read_indices().unwrap().into_u32().collect();
+                app.world_mut().spawn((
+                    Transform::from_matrix(Mat4::from_cols_array_2d(&node.transform().matrix())),
+                    Collider::trimesh_with_flags(
+                        vertices,
+                        indices
+                            .chunks_exact(3)
+                            .map(|triangle| [triangle[0], triangle[1], triangle[2]])
+                            .collect(),
+                        COLLIDER_FLAGS,
+                    )
+                    .unwrap(),
+                ));
+            }
+        }
+        step(&mut app, 5);
+        step(&mut app, 60 * 60);
+        let start = position(&app, player);
+        assert!((start.y - 0.915).abs() < 0.015, "idle position: {start}");
+        assert!(
+            app.world()
+                .get::<Player>(player)
+                .unwrap()
+                .vertical_speed
+                .abs()
+                < 1.0,
+            "gravity accumulated while standing on the floor: speed={}, output={:?}",
+            app.world().get::<Player>(player).unwrap().vertical_speed,
+            app.world()
+                .get::<KinematicCharacterControllerOutput>(player)
+                .unwrap()
+        );
+        app.world_mut().resource_mut::<Controls>().movement = Vec2::Y;
+        for tick in 1..=12 {
+            step(&mut app, 1);
+            let actual = position(&app, player);
+            let expected = start + Vec3::Z * (2.5 * DT * tick as f32);
+            assert!(
+                actual.abs_diff_eq(expected, 0.01),
+                "tick {tick}: {actual} != {expected}"
+            );
+        }
+        let before_jump = position(&app, player);
+        app.world_mut().resource_mut::<Controls>().jump = true;
+        step(&mut app, 1);
+        assert!(position(&app, player).y > before_jump.y + 0.05);
+        for tick in 0..60 * 60 * 10 {
+            if tick % 90 == 0 {
+                let mut controls = app.world_mut().resource_mut::<Controls>();
+                controls.yaw = (tick / 90) as f32 * 0.7;
+                controls.sprint = tick % 180 == 0;
+            }
+            let before = position(&app, player);
+            step(&mut app, 1);
+            let after = position(&app, player);
+            assert!(
+                after.distance(before) < 0.35,
+                "teleport at tick {tick}: {before} -> {after}; vertical speed {}",
+                app.world().get::<Player>(player).unwrap().vertical_speed
+            );
+            assert!(
+                after.y > 0.85 && after.y < 1.85,
+                "left apartment at tick {tick}: {after}"
+            );
+        }
     }
 
     #[test]
@@ -624,11 +719,16 @@ mod tests {
     fn keyboard_diagonal_is_normalized_and_lock_loss_clears_controls() {
         let mut app = App::new();
         app.init_resource::<Controls>()
+            .init_resource::<GameplayOverlay>()
             .init_resource::<ButtonInput<KeyCode>>()
             .init_resource::<ButtonInput<MouseButton>>()
             .init_resource::<AccumulatedMouseMotion>()
             .init_resource::<NextState<GameState>>()
-            .add_systems(PreUpdate, input);
+            .insert_resource(State::new(GameState::Playing))
+            .add_message::<bevy::picking::pointer::PointerInput>()
+            .add_message::<bevy::input::mouse::MouseWheel>()
+            .add_plugins(super::super::cursor::GameCursorPlugin)
+            .add_systems(PreUpdate, input.in_set(PlayerInput));
         app.world_mut().spawn(Player {
             vertical_speed: 0.0,
             previous: SPAWN,
@@ -680,6 +780,7 @@ mod tests {
         app.add_plugins((MinimalPlugins, bevy::state::app::StatesPlugin))
             .insert_state(GameState::Playing)
             .init_resource::<Controls>()
+            .init_resource::<GameplayOverlay>()
             .add_systems(OnExit(GameState::Playing), release)
             .add_systems(OnEnter(GameState::Playing), resume);
         let position = Vec3::new(2.0, 1.5, 6.0);
@@ -728,5 +829,149 @@ mod tests {
                 1
             );
         }
+    }
+
+    #[test]
+    fn overlay_keeps_capture_freezes_input_and_resumes_without_a_camera_jump() {
+        let mut app = App::new();
+        app.init_resource::<Controls>()
+            .init_resource::<GameplayOverlay>()
+            .init_resource::<ButtonInput<KeyCode>>()
+            .init_resource::<ButtonInput<MouseButton>>()
+            .init_resource::<AccumulatedMouseMotion>()
+            .init_resource::<NextState<GameState>>()
+            .insert_resource(State::new(GameState::Playing))
+            .add_message::<bevy::picking::pointer::PointerInput>()
+            .add_message::<bevy::input::mouse::MouseWheel>()
+            .add_plugins(super::super::cursor::GameCursorPlugin)
+            .add_systems(PreUpdate, input.in_set(PlayerInput));
+        let window = app
+            .world_mut()
+            .spawn((
+                Window {
+                    focused: true,
+                    ..default()
+                },
+                PrimaryWindow,
+                CursorOptions {
+                    grab_mode: CursorGrabMode::Locked,
+                    ..default()
+                },
+            ))
+            .id();
+        app.world_mut().resource_mut::<Controls>().captured = true;
+        app.world_mut().resource_mut::<Controls>().movement = Vec2::ONE;
+        app.world_mut().resource_mut::<GameplayOverlay>().active =
+            Some(super::super::routine::OverlayKind::Context);
+        let yaw = app.world().resource::<Controls>().yaw;
+        app.world_mut()
+            .resource_mut::<AccumulatedMouseMotion>()
+            .delta = Vec2::ONE;
+        app.world_mut()
+            .resource_mut::<ButtonInput<KeyCode>>()
+            .press(KeyCode::KeyW);
+        app.update();
+        let controls = app.world().resource::<Controls>();
+        assert_eq!(controls.yaw, yaw);
+        assert_eq!(controls.movement, Vec2::ZERO);
+        assert!(controls.captured);
+        assert_eq!(
+            app.world().get::<CursorOptions>(window).unwrap().grab_mode,
+            CursorGrabMode::Locked
+        );
+        assert!(matches!(
+            app.world().resource::<NextState<GameState>>(),
+            NextState::Unchanged
+        ));
+        app.world_mut().resource_mut::<GameplayOverlay>().active = None;
+        app.world_mut()
+            .resource_mut::<AccumulatedMouseMotion>()
+            .delta = Vec2::splat(120.0);
+        app.update();
+        let controls = app.world().resource::<Controls>();
+        assert!(controls.captured);
+        assert_eq!(controls.yaw, yaw);
+        assert_eq!(controls.movement, Vec2::Y);
+        app.update();
+        assert!(app.world().resource::<Controls>().yaw < yaw);
+        app.world_mut().get_mut::<Window>(window).unwrap().focused = false;
+        app.update();
+        assert!(matches!(
+            app.world().resource::<NextState<GameState>>(),
+            NextState::Pending(GameState::Menu)
+        ));
+    }
+
+    #[test]
+    fn new_campaign_resets_player_and_all_control_state() {
+        let mut app = App::new();
+        app.init_resource::<Controls>()
+            .add_observer(reset_new_campaign);
+        let entity = app
+            .world_mut()
+            .spawn((
+                Player {
+                    previous: Vec3::ONE,
+                    vertical_speed: 4.0,
+                },
+                Transform::from_translation(Vec3::ONE),
+                character_controller(),
+            ))
+            .id();
+        {
+            let mut controls = app.world_mut().resource_mut::<Controls>();
+            controls.yaw = 0.5;
+            controls.pitch = 0.6;
+            controls.movement = Vec2::ONE;
+            controls.captured = true;
+            controls.jump = true;
+        }
+        app.world_mut()
+            .trigger(super::super::campaign_save::CampaignReplaced);
+        assert_eq!(
+            app.world().get::<Transform>(entity).unwrap().translation,
+            SPAWN
+        );
+        let player = app.world().get::<Player>(entity).unwrap();
+        assert_eq!(player.previous, SPAWN);
+        assert_eq!(player.vertical_speed, 0.0);
+        let controls = app.world().resource::<Controls>();
+        assert_eq!(controls.yaw, Controls::default().yaw);
+        assert_eq!(controls.pitch, 0.0);
+        assert_eq!(controls.movement, Vec2::ZERO);
+        assert!(!controls.captured && !controls.jump);
+    }
+
+    #[test]
+    fn world_camera_query_initializes_and_ignores_auxiliary_cameras() {
+        let mut app = App::new();
+        app.init_resource::<Time<Fixed>>()
+            .init_resource::<Controls>()
+            .add_systems(Update, camera);
+        let position = Vec3::new(1.0, 2.0, 3.0);
+        app.world_mut().spawn((
+            Player {
+                previous: position,
+                vertical_speed: 0.0,
+            },
+            Transform::from_translation(position),
+        ));
+        let main = app
+            .world_mut()
+            .spawn((Camera3d::default(), MainCamera, Transform::default()))
+            .id();
+        let auxiliary_transform = Transform::from_xyz(9.0, 8.0, 7.0);
+        let auxiliary = app
+            .world_mut()
+            .spawn((Camera3d::default(), auxiliary_transform))
+            .id();
+        app.update();
+        let main = app.world().get::<Transform>(main).unwrap();
+        assert_eq!(main.translation, position + Vec3::Y * EYE_OFFSET);
+        assert_eq!(main.rotation, Quat::from_rotation_y(std::f32::consts::PI));
+        assert_eq!(
+            *app.world().get::<Transform>(auxiliary).unwrap(),
+            auxiliary_transform
+        );
     }
 }
