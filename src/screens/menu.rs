@@ -67,6 +67,8 @@ enum Action {
     Preset(Quality),
     Lighting(Quality),
     AntiAliasing(AntiAliasing),
+    TextureWarping(bool),
+    VertexJitter(bool),
 }
 impl Action {
     fn selected(self, settings: GraphicsSettings) -> bool {
@@ -74,6 +76,8 @@ impl Action {
             Self::Preset(q) => settings == GraphicsSettings::preset(q),
             Self::Lighting(q) => settings.lighting == q,
             Self::AntiAliasing(mode) => settings.anti_aliasing == mode,
+            Self::TextureWarping(enabled) => settings.texture_warping == enabled,
+            Self::VertexJitter(enabled) => settings.vertex_jitter == enabled,
             _ => false,
         }
     }
@@ -82,6 +86,8 @@ impl Action {
             Self::Preset(_) => Some("Quality preset"),
             Self::Lighting(_) => Some("Lighting quality"),
             Self::AntiAliasing(_) => Some("Anti-aliasing"),
+            Self::TextureWarping(_) => Some("Texture warping"),
+            Self::VertexJitter(_) => Some("Model jitter"),
             _ => None,
         }
     }
@@ -700,6 +706,26 @@ fn setup(
                                             ],
                                             &mut index,
                                         );
+                                        choices(
+                                            body,
+                                            &skin,
+                                            "Texture warping",
+                                            &[
+                                                ("Off", Action::TextureWarping(false)),
+                                                ("On", Action::TextureWarping(true)),
+                                            ],
+                                            &mut index,
+                                        );
+                                        choices(
+                                            body,
+                                            &skin,
+                                            "Model jitter",
+                                            &[
+                                                ("Off", Action::VertexJitter(false)),
+                                                ("On", Action::VertexJitter(true)),
+                                            ],
+                                            &mut index,
+                                        );
                                         button(
                                             body,
                                             &skin,
@@ -904,6 +930,8 @@ fn actions(
         Action::Preset(q) => options.current = GraphicsSettings::preset(q),
         Action::Lighting(q) => options.current.lighting = q,
         Action::AntiAliasing(mode) => options.current.anti_aliasing = mode,
+        Action::TextureWarping(enabled) => options.current.texture_warping = enabled,
+        Action::VertexJitter(enabled) => options.current.vertex_jitter = enabled,
     }
 }
 fn appearance(
@@ -1327,8 +1355,37 @@ mod tests {
                 *app.world().resource::<State<GameState>>().get(),
                 GameState::Settings
             );
-            app.world_mut().resource_mut::<GraphicsOptions>().current =
-                GraphicsSettings::preset(Quality::Low);
+            select(&mut app, Action::TextureWarping(false));
+            assert!(
+                !app.world()
+                    .resource::<GraphicsOptions>()
+                    .current
+                    .texture_warping
+            );
+            assert!(
+                app.world()
+                    .resource::<GraphicsOptions>()
+                    .current
+                    .vertex_jitter
+            );
+            select(&mut app, Action::VertexJitter(false));
+            assert!(
+                !app.world()
+                    .resource::<GraphicsOptions>()
+                    .current
+                    .vertex_jitter
+            );
+            select(&mut app, Action::Reset);
+            assert_eq!(
+                app.world().resource::<GraphicsOptions>().current,
+                GraphicsSettings::default()
+            );
+            select(&mut app, Action::TextureWarping(false));
+            select(&mut app, Action::VertexJitter(false));
+            app.world_mut()
+                .resource_mut::<GraphicsOptions>()
+                .current
+                .lighting = Quality::Low;
             key(&mut app, KeyCode::Escape);
             assert_eq!(*app.world().resource::<State<GameState>>().get(), origin);
             assert_eq!(

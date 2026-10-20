@@ -87,7 +87,7 @@ quicker development builds. Release linking takes longer but produces a smaller 
 
 Choose **Settings** on the title screen, or **P → Settings** during play.
 Settings returns to the screen it was opened from. The pause and settings panels are centered over the scene.
-High is the default and preserves the original appearance.
+High is the default; all presets enable PSX texture warping and model jitter.
 Presets can be adjusted individually; unmatched combinations display **Custom**.
 
 | Setting | Low | Medium | High |
@@ -102,12 +102,20 @@ FXAA is a fast post-process; SMAA preserves edges more accurately at additional 
 The web supports only 1×/4× MSAA, so 2×/8× are not offered. FXAA/SMAA turn MSAA off and are mutually exclusive.
 Implementation follows [Bevy 0.19.1 FXAA](https://raw.githubusercontent.com/bevyengine/bevy/v0.19.1/crates/bevy_anti_alias/src/fxaa/mod.rs) and
 [SMAA](https://raw.githubusercontent.com/bevyengine/bevy/v0.19.1/crates/bevy_anti_alias/src/smaa/mod.rs).
+**Texture warping** uses affine UV interpolation, and **Model jitter** snaps vertices to a two-pixel
+screen grid. Both have independent **Off / On** controls, enabled by default. They apply to all
+3D models, including animated characters and the handheld phone; menus and HUD stay crisp.
+The standard lighting, fog, cutout materials, depth and shadow passes remain in use. The effects
+follow the [URP-PSX reference shader](https://github.com/Math-Man/URP-PSX-FORKED/blob/11752b7717ecd2157ca67ba5f944963d2f63ebed/URP-PSX/Assets/Shaders/Other/PS1AffineFog.shader),
+implemented with WGSL interpolation and vertex projection. These patches target Bevy 0.19.1;
+review them when upgrading the engine. Switching effects recompiles render pipelines.
+
 Changes preview immediately;
 **Save settings** commits them, while **Cancel** restores the last saved settings. Escape also
 cancels on native or with browser Escape capture active. Without browser Escape capture,
 the first Escape while captured releases the mouse and keeps settings open.
 Version-one saved preferences migrate lighting and anti-aliasing only; removed texture and resolution values are discarded.
-New saves use schema version two in the existing storage location.
+Version-two saves also migrate with both PSX effects enabled. New saves use schema version three in the existing storage location.
 
 Settings are stored in browser localStorage (`casino-game.graphics.v1`), or in
 `CasinoGame/casino-game.graphics.v1.json` under the native user configuration directory

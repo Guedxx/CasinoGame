@@ -6,6 +6,8 @@ use bevy::{
 };
 use serde::{Deserialize, Serialize};
 
+mod psx;
+
 // Keep the existing storage location so version-one preferences can migrate.
 const STORAGE_KEY: &str = "casino-game.graphics.v1";
 
@@ -43,6 +45,13 @@ pub enum AntiAliasing {
 pub struct GraphicsSettings {
     pub lighting: Quality,
     pub anti_aliasing: AntiAliasing,
+    #[serde(default = "enabled")]
+    pub texture_warping: bool,
+    #[serde(default = "enabled")]
+    pub vertex_jitter: bool,
+}
+fn enabled() -> bool {
+    true
 }
 impl Default for GraphicsSettings {
     fn default() -> Self {
@@ -58,6 +67,8 @@ impl GraphicsSettings {
                 Quality::Medium => AntiAliasing::Fxaa,
                 Quality::High => AntiAliasing::Msaa4,
             },
+            texture_warping: true,
+            vertex_jitter: true,
         }
     }
     pub fn label(self) -> &'static str {
@@ -101,10 +112,11 @@ fn decode_settings(json: &str) -> Result<GraphicsSettings, String> {
             } else {
                 AntiAliasing::Off
             },
+            ..GraphicsSettings::default()
         });
     }
     let saved: SavedSettings = serde_json::from_str(json).map_err(|e| e.to_string())?;
-    if saved.version != 2 {
+    if !matches!(saved.version, 2 | 3) {
         return Err("Unsupported settings version".into());
     }
     Ok(saved.graphics)
@@ -146,7 +158,7 @@ impl GraphicsOptions {
     pub fn save(&mut self) {
         self.saved = self.current;
         let result = serde_json::to_string(&SavedSettings {
-            version: 2,
+            version: 3,
             graphics: self.saved,
         })
         .map_err(|e| e.to_string())
@@ -220,7 +232,8 @@ pub struct ApplyGraphics;
 impl Plugin for GraphicsPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<GraphicsOptions>()
-            .add_systems(Update, apply_graphics.in_set(ApplyGraphics));
+            .add_systems(Update, apply_graphics.in_set(ApplyGraphics))
+            .add_systems(Update, psx::apply.after(ApplyGraphics));
     }
 }
 
@@ -294,6 +307,7 @@ mod tests {
         for quality in Quality::ALL {
             let settings = GraphicsSettings::preset(quality);
             assert_eq!(settings.label(), quality.label());
+            assert!(settings.texture_warping && settings.vertex_jitter);
             for anti_aliasing in [
                 AntiAliasing::Off,
                 AntiAliasing::Fxaa,
@@ -305,7 +319,7 @@ mod tests {
                     ..settings
                 };
                 let json = serde_json::to_string(&SavedSettings {
-                    version: 2,
+                    version: 3,
                     graphics: settings,
                 })
                 .unwrap();
@@ -326,13 +340,48 @@ mod tests {
                     } else {
                         AntiAliasing::Off
                     },
+                    ..GraphicsSettings::default()
                 }
             );
+        }
+        let version_two = decode_settings(
+            r#"{"version":2,"graphics":{"lighting":"low","anti_aliasing":"smaa"}}"#,
+        )
+        .unwrap();
+        assert_eq!(version_two.lighting, Quality::Low);
+        assert_eq!(version_two.anti_aliasing, AntiAliasing::Smaa);
+        assert!(version_two.texture_warping && version_two.vertex_jitter);
+        for warping in [false, true] {
+            for jitter in [false, true] {
+                let settings = GraphicsSettings {
+                    texture_warping: warping,
+                    vertex_jitter: jitter,
+                    ..GraphicsSettings::default()
+                };
+                let json = serde_json::to_string(&SavedSettings {
+                    version: 3,
+                    graphics: settings,
+                })
+                .unwrap();
+                assert_eq!(decode_settings(&json).unwrap(), settings);
+                if !warping || !jitter {
+                    assert_eq!(settings.label(), "Custom");
+                }
+                let mut options = GraphicsOptions {
+                    current: settings,
+                    saved: GraphicsSettings::default(),
+                    notice: String::new(),
+                };
+                options.cancel();
+                assert_eq!(options.current, options.saved);
+            }
         }
         for invalid in [
             "{}",
             "null",
-            r#"{"version":3,"graphics":{"lighting":"high","anti_aliasing":"msaa4"}}"#,
+            r#"{"version":3,"graphics":{"lighting":"high","anti_aliasing":"off","texture_warping":1}}"#,
+            r#"{"version":3,"graphics":{"lighting":"high","anti_aliasing":"off","vertex_jitter":"true"}}"#,
+            r#"{"version":4,"graphics":{"lighting":"high","anti_aliasing":"msaa4"}}"#,
             r#"{"version":2,"graphics":{"lighting":"high","anti_aliasing":"msaa8"}}"#,
             r#"{"version":2,"graphics":{"lighting":"high","anti_aliasing":"off","render_scale":"low"}}"#,
             r#"{"version":1,"graphics":{"lighting":"medium","textures":"invalid","render_scale":"low","msaa":false}}"#,
@@ -343,6 +392,7 @@ mod tests {
             current: GraphicsSettings {
                 lighting: Quality::High,
                 anti_aliasing: AntiAliasing::Smaa,
+                ..GraphicsSettings::default()
             },
             saved: GraphicsSettings::default(),
             notice: String::new(),

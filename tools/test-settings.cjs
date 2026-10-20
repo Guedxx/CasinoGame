@@ -86,8 +86,8 @@ async function main() {
       modes.push({ mode, target, activePasses: Object.keys(captured) });
     }
     checks.push('Off, FXAA, SMAA and 4x MSAA execute the expected GPU passes, remain exclusive and preserve full-resolution rendering and identical menu heading pixels');
-    await select(12); // Save SMAA.
-    assert.deepEqual(JSON.parse(await saved()), { version: 2, graphics: { lighting: 'high', anti_aliasing: 'smaa' } });
+    await select(16); // Save SMAA.
+    assert.deepEqual(JSON.parse(await saved()), { version: 3, graphics: { lighting: 'high', anti_aliasing: 'smaa', texture_warping: true, vertex_jitter: true } });
     await ready();
     assert((await passes())['SMAA neighborhood blending pass']);
     await settings(); await select(7); await page.waitForTimeout(1500); // Preview FXAA.
@@ -102,8 +102,8 @@ async function main() {
     await ready();
     assert(logs.some(line => line.includes('lighting: Medium, anti_aliasing: Off')));
     assert.deepEqual((await passes()).main_opaque_pass_3d.targets[0], { ...canvas, samples: 1 });
-    await settings(); await select(12);
-    assert.deepEqual(JSON.parse(await saved()), { version: 2, graphics: { lighting: 'medium', anti_aliasing: 'off' } });
+    await settings(); await select(16);
+    assert.deepEqual(JSON.parse(await saved()), { version: 3, graphics: { lighting: 'medium', anti_aliasing: 'off', texture_warping: true, vertex_jitter: true } });
     await key('Enter');
     checks.push('Legacy low-resolution/low-texture save migrates lighting and AA only, renders at full resolution and saves without removed fields');
     await settings(); await select(1); // Medium preset now uses FXAA.
@@ -122,7 +122,7 @@ async function main() {
     assert(logs.slice(start).some(line => line.includes('lighting: High, anti_aliasing: Msaa4')));
     await settings();
     await page.evaluate(() => { Storage.prototype.setItem = () => { throw new DOMException('Storage disabled', 'SecurityError'); }; });
-    await select(12); await screenshot('storage-unavailable');
+    await select(16); await screenshot('storage-unavailable');
     assert(logs.some(line => line.includes('Cannot save graphics settings')));
     checks.push('Invalid storage defaults to High; failed writes keep settings usable for this session');
     assert.equal(errors.length, 0, errors.join('\n'));
