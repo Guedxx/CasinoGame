@@ -102,10 +102,12 @@ FXAA is a fast post-process; SMAA preserves edges more accurately at additional 
 The web supports only 1×/4× MSAA, so 2×/8× are not offered. FXAA/SMAA turn MSAA off and are mutually exclusive.
 Implementation follows [Bevy 0.19.1 FXAA](https://raw.githubusercontent.com/bevyengine/bevy/v0.19.1/crates/bevy_anti_alias/src/fxaa/mod.rs) and
 [SMAA](https://raw.githubusercontent.com/bevyengine/bevy/v0.19.1/crates/bevy_anti_alias/src/smaa/mod.rs).
-**Texture warping** uses affine UV interpolation, and **Model jitter** snaps vertices to a two-pixel
-screen grid. Both have independent **Off / On** controls, enabled by default. They apply to all
-3D models, including animated characters and the handheld phone; menus and HUD stay crisp.
-The standard lighting, fog, cutout materials, depth and shadow passes remain in use. The effects
+**Texture warping** blends 20% affine UVs with 80% perspective-correct UVs, capped at 0.01 UV
+units per axis to keep large tiled surfaces subtle. Cutout materials retain perspective-correct UVs to preserve their silhouettes and shadow masks. **Model jitter**
+snaps vertices to a one-pixel screen grid in the camera color and depth passes only; shadow maps
+keep unsnapped geometry and perspective-correct UVs. Shadow lookup uses the original world position.
+Both have independent **Off / On** controls, enabled by default, including for animated characters
+and the handheld phone; menus and HUD stay crisp. The standard lighting and fog remain in use. The effects
 follow the [URP-PSX reference shader](https://github.com/Math-Man/URP-PSX-FORKED/blob/11752b7717ecd2157ca67ba5f944963d2f63ebed/URP-PSX/Assets/Shaders/Other/PS1AffineFog.shader),
 implemented with WGSL interpolation and vertex projection. These patches target Bevy 0.19.1;
 review them when upgrading the engine. Switching effects recompiles render pipelines.
