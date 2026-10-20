@@ -32,6 +32,11 @@ a favorites dock, with low-resolution, palette-limited bitmaps for a PSX look. I
 fictional betting games, banking, financial/betting history and saved daily
 reports, household sales, contacts, support, and food options. **1–9** select visible phone choices,
 **H** returns home, **Backspace** goes back, and the wheel or **PageUp / PageDown** scrolls.
+Apps have their own compact interfaces: VIRA casino, Violeta banking, Conversa chats,
+MeFood ordering, household listings and Respiro support. Roulette and football use
+selection tiles followed by an explicit Bet button; Slots uses Spin. Rules and My bets
+stay within the shared betting session. Contact rows open a thread before a call.
+Sales opens a history of sold items with SOLD stamps; Sell an item appears when offers are available.
 Walking and looking stop while an overlay is open. Use **Tab** or its Lower button to lower the
 phone without releasing capture. Actual window focus or browser pointer-lock loss still pauses safely.
 
@@ -141,8 +146,19 @@ The phone's original SVG artwork is rasterized into nearest-sampled indexed PNGs
 The two bitmaps total 4,451 bytes on disk, 95% less than the original full-resolution PNGs,
 and decode to 149,952 bytes of RGBA texture storage, 92.6% less than the originals.
 The composed screen also uses nearest sampling; launcher text uses Liberation Sans Regular,
-while app content uses Bold. These figures exclude the render target, CPU copies and font atlases.
+while apps use Regular for detail and Bold for headings. These figures exclude the render target, CPU copies and font atlases.
 Rasterization and Pillow processing details are in `art/ui/phone-generation.json`.
+
+App artwork uses two additional nearest-sampled, 32-color indexed PNG atlases:
+`phone-betting.png` (128×128) and `phone-apps.png` (192×160), totaling 13,063 bytes
+on disk and 188,416 bytes decoded RGBA. Native text keeps amounts and controls readable.
+The two-color roulette disk is generated in memory at 64×64 (16,384 RGBA bytes,
+no additional download), so rotation does not depend on rectangular UI clipping.
+Built-in imagegen prompts, source hashes and crop rectangles are recorded in
+`art/ui/phone-apps-generation.json`. Repack retained generated sources with
+`python3 tools/build_phone_apps.py`; its assertions enforce palette, placement, alpha and
+a combined 32 KiB budget. Source manifests record the original generation paths;
+raw generated masters are not included in the browser assets.
 
 The settings page's FPS counter measures game rendering cadence. Browser performance reports use
 WebGPU canvas acquisitions per second; neither is a measurement of displayed frames.
@@ -162,7 +178,8 @@ src/
     campaign.rs       Authoritative ten-day state, actions, clock, ledger, and reports
     campaign_save.rs  Validated versioned autosave and retained session
     routine.rs        World interactions, reports, endings, and read-only records
-    phone.rs          Physical phone, apps, amount entry, and settled-result presentation
+    phone.rs          Physical phone, app routing, amount entry and input guards
+    phone/            Launcher, app renderers, compact artwork and phone action tests
     betting.rs        Exact fictional wagering, saved outcomes, and shared sessions
     obligations.rs    Bills, rent extension, contacts, and commitments
     support.rs        Gradual care, planning, voluntary caps, and app block

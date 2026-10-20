@@ -384,6 +384,7 @@ fn environment(
     overlay: Res<GameplayOverlay>,
     mut lights: Query<&mut SpotLight, With<InteriorLight>>,
     mut audio: Query<&mut AudioSink, With<PressureAudio>>,
+    windows: Query<&Window, With<bevy::window::PrimaryWindow>>,
     mut thoughts: Query<(&mut Text, &mut Visibility), With<Thought>>,
 ) {
     let campaign = store.campaign();
@@ -404,7 +405,13 @@ fn environment(
         };
     }
     for mut sink in &mut audio {
-        sink.set_volume(Volume::Linear(if playing { stress * 0.3 } else { 0.0 }));
+        sink.set_volume(Volume::Linear(
+            if playing && windows.single().is_ok_and(|w| w.focused) {
+                stress * 0.3
+            } else {
+                0.0
+            },
+        ));
     }
     for (mut text, mut visibility) in &mut thoughts {
         let value = if playing && !overlay.blocks_world() {

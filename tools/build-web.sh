@@ -43,5 +43,7 @@ test -s dist/assets/audio/pressure.wav
 test -s dist/assets/ui/hud-medallions.png
 test -s dist/assets/ui/phone-icons.png
 test -s dist/assets/ui/phone-wallpaper.png
+test -s dist/assets/ui/phone-betting.png
+test -s dist/assets/ui/phone-apps.png
 test -s dist/assets/fonts/LiberationSans-Bold.ttf
 test -s dist/assets/fonts/LiberationSans-Regular.ttf

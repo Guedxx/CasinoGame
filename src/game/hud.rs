@@ -102,7 +102,7 @@ pub(super) fn spawn(commands: &mut Commands, campaign: &Campaign, skin: &HudSkin
                 ("Urge", a.urge),
                 ("Relationships", a.relationships),
             ];
-            for indices in [&[0, 1, 2][..], &[3, 4][..]] {
+            for indices in [&[0, 1][..], &[3, 4][..]] {
                 hud.spawn(Node {
                     justify_content: JustifyContent::End,
                     column_gap: px(9),

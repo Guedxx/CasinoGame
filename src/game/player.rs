@@ -57,7 +57,8 @@ impl Plugin for PlayerPlugin {
             )
             .add_systems(
                 FixedUpdate,
-                move_player
+                (move_player, footsteps)
+                    .chain()
                     .before(PhysicsSet::SyncBackend)
                     .run_if(in_state(GameState::Playing)),
             )
@@ -364,6 +365,47 @@ fn move_player(
     );
 }
 
+fn footsteps(
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    controls: Res<Controls>,
+    overlay: Res<GameplayOverlay>,
+    player: Query<&KinematicCharacterControllerOutput, With<Player>>,
+    mut distance: Local<f32>,
+    mut sound: Local<Option<[Handle<AudioSource>; 2]>>,
+    mut step: Local<usize>,
+) {
+    let Ok(output) = player.single() else {
+        *distance = 0.0;
+        return;
+    };
+    if !controls.captured
+        || controls.movement == Vec2::ZERO
+        || overlay.blocks_world()
+        || overlay.escape_consumed
+        || !output.grounded
+    {
+        *distance = 0.0;
+        return;
+    }
+    *distance += output.effective_translation.xz().length();
+    if *distance >= 1.5 {
+        *distance %= 1.5;
+        let sound = sound.get_or_insert_with(|| {
+            [
+                assets.load("audio/step1.wav"),
+                assets.load("audio/step2.wav"),
+            ]
+        });
+        commands.spawn((
+            super::audio::Sound::Step,
+            AudioPlayer::new(sound[*step].clone()),
+            PlaybackSettings::DESPAWN.with_volume(bevy::audio::Volume::Linear(0.4)),
+        ));
+        *step = (*step + 1) % 2;
+    }
+}
+
 fn camera(
     time: Res<Time<Fixed>>,
     controls: Res<Controls>,
@@ -414,6 +456,71 @@ fn loading_visibility(
 mod tests {
     use super::*;
     use bevy::window::{CursorGrabMode, CursorOptions, PrimaryWindow};
+
+    #[test]
+    fn footsteps_require_ground_travel_and_stop_when_input_is_blocked() {
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, bevy::asset::AssetPlugin::default()))
+            .init_asset::<AudioSource>()
+            .init_resource::<Controls>()
+            .init_resource::<GameplayOverlay>()
+            .add_systems(Update, footsteps);
+        {
+            let mut controls = app.world_mut().resource_mut::<Controls>();
+            controls.captured = true;
+            controls.movement = Vec2::Y;
+        }
+        let player = app
+            .world_mut()
+            .spawn((
+                Player::default(),
+                KinematicCharacterControllerOutput {
+                    grounded: true,
+                    effective_translation: Vec3::X * 0.75,
+                    ..default()
+                },
+            ))
+            .id();
+        app.update();
+        assert_eq!(
+            app.world_mut()
+                .query::<&AudioPlayer>()
+                .iter(app.world())
+                .count(),
+            0
+        );
+        app.update();
+        assert_eq!(
+            app.world_mut()
+                .query::<&AudioPlayer>()
+                .iter(app.world())
+                .count(),
+            1
+        );
+        for (grounded, translation, captured) in [
+            (false, Vec3::X * 2.0, true),
+            (true, Vec3::ZERO, true),
+            (true, Vec3::X * 2.0, false),
+        ] {
+            {
+                let mut output = app
+                    .world_mut()
+                    .get_mut::<KinematicCharacterControllerOutput>(player)
+                    .unwrap();
+                output.grounded = grounded;
+                output.effective_translation = translation;
+            }
+            app.world_mut().resource_mut::<Controls>().captured = captured;
+            app.update();
+            assert_eq!(
+                app.world_mut()
+                    .query::<&AudioPlayer>()
+                    .iter(app.world())
+                    .count(),
+                1
+            );
+        }
+    }
 
     fn room() -> (App, Entity) {
         let mut app = App::new();

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "roulette",
+    "path": "/home/xigo/.codex/generated_images/01a15aa8-ddea-7d63-9344-234511e45cde/exec-9de494ae-9c67-4a18-a308-7b8f0993a6b3.png",
+    "prompt": "Use case: stylized-concept. Asset type: square cover illustration for a fictional Brazilian mobile casino app inside a PS1-style narrative game. Primary request: a dramatic close-up of a decorative red and charcoal-black two-color casino wheel with a small ivory pointer, warm gold rim, dark emerald background. Exactly two colors on the wheel, red and black; no green zero, no numbers, no writing. Bold centered composition legible after reduction to 64x64 pixels. Contemporary colorful mobile casino tile art translated to a chunky late-1990s prerendered game aesthetic, broad shapes and strong silhouette, restrained saturated ruby/emerald/gold palette, coarse dithered lighting. Square opaque image fills frame; no rounded border, UI, letters, watermark, human figures, tiny details or extra objects. This is cover art, not the actual roulette rules or live wheel."
+  },
+  {
+    "id": "slots",
+    "path": "/home/xigo/.codex/generated_images/01a15aa8-ddea-7d63-9344-234511e45cde/exec-366023b8-80e4-4e08-849c-86627bcce50a.png",
+    "prompt": "Use case: stylized-concept. Asset type: square cover illustration for a fictional Brazilian mobile casino app inside a PS1-style narrative game. Primary request: a close-up gold three-reel slot machine face with three bold red sevens on ivory reel windows, vivid violet background, small warm glints. The main subject fills the square frame. Contemporary colorful mobile casino tile art translated to a chunky late-1990s prerendered game aesthetic, broad readable shapes, restrained violet/ruby/gold palette, coarse dithered lighting. Must remain immediately recognizable after reduction to 64x64 pixels. Square opaque image; no rounded border, slogans, interface buttons, humans, watermark or fine details. Only the three 7 symbols may appear as text."
+  },
+  {
+    "id": "football",
+    "path": "/home/xigo/.codex/generated_images/01a15aa8-ddea-7d63-9344-234511e45cde/exec-4cb6659d-c164-4ea5-8e88-b9bb0c3ebaf2.png",
+    "prompt": "Use case: stylized-concept. Asset type: square cover illustration for a fictional sports betting app inside a PS1-style narrative game. Primary request: a large white-and-black football in foreground on bright green turf, simple illuminated stadium stands behind, dramatic clear silhouette, no players. Contemporary colorful Brazilian mobile sports app tile art translated to a chunky late-1990s prerendered game aesthetic, emerald/ivory/navy palette, broad shapes, coarse dithered lighting. Composition must read after reduction to 64x64 pixels. Square opaque image fills the frame; no lettering, logos, scores, clock, ads, UI, watermark or tiny detail."
+  },
+  {
+    "id": "seven",
+    "path": "/home/xigo/.codex/generated_images/01a15aa8-ddea-7d63-9344-234511e45cde/exec-239c04e9-3709-4867-a012-c06b813a8732.png",
+    "prompt": "Use case: stylized-concept. Asset type: one isolated slot reel symbol for a fictional PS1-style casino game. Primary request: a single bold ruby-red numeral 7 with a simple warm gold beveled rim, centered and filling most of the square frame. Exact text: \"7\". Chunky late-1990s prerendered arcade sprite, broad flat highlights, coarse pixel-like texture, readable at 32x32 pixels, restrained red/gold palette. Transparent background, no reel window, shadow outside the silhouette, decoration, additional symbols, letters or watermark."
+  },
+  {
+    "id": "bar",
+    "path": "/home/xigo/.codex/generated_images/01a15aa8-ddea-7d63-9344-234511e45cde/exec-68ea1f27-951d-4845-85a5-d21d664fbdc4.png",
+    "prompt": "Use case: stylized-concept. Asset type: one isolated slot reel symbol for a fictional PS1-style casino game. Primary request: a single dark charcoal horizontal BAR badge with ivory letters and a thick simple gold rectangular rim, centered in the square frame. Exact text: \"BAR\". Chunky late-1990s prerendered arcade sprite, broad flat highlights, readable at 32x32 pixels, restrained charcoal/ivory/gold palette. Transparent background, no reel window, shadow outside the silhouette, decoration, additional symbols or watermark. Large simple lettering."
+  },
+  {
+    "id": "bell",
+    "path": "/home/xigo/.codex/generated_images/01a15aa8-ddea-7d63-9344-234511e45cde/exec-8354f79b-7381-4431-b3b6-18c70db8db6b.png",
+    "prompt": "Use case: stylized-concept. Asset type: one isolated slot reel symbol for a fictional PS1-style casino game. Primary request: a single chunky golden bell with a small dark clapper, centered and filling most of the square frame. Late-1990s prerendered arcade sprite, broad flat highlights and strong silhouette, readable at 32x32 pixels, restrained amber/gold palette. Transparent background, no reel window, shadow outside the silhouette, decoration, text, additional symbols or watermark."
+  }
+]

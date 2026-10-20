@@ -881,6 +881,7 @@ fn actions(
     if confirmation.0 && !matches!(action, Action::ConfirmNewGame | Action::CancelNewGame) {
         return;
     }
+    commands.trigger(crate::game::audio::Sound::Click);
     match action {
         Action::Start => {
             // Retained session-only progress is newer than a failed/older snapshot.

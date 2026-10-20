@@ -1,0 +1,24 @@
+[
+  {
+    "id": "marina",
+    "path": "/home/xigo/.codex/generated_images/01a15aa8-fe32-7ed3-946f-29e57eb9956c/exec-114531ad-eefb-4f80-96e1-98c526e56f01.png",
+    "prompt": "Two fictional portrait avatars side by side as separate square panels, left Marina an adult Brazilian woman Alex's sister, right Rafa an adult Brazilian man Alex's friend. Friendly everyday adults, casual clothing, simple close head-and-shoulders framing, muted teal background left and muted warm ochre background right. Low resolution PS1-era painted game portrait art, restricted palette, clear facial silhouettes recognizable at 32 pixels, flat even lighting, no text, no logos, no border. Both equally sized panels.",
+    "crop": [
+      0,
+      0,
+      887,
+      887
+    ]
+  },
+  {
+    "id": "rafa",
+    "path": "/home/xigo/.codex/generated_images/01a15aa8-fe32-7ed3-946f-29e57eb9956c/exec-114531ad-eefb-4f80-96e1-98c526e56f01.png",
+    "prompt": "Two fictional portrait avatars side by side as separate square panels, left Marina an adult Brazilian woman Alex's sister, right Rafa an adult Brazilian man Alex's friend. Friendly everyday adults, casual clothing, simple close head-and-shoulders framing, muted teal background left and muted warm ochre background right. Low resolution PS1-era painted game portrait art, restricted palette, clear facial silhouettes recognizable at 32 pixels, flat even lighting, no text, no logos, no border. Both equally sized panels.",
+    "crop": [
+      887,
+      0,
+      1774,
+      887
+    ]
+  }
+]

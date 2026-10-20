@@ -1,10 +1,11 @@
+pub(crate) mod audio;
 pub(crate) mod betting;
 pub(crate) mod camera;
 pub(crate) mod campaign;
 pub(crate) mod campaign_save;
-pub(crate) mod cursor;
 #[cfg(any(target_arch = "wasm32", test))]
 mod cluster_settings;
+pub(crate) mod cursor;
 pub(crate) mod household;
 mod hud;
 mod lighting_fast_path;
@@ -24,6 +25,7 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
+            audio::GameAudioPlugin,
             camera::CameraPlugin,
             player::PlayerPlugin,
             cursor::GameCursorPlugin,

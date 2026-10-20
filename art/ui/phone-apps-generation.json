@@ -1,0 +1,246 @@
+{
+  "mode": "Built-in imagegen",
+  "processing": "BOX resize, shared 31 opaque colors + binary transparency, no dithering, optimized indexed PNG, nearest sampling",
+  "assets": [
+    {
+      "path": "assets/ui/phone-betting.png",
+      "dimensions": [
+        128,
+        128
+      ],
+      "palette_entries": 32,
+      "bytes": 5665,
+      "decoded_rgba_bytes": 65536,
+      "cells": [
+        {
+          "id": "roulette",
+          "source_sha256": "6efe7127dae9f91697e3c92edf1e34fd1d18a97c0d8fa2a75eb7227834aaaeb9",
+          "crop": null,
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "prompt": "Use case: stylized-concept. Asset type: square cover illustration for a fictional Brazilian mobile casino app inside a PS1-style narrative game. Primary request: a dramatic close-up of a decorative red and charcoal-black two-color casino wheel with a small ivory pointer, warm gold rim, dark emerald background. Exactly two colors on the wheel, red and black; no green zero, no numbers, no writing. Bold centered composition legible after reduction to 64x64 pixels. Contemporary colorful mobile casino tile art translated to a chunky late-1990s prerendered game aesthetic, broad shapes and strong silhouette, restrained saturated ruby/emerald/gold palette, coarse dithered lighting. Square opaque image fills frame; no rounded border, UI, letters, watermark, human figures, tiny details or extra objects. This is cover art, not the actual roulette rules or live wheel."
+        },
+        {
+          "id": "slots",
+          "source_sha256": "b59155216ec041c7c44317814304990a1e0df85c4c5e045499bcb779870f4e71",
+          "crop": null,
+          "rect": [
+            64,
+            0,
+            128,
+            64
+          ],
+          "prompt": "Use case: stylized-concept. Asset type: square cover illustration for a fictional Brazilian mobile casino app inside a PS1-style narrative game. Primary request: a close-up gold three-reel slot machine face with three bold red sevens on ivory reel windows, vivid violet background, small warm glints. The main subject fills the square frame. Contemporary colorful mobile casino tile art translated to a chunky late-1990s prerendered game aesthetic, broad readable shapes, restrained violet/ruby/gold palette, coarse dithered lighting. Must remain immediately recognizable after reduction to 64x64 pixels. Square opaque image; no rounded border, slogans, interface buttons, humans, watermark or fine details. Only the three 7 symbols may appear as text."
+        },
+        {
+          "id": "football",
+          "source_sha256": "3a7e61184580e83e9a7c2203cfcc753255f4b31b1db6c69d765b6e2197948bdf",
+          "crop": null,
+          "rect": [
+            0,
+            64,
+            64,
+            128
+          ],
+          "prompt": "Use case: stylized-concept. Asset type: square cover illustration for a fictional sports betting app inside a PS1-style narrative game. Primary request: a large white-and-black football in foreground on bright green turf, simple illuminated stadium stands behind, dramatic clear silhouette, no players. Contemporary colorful Brazilian mobile sports app tile art translated to a chunky late-1990s prerendered game aesthetic, emerald/ivory/navy palette, broad shapes, coarse dithered lighting. Composition must read after reduction to 64x64 pixels. Square opaque image fills the frame; no lettering, logos, scores, clock, ads, UI, watermark or tiny detail."
+        },
+        {
+          "id": "seven",
+          "source_sha256": "81a83f0b0c9049d210c9a4d20b62229fc751f9f8f2c9bc509c54e34c066e1a77",
+          "crop": null,
+          "rect": [
+            64,
+            64,
+            96,
+            96
+          ],
+          "prompt": "Use case: stylized-concept. Asset type: one isolated slot reel symbol for a fictional PS1-style casino game. Primary request: a single bold ruby-red numeral 7 with a simple warm gold beveled rim, centered and filling most of the square frame. Exact text: \"7\". Chunky late-1990s prerendered arcade sprite, broad flat highlights, coarse pixel-like texture, readable at 32x32 pixels, restrained red/gold palette. Transparent background, no reel window, shadow outside the silhouette, decoration, additional symbols, letters or watermark."
+        },
+        {
+          "id": "bar",
+          "source_sha256": "b6c26c2485e23c611d5901edf42315d38cfa30cfc6c284b3cf5d844822b6395f",
+          "crop": null,
+          "rect": [
+            96,
+            64,
+            128,
+            96
+          ],
+          "prompt": "Use case: stylized-concept. Asset type: one isolated slot reel symbol for a fictional PS1-style casino game. Primary request: a single dark charcoal horizontal BAR badge with ivory letters and a thick simple gold rectangular rim, centered in the square frame. Exact text: \"BAR\". Chunky late-1990s prerendered arcade sprite, broad flat highlights, readable at 32x32 pixels, restrained charcoal/ivory/gold palette. Transparent background, no reel window, shadow outside the silhouette, decoration, additional symbols or watermark. Large simple lettering."
+        },
+        {
+          "id": "bell",
+          "source_sha256": "1e98a1e43da257bb210e56c0007bdf5729fc00921f99cb2300b690a0d3b4b820",
+          "crop": null,
+          "rect": [
+            64,
+            96,
+            96,
+            128
+          ],
+          "prompt": "Use case: stylized-concept. Asset type: one isolated slot reel symbol for a fictional PS1-style casino game. Primary request: a single chunky golden bell with a small dark clapper, centered and filling most of the square frame. Late-1990s prerendered arcade sprite, broad flat highlights and strong silhouette, readable at 32x32 pixels, restrained amber/gold palette. Transparent background, no reel window, shadow outside the silhouette, decoration, text, additional symbols or watermark."
+        }
+      ]
+    },
+    {
+      "path": "assets/ui/phone-apps.png",
+      "dimensions": [
+        192,
+        160
+      ],
+      "palette_entries": 32,
+      "bytes": 7398,
+      "decoded_rgba_bytes": 122880,
+      "cells": [
+        {
+          "id": "meal",
+          "source_sha256": "329f9b2bce734e04f2122f4196cdcb4124a15366e949bf910097c093609a1db7",
+          "crop": null,
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "prompt": "Use case: stylized-concept. Asset type: square food delivery app catalogue thumbnail, ultimately displayed at 64x64 pixels. Primary request: A single simple Brazilian prepared takeaway lunch: rice, beans, a cooked portion and vegetables in a rectangular food tray. Style: crisp low-poly late-1990s game art, large readable shapes, restrained shading, inviting food colors. Composition: centered three-quarter product view, square canvas, ample clean margins. Background: plain warm off-white. Constraints: exactly one product grouping; no text, logos, watermark, UI, hands, tableware outside the product, gradients or fine texture."
+        },
+        {
+          "id": "groceries",
+          "source_sha256": "7be8885905f3fa3d25663a8e48bab1d0c8196c874abadbce01770084e55c58ea",
+          "crop": null,
+          "rect": [
+            64,
+            0,
+            128,
+            64
+          ],
+          "prompt": "Use case: stylized-concept. Asset type: square food delivery app catalogue thumbnail, ultimately displayed at 64x64 pixels. Primary request: One kraft grocery bag with plain bread, a vegetable and a small carton, no packaging lettering. Style: crisp low-poly late-1990s game art, large readable shapes, restrained shading, inviting food colors. Composition: centered three-quarter product view, square canvas, ample clean margins. Background: plain warm off-white. Constraints: exactly one product grouping; no text, logos, watermark, UI, hands, tableware outside the product, gradients or fine texture."
+        },
+        {
+          "id": "marina",
+          "source_sha256": "8cb97991a3529a55313afd9cd8067af7b157615963034d2d0542becbe811430c",
+          "crop": [
+            0,
+            0,
+            887,
+            887
+          ],
+          "rect": [
+            128,
+            0,
+            160,
+            32
+          ],
+          "prompt": "Two fictional portrait avatars side by side as separate square panels, left Marina an adult Brazilian woman Alex's sister, right Rafa an adult Brazilian man Alex's friend. Friendly everyday adults, casual clothing, simple close head-and-shoulders framing, muted teal background left and muted warm ochre background right. Low resolution PS1-era painted game portrait art, restricted palette, clear facial silhouettes recognizable at 32 pixels, flat even lighting, no text, no logos, no border. Both equally sized panels."
+        },
+        {
+          "id": "rafa",
+          "source_sha256": "8cb97991a3529a55313afd9cd8067af7b157615963034d2d0542becbe811430c",
+          "crop": [
+            887,
+            0,
+            1774,
+            887
+          ],
+          "rect": [
+            160,
+            0,
+            192,
+            32
+          ],
+          "prompt": "Two fictional portrait avatars side by side as separate square panels, left Marina an adult Brazilian woman Alex's sister, right Rafa an adult Brazilian man Alex's friend. Friendly everyday adults, casual clothing, simple close head-and-shoulders framing, muted teal background left and muted warm ochre background right. Low resolution PS1-era painted game portrait art, restricted palette, clear facial silhouettes recognizable at 32 pixels, flat even lighting, no text, no logos, no border. Both equally sized panels."
+        },
+        {
+          "id": "tv",
+          "source_sha256": "a071c8df597d78754b5247c64dfb2162959f575d01ba1f11298686439e554336",
+          "crop": null,
+          "rect": [
+            0,
+            64,
+            48,
+            112
+          ],
+          "prompt": "Use case: stylized-concept. Asset type: square secondhand marketplace listing thumbnail displayed at 48x48 pixels. Reference image is subject/material reference only, not the output composition. Primary request: A vintage small brown woodgrain CRT television with rounded grey glass screen, cream/gold bezel and vertical knobs on the right. Match the brown old television in the supplied texture reference. Style: crisp low-poly late-1990s game product art, bold readable silhouette, simplified texture and restrained shading. Composition: single centered item/group, complete subject, three-quarter view, square canvas with clean margin. Background: solid warm off-white. Constraints: no text, price, branding, watermark, controls, hands, room, unrelated objects or gradients."
+        },
+        {
+          "id": "fridge",
+          "source_sha256": "ef0a8c4bccb3ec778cf8073a080de8f0c0e57fb67e737ec603c60dd7e8390d3d",
+          "crop": null,
+          "rect": [
+            48,
+            64,
+            96,
+            112
+          ],
+          "prompt": "Use case: stylized-concept. Asset type: square secondhand marketplace listing thumbnail displayed at 48x48 pixels. Reference image is subject/material reference only, not the output composition. Primary request: A worn pale beige narrow refrigerator, with its door slightly open showing empty white shelves, matching the appliance in the supplied apartment screenshot. Style: crisp low-poly late-1990s game product art, bold readable silhouette, simplified texture and restrained shading. Composition: single centered item/group, complete subject, three-quarter view, square canvas with clean margin. Background: solid warm off-white. Constraints: no text, price, branding, watermark, controls, hands, room, unrelated objects or gradients."
+        },
+        {
+          "id": "stove",
+          "source_sha256": "376999719c1505ebde62ff348ac4152fc94c957a6d18799c63078d8f5f257bff",
+          "crop": null,
+          "rect": [
+            96,
+            64,
+            144,
+            112
+          ],
+          "prompt": "Use case: stylized-concept. Asset type: square secondhand marketplace listing thumbnail displayed at 48x48 pixels. Reference image is subject/material reference only, not the output composition. Primary request: A compact freestanding dark charcoal gas stove and oven, four burners and dark oven door, matching the cooker at the rear of the supplied apartment screenshot. Style: crisp low-poly late-1990s game product art, bold readable silhouette, simplified texture and restrained shading. Composition: single centered item/group, complete subject, three-quarter view, square canvas with clean margin. Background: solid warm off-white. Constraints: no text, price, branding, watermark, controls, hands, room, unrelated objects or gradients."
+        },
+        {
+          "id": "cookware",
+          "source_sha256": "99bedd379dbd3f900d34e83272d09fa23f02d5ce806d70d027f0e273cf01b30b",
+          "crop": null,
+          "rect": [
+            144,
+            64,
+            192,
+            112
+          ],
+          "prompt": "Use case: stylized-concept. Asset type: square secondhand marketplace listing thumbnail displayed at 48x48 pixels. Reference image is subject/material reference only, not the output composition. Primary request: A compact bundle of simple kitchen utensils: steel ladle, slotted spoon, black spatula, whisk, matching the supplied game texture. No pot or ingredients. Style: crisp low-poly late-1990s game product art, bold readable silhouette, simplified texture and restrained shading. Composition: single centered item/group, complete subject, three-quarter view, square canvas with clean margin. Background: solid warm off-white. Constraints: no text, price, branding, watermark, controls, hands, room, unrelated objects or gradients."
+        },
+        {
+          "id": "couch",
+          "source_sha256": "96dca0f9d766d8fdfce793804e0aaa2165837e8744a6157de0023fa4680a979a",
+          "crop": null,
+          "rect": [
+            0,
+            112,
+            48,
+            160
+          ],
+          "prompt": "Use case: stylized-concept. Asset type: square secondhand marketplace listing thumbnail displayed at 48x48 pixels. Reference image is subject/material reference only, not the output composition. Primary request: A modest worn two-seat couch upholstered in brown, olive and cream tartan plaid, with simple rectangular cushions. Match the supplied upholstery texture, complete sofa three-quarter view. Style: crisp low-poly late-1990s game product art, bold readable silhouette, simplified texture and restrained shading. Composition: single centered item/group, complete subject, three-quarter view, square canvas with clean margin. Background: solid warm off-white. Constraints: no text, price, branding, watermark, controls, hands, room, unrelated objects or gradients."
+        },
+        {
+          "id": "books",
+          "source_sha256": "6bb71b6bcaa71428122ba3ef2102e2204adcca466d03a343ee51cad0ec096a68",
+          "crop": null,
+          "rect": [
+            48,
+            112,
+            96,
+            160
+          ],
+          "prompt": "Use case: stylized-concept. Asset type: square secondhand marketplace listing thumbnail displayed at 48x48 pixels. Reference image is subject/material reference only, not the output composition. Primary request: Exactly six used books grouped upright, mixed dark green, orange, cream, brown covers, no legible lettering, matching the palette and simple paperback style in the reference texture. No shelf. Style: crisp low-poly late-1990s game product art, bold readable silhouette, simplified texture and restrained shading. Composition: single centered item/group, complete subject, three-quarter view, square canvas with clean margin. Background: solid warm off-white. Constraints: no text, price, branding, watermark, controls, hands, room, unrelated objects or gradients."
+        },
+        {
+          "id": "pipoca",
+          "source_sha256": "fbfc2843d8267e68e7b6822e684775fff2ec0326fdc77ea8b5201f63e4c353a2",
+          "crop": null,
+          "rect": [
+            96,
+            112,
+            144,
+            160
+          ],
+          "prompt": "Use case: stylized-concept. Asset type: square secondhand marketplace listing thumbnail displayed at 48x48 pixels. Reference image is subject/material reference only, not the output composition. Primary request: Pipoca, the existing game's black Labrador-like dog: all-black short fur, floppy ears, broad muzzle, gentle dark brown eyes, sitting, whole dog visible. Preserve the black dog identity in supplied texture reference. No white patches, no collar, no accessories. Style: crisp low-poly late-1990s game product art, bold readable silhouette, simplified texture and restrained shading. Composition: single centered item/group, complete subject, three-quarter view, square canvas with clean margin. Background: solid warm off-white. Constraints: no text, price, branding, watermark, controls, hands, room, unrelated objects or gradients."
+        }
+      ]
+    }
+  ],
+  "total_bytes": 13063,
+  "decoded_rgba_bytes": 188416
+}

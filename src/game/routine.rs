@@ -7,6 +7,7 @@ use bevy::{
 use bevy_rapier3d::prelude::{QueryFilter, ReadRapierContext};
 
 use super::{
+    audio::Sound,
     camera::MainCamera,
     campaign::*,
     campaign_save::CampaignStore,
@@ -191,6 +192,7 @@ fn tag_targets(
 }
 
 fn context_input(
+    mut commands: Commands,
     keys: Res<ButtonInput<KeyCode>>,
     time: Res<Time<Real>>,
     store: Res<CampaignStore>,
@@ -222,6 +224,9 @@ fn context_input(
         overlay.escape_consumed = true;
         context.records = None;
         if !overlay.campaign_modal && overlay.active != Some(OverlayKind::Transition) {
+            if overlay.active == Some(OverlayKind::Context) {
+                commands.trigger(Sound::Back);
+            }
             overlay.active = None;
         }
     }
@@ -246,6 +251,7 @@ fn context_input(
         context.opened = context.nearby;
         context.message.clear();
         overlay.active = Some(OverlayKind::Context);
+        commands.trigger(Sound::Open);
     }
 }
 
@@ -360,6 +366,7 @@ fn options(
 }
 
 fn handle_actions(
+    mut commands: Commands,
     keys: Res<ButtonInput<KeyCode>>,
     mouse: Res<ButtonInput<MouseButton>>,
     time: Res<Time<Real>>,
@@ -422,6 +429,9 @@ fn handle_actions(
             }
         });
     let Some(command) = command else { return };
+    if !matches!(command, UiCommand::Apply(_) | UiCommand::RetrySave) {
+        commands.trigger(Sound::Click);
+    }
     match command {
         UiCommand::Records(view) => context.records = view,
         UiCommand::ReturnTitle => {
@@ -431,10 +441,17 @@ fn handle_actions(
         UiCommand::Close => overlay.active = None,
         UiCommand::RetrySave => {
             context.message.clear();
-            let _ = store.save();
+            commands.trigger(if store.save().is_ok() {
+                Sound::Confirm
+            } else {
+                Sound::Error
+            });
         }
         UiCommand::Apply(action) => match store.apply(action) {
             Ok(_) => {
+                if let Some(sound) = Sound::action(action) {
+                    commands.trigger(sound);
+                }
                 context.message = match action {
                     Action::Work => "MeFood shift complete. Back home with R$80 earned.",
                     Action::Groceries => "Groceries collected. Back home with 3 food portions.",
@@ -462,7 +479,10 @@ fn handle_actions(
                         .is_some_and(|c| c.stage != CampaignStage::Playing);
                 }
             }
-            Err(error) => context.message = error,
+            Err(error) => {
+                commands.trigger(Sound::Error);
+                context.message = error;
+            }
         },
     }
 }

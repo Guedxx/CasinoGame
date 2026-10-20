@@ -11,6 +11,28 @@
 </style>
 <body>
 <div id="status" role="status">Loading Let It Ride…</div>
+<script data-audio-unlock>
+  // Bevy owns the audio contexts; browsers require resume inside a user gesture.
+  if (window.AudioContext) {
+    const AudioContext = window.AudioContext;
+    const contexts = new Set();
+    window.AudioContext = class extends AudioContext {
+      constructor(...args) {
+        super(...args);
+        contexts.add(this);
+      }
+    };
+    const unlockAudio = () => {
+      for (const context of contexts) {
+        if (context.state === 'suspended') {
+          context.resume().catch(error => console.warn('Audio could not resume.', error));
+        }
+      }
+    };
+    window.addEventListener('pointerdown', unlockAudio, { capture: true, passive: true });
+    window.addEventListener('keydown', unlockAudio, { capture: true });
+  }
+</script>
 <script type="module">
   const status = document.querySelector('#status');
   function failed(error) {
