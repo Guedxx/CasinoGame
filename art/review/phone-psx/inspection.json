@@ -1,0 +1,27 @@
+{
+  "build": "normal game, scene-review disabled",
+  "graphics": "Low in isolated Playwright profile; user settings untouched",
+  "purpose": "Focused inspection of restored modern phone colors and icons, with PSX bitmap treatment; navigation only",
+  "screenshots": [
+    "home.png",
+    "betting.png"
+  ],
+  "resources": [
+    {
+      "url": "http://localhost:8080/assets/ui/phone-icons.png",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:8080/assets/ui/phone-wallpaper.png",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "build_id": "5fdef6f8163d7f1e",
+  "views_inspected": [
+    "Original modern icon designs and seven bright app colors",
+    "Blue/teal wallpaper and rounded clock/reminder widgets",
+    "Low-resolution pixel edges, limited palettes and dithered gradients",
+    "Blue app background, cyan accents and rounded buttons"
+  ]
+}

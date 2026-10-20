@@ -6,7 +6,13 @@ use bevy::{
 };
 use bevy_rapier3d::prelude::{QueryFilter, ReadRapierContext};
 
-use super::{camera::MainCamera, campaign::*, campaign_save::CampaignStore, player::Player};
+use super::{
+    camera::MainCamera,
+    campaign::*,
+    campaign_save::CampaignStore,
+    hud::{self, HudSkin},
+    player::Player,
+};
 use crate::state::GameState;
 
 pub struct RoutinePlugin;
@@ -75,7 +81,7 @@ enum RecordView {
     Reports,
 }
 #[derive(Component)]
-struct RoutineUi;
+pub(super) struct RoutineUi;
 #[derive(Component)]
 struct RoutineScroll;
 #[derive(Component, Clone, Copy, Debug, PartialEq, Eq)]
@@ -91,6 +97,7 @@ impl Plugin for RoutinePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<GameplayOverlay>()
             .init_resource::<Context>()
+            .init_resource::<HudSkin>()
             .add_observer(reset_new_campaign)
             .add_systems(
                 PreUpdate,
@@ -733,6 +740,7 @@ fn ending_text(c: &Campaign, ending: Ending) -> String {
 
 fn present(
     mut commands: Commands,
+    skin: Res<HudSkin>,
     store: Res<CampaignStore>,
     overlay: Res<GameplayOverlay>,
     context: Res<Context>,
@@ -767,26 +775,14 @@ fn present(
             context.message
         ),
     };
-    let mut hud = format!(
-        "Day {} / 10 | {} | {} PA left\n{}",
-        campaign.clock.day,
-        campaign.clock.period().label(),
-        campaign.clock.remaining_pa(),
-        if !modal && overlay.active.is_none() {
-            context
-                .nearby
-                .map(|target| format!("E - {} | Tab - phone", target.label()))
-                .unwrap_or_else(|| "E - interact | Tab - phone".into())
-        } else {
-            String::new()
-        }
-    );
-    if !store.notice.is_empty() {
-        hud.push_str(&format!("\n{}", store.notice));
-    }
     let signature = format!(
-        "{hud}{heading}{choices:?}{modal}{}{:?}",
-        store.notice, overlay.active
+        "{:?}{}{:?}{:?}{heading}{choices:?}{modal}{}{:?}",
+        campaign.clock,
+        campaign.balance_cents,
+        campaign.attributes,
+        context.nearby,
+        store.notice,
+        overlay.active
     );
     if *previous == signature && !existing.is_empty() {
         return;
@@ -795,27 +791,33 @@ fn present(
     for entity in &existing {
         commands.entity(entity).despawn();
     }
-    commands
-        .spawn((
+    if !modal && overlay.active.is_none() {
+        hud::spawn(&mut commands, campaign, &skin);
+        if let Some(target) = context.nearby {
+            hud::interaction(&mut commands, target.label(), &skin);
+        }
+    }
+    if !store.notice.is_empty() && !modal {
+        commands.spawn((
             RoutineUi,
+            Name::new("Save notice"),
             Node {
                 position_type: PositionType::Absolute,
-                top: px(16),
-                left: px(16),
+                bottom: px(24),
+                left: percent(10),
                 padding: UiRect::all(px(10)),
-                max_width: percent(95),
+                max_width: percent(80),
                 ..default()
             },
             BackgroundColor(Color::srgba(0.025, 0.03, 0.04, 0.88)),
             ZIndex(20),
-        ))
-        .with_children(|parent| {
-            parent.spawn((
-                Text::new(hud),
+            children![(
+                Text::new(store.notice.clone()),
                 TextFont::from_font_size(18.0),
                 TextColor(Color::WHITE),
-            ));
-        });
+            )],
+        ));
+    }
     if !modal {
         return;
     }

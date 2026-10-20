@@ -15,17 +15,24 @@ including a daily report or ending. Wait for loading, then **click** to capture 
 Use **WASD** to walk, **Shift** to sprint, **Space** to jump, and the **mouse** to look.
 **P** pauses with the mouse captured. The in-game cursor operates the phone, household panels,
 reports, pause menu and settings; closing them resumes control immediately.
-**Escape** closes an overlay first on native. In the browser, Escape releases pointer lock and
-pauses with the current phone page preserved; after Resume, click once to capture again.
+**Escape** closes an overlay first. From gameplay it opens the pause menu with the mouse
+captured; press Escape again in that menu to release the mouse and stay paused.
+Select Resume to continue. In supported browsers (Chromium), clicking to capture also enters
+fullscreen and captures Escape through Keyboard Lock. Holding Escape still exits fullscreen.
+Firefox and browsers that deny fullscreen/keyboard capture keep their normal Escape behavior:
+Escape releases the mouse and pauses with the current phone page preserved. Use **P** to pause
+with capture there; after releasing the mouse, Resume and click to capture again.
 Use **Tab / Shift+Tab** to navigate the menu and **Enter / Space** to select.
 Losing window focus or browser pointer lock also opens the menu. The closed door, windows,
 furniture, walls, floor, and ceiling are solid.
 
 Use **E** near an object for household actions and **Tab** to raise or lower the phone.
-The phone contains fictional betting games, banking, financial/betting history and saved daily
-reports, exact status, contacts, support, and food options. **1–9** select visible phone choices,
+The phone keeps a modern blue/teal home screen, colorful app icons, rounded widgets and
+a favorites dock, with low-resolution, palette-limited bitmaps for a PSX look. It contains
+fictional betting games, banking, financial/betting history and saved daily
+reports, household sales, contacts, support, and food options. **1–9** select visible phone choices,
 **H** returns home, **Backspace** goes back, and the wheel or **PageUp / PageDown** scrolls.
-Walking and looking stop while an overlay is open. Use **Tab** or its Close button to lower the
+Walking and looking stop while an overlay is open. Use **Tab** or its Lower button to lower the
 phone without releasing capture. Actual window focus or browser pointer-lock loss still pauses safely.
 
 Each day has six shared action points (PA). Work, meals and other activities spend PA;
@@ -50,11 +57,24 @@ With Python 3, `wasm-bindgen-cli` 0.2.129 on your PATH, and the Rust
 
 ```sh
 tools/build-web.sh
-python3 -m http.server 8080 --bind 127.0.0.1 --directory dist
+python3 tools/serve_web.py
 ```
 
 Open <http://localhost:8080>. The build uses WebGPU and copies the apartment assets
 into `dist/`. A WebGPU-enabled browser and HTTPS (or localhost) are required.
+The build stamps the JavaScript and WASM URLs with one content hash so browsers
+load matching files after a rebuild. Reload an existing game tab to use the new build.
+The local server disables HTTP caching for the page, code and assets. For an existing
+cached tab, disable the HTTP cache in browser developer tools and reload once;
+keep the toolbox open while developing. Keep site storage to preserve campaign saves.
+Startup reports an error if the browser cannot provide a WebGPU graphics device.
+On this Linux development PC, Chromium needs WebGPU enabled explicitly.
+Quit all Chromium windows before running this command so the flags take effect:
+
+```sh
+chromium --ozone-platform=x11 --enable-unsafe-webgpu --ignore-gpu-blocklist http://localhost:8080/
+```
+
 At High quality, both versions use one sunlight shadow cascade and six shadow-casting spotlights.
 On system Rust installations with `rust-src` but no precompiled
 WASM target, the script builds the standard library from those sources instead.
@@ -84,8 +104,8 @@ Implementation follows [Bevy 0.19.1 FXAA](https://raw.githubusercontent.com/bevy
 [SMAA](https://raw.githubusercontent.com/bevyengine/bevy/v0.19.1/crates/bevy_anti_alias/src/smaa/mod.rs).
 Changes preview immediately;
 **Save settings** commits them, while **Cancel** restores the last saved settings. Escape also
-cancels on native or with the browser mouse already unlocked; the first browser Escape while
-captured releases the mouse and keeps settings open.
+cancels on native or with browser Escape capture active. Without browser Escape capture,
+the first Escape while captured releases the mouse and keeps settings open.
 Version-one saved preferences migrate lighting and anti-aliasing only; removed texture and resolution values are discarded.
 New saves use schema version two in the existing storage location.
 
@@ -96,12 +116,23 @@ Settings are stored in browser localStorage (`casino-game.graphics.v1`), or in
 show a notice and keep settings usable for the current session. There is no account sync.
 
 The centered panels and buttons share one generated, nine-sliced texture:
-`assets/ui/pause-panel.png` (512×512, 97,946 bytes on disk, 1 MiB decoded RGBA on the GPU).
-This reduces texture GPU storage by 83% versus the generated 1254×1254 source. Text stays
+`assets/ui/pause-panel.png` (128×128, 864 bytes on disk, 64 KiB decoded RGBA on the GPU).
+It matches the HUD's charcoal backplates and gray rims, with a 64×64 pixel grid,
+16 colors, 4-bit indexed PNG storage and nearest-neighbor sampling for a PSX look.
+This reduces GPU texture storage by 94% versus the previous 512×512 panel. Text stays
 native-resolution using the included, unmodified Liberation Sans Bold font and its OFL license.
 Pause and settings share three text sizes; the title heading scales with window width.
 These texture figures exclude the CPU image copy and font atlases. The generation prompt,
 style notes and compression details are in `art/ui/pause-panel-generation.json`.
+
+The phone's original SVG artwork is rasterized into nearest-sampled indexed PNGs:
+`assets/ui/phone-icons.png` (128×96 atlas, 32×32 cells, up to 32 palette entries, 8-bit,
+2,459 bytes) and `assets/ui/phone-wallpaper.png` (120×210, 16 colors, 4-bit, 1,992 bytes).
+The two bitmaps total 4,451 bytes on disk, 95% less than the original full-resolution PNGs,
+and decode to 149,952 bytes of RGBA texture storage, 92.6% less than the originals.
+The composed screen also uses nearest sampling; launcher text uses Liberation Sans Regular,
+while app content uses Bold. These figures exclude the render target, CPU copies and font atlases.
+Rasterization and Pillow processing details are in `art/ui/phone-generation.json`.
 
 The settings page's FPS counter measures game rendering cadence. Browser performance reports use
 WebGPU canvas acquisitions per second; neither is a measurement of displayed frames.

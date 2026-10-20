@@ -1,5 +1,6 @@
 mod menu;
 mod playing;
+mod title_render;
 
 use bevy::prelude::*;
 

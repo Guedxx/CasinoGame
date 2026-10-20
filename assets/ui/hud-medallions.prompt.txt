@@ -1,0 +1,41 @@
+Use case: stylized-concept
+Asset type: original survival-game inventory ITEM SPRITE atlas, generated afresh.
+Reference image role: supplied screenshot is a STYLE reference only. Study the little inventory objects in its lower left: coarse low-resolution texture-mapped props, murky colored shading, simple 1990s pre-rendered inventory sprites. Use that visual language for new objects. Do not copy its text, layout, characters, items or branding.
+Primary request: SIX ISOLATED object sprites, absolutely NO decorative badges, medallions, frames, circular backplates, stone borders, leather or rivets. No UI screen/mockup. Each sprite is a tiny pre-rendered low-poly textured object at a slight three-quarter inventory angle with deep dark shading and flat baked directional lighting. Restrained dirty olive, cream, gray, burgundy and rust palette, coarse painted texture maps, deliberately simple 1996-1999 console-model geometry. Avoid modern illustration, voxel art, fancy low-poly sculpture, vector symbols and shiny materials. These will be processed down to 40x40 pixels afterward: prioritize a strong readable silhouette over detail.
+Object order:
+Top left HUNGER: an opened squat red-and-cream food tin with a little brown food visible; no words on its label.
+Top middle BOREDOM: a small old charcoal CRT television with a dull green-gray screen and two simple knobs.
+Top right STRESS: a battered round pressure gauge with a pale face, a dark needle pointing into a small red danger sector; no numbers.
+Bottom left URGE / GAMBLING: a single slightly tilted worn ivory ACE OF SPADES PLAYING CARD, broad flat dark spade in its center, a small black A in its top-left corner. The card must dominate the silhouette and read instantly as a gambling card.
+Bottom middle RELATIONSHIPS: two clasped hands, one warm beige and the other muted brown, modeled as a simple textured low-poly handshake.
+Bottom right DAY/PHASE: a squat dark olive alarm clock with a pale face and bold dark hands; no numbers.
+Canvas and geometry are production constraints:
+1536x1024 pixels with genuine transparent background. Exactly 3 columns and 2 rows. Object centers at (288,256), (768,256), (1248,256), (288,740), (768,740), (1248,740). Each object fits within a 360x360 square centered at its position. Empty transparent space between sprites. No cast shadow or glow outside the objects. No circles around objects. No text except the tiny A on the playing card. No checkerboard backdrop graphic.
+
+Post-processing recipe (ImageMagick; run from the project root):
+#!/usr/bin/env bash
+set -euo pipefail
+hud_work_dir=$(mktemp -d /tmp/casino-classic-hud.XXXXXX)
+trap 'rm -rf "$hud_work_dir"' EXIT
+magick -size 1536x1024 xc:none "PNG32:$hud_work_dir/atlas.png"
+magick -size 48x48 xc:none -fill '#090b0ee6' -stroke '#777973' -strokewidth 1 -draw 'circle 24,24 24,2' -fill none -stroke '#25282b' -draw 'circle 24,24 24,4' "PNG32:$hud_work_dir/frame.png"
+for hud_y in 24 508; do
+    for hud_x in 56 536 1016; do
+        magick assets/ui/hud-items-source.png -crop "464x464+$hud_x+$hud_y" +repage -filter Box -resize '40x40!' "PNG32:$hud_work_dir/object.png"
+        magick "$hud_work_dir/object.png" -alpha extract -threshold 50% "$hud_work_dir/mask.png"
+        magick "$hud_work_dir/object.png" -background '#090b0e' -alpha remove -alpha off -dither FloydSteinberg -colors 32 "$hud_work_dir/mask.png" -alpha off -compose CopyOpacity -composite "PNG32:$hud_work_dir/sprite.png"
+        magick "$hud_work_dir/frame.png" "$hud_work_dir/sprite.png" -gravity center -compose Over -composite -filter point -resize '464x464!' "PNG32:$hud_work_dir/badge.png"
+        magick "$hud_work_dir/atlas.png" "$hud_work_dir/badge.png" -geometry "+$hud_x+$hud_y" -compose Over -composite "PNG32:$hud_work_dir/next.png"
+        mv "$hud_work_dir/next.png" "$hud_work_dir/atlas.png"
+    done
+done
+magick "$hud_work_dir/atlas.png" PNG32:assets/ui/hud-medallions.png
+python3 - <<'PY'
+import struct
+from pathlib import Path
+png=Path('assets/ui/hud-medallions.png').read_bytes()
+assert png[:8]==b'\x89PNG\r\n\x1a\n'
+assert struct.unpack('>II',png[16:24])==(1536,1024)
+assert png[25]==6
+print('Classic HUD: RGBA atlas and original crop dimensions verified')
+PY

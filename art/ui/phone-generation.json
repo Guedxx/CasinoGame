@@ -1,0 +1,70 @@
+{
+  "direction": "Modern phone palette, flat colorful app symbols, blue/teal wallpaper, rounded phone widgets. PSX treatment comes from low-resolution bitmaps, limited palettes, dithering and nearest sampling.",
+  "mode": "Local rasterization of the existing SVG artwork",
+  "sources": [
+    "assets/ui/phone-icons.svg",
+    "assets/ui/phone-wallpaper.svg"
+  ],
+  "processing": {
+    "tools": [
+      "rsvg-convert (installed locally)",
+      "Python Pillow (installed locally)"
+    ],
+    "icons": "Rasterize original SVG at 512x384. BOX resize to 128x96 (32x32 cells). For each of the seven app cells, derive a separate four-color median-cut palette from pixels with alpha>=128, quantize with Floyd-Steinberg dithering, and set its brightest palette entry to pure white to preserve white glyphs. Combine the cell palettes, use white for the five original navigation/status glyphs, and threshold alpha at 128. Transparent index 31, optimized 8-bit indexed PNG with at most 32 palette entries.",
+    "wallpaper": "Rasterize original SVG at 420x735. BOX resize to 120x210; median-cut quantization to 16 colors with Floyd-Steinberg dithering, optimized 4-bit indexed PNG. Preserve source hue and saturation.",
+    "sampling": "Nearest on both bitmap assets and the composed phone screen.",
+    "text": "Original Liberation Sans Regular for launcher/system chrome; Liberation Sans Bold for app content."
+  },
+  "assets": [
+    {
+      "path": "assets/ui/phone-icons.png",
+      "source": "assets/ui/phone-icons.svg",
+      "source_sha256": "e36b038a89752559768d643af9318cd0a6fe9a89ed33acc6293de70148b8d950",
+      "dimensions": [
+        128,
+        96
+      ],
+      "maximum_palette_entries": 32,
+      "used_palette_entries": 30,
+      "bit_depth": 8,
+      "bytes": 2459,
+      "decoded_rgba_bytes": 49152,
+      "original_dimensions": [
+        512,
+        384
+      ],
+      "original_bytes": 38921
+    },
+    {
+      "path": "assets/ui/phone-wallpaper.png",
+      "source": "assets/ui/phone-wallpaper.svg",
+      "source_sha256": "47c2e391976fa36eb7f8602ec102d7dc4dd3236436d4670e2411b3571ed524a3",
+      "dimensions": [
+        120,
+        210
+      ],
+      "maximum_palette_entries": 16,
+      "used_palette_entries": 16,
+      "bit_depth": 4,
+      "bytes": 1992,
+      "decoded_rgba_bytes": 100800,
+      "original_dimensions": [
+        420,
+        735
+      ],
+      "original_bytes": 50808
+    }
+  ],
+  "totals": {
+    "bytes": 4451,
+    "original_bytes": 89729,
+    "decoded_rgba_bytes": 149952,
+    "original_decoded_rgba_bytes": 2021232,
+    "note": "PNG compression reduces disk/download size. GPU textures decode to RGBA. Excludes render target, font atlases and CPU copies."
+  },
+  "validation": [
+    "Dimensions, PNG indexed bit depths and palette limits asserted with Pillow.",
+    "All twelve atlas cells populated, binary alpha, seven saturated app colors and white glyphs asserted.",
+    "Focused browser captures recorded under art/review/phone-psx."
+  ]
+}

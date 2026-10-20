@@ -2,6 +2,7 @@
 use bevy::{
     asset::{RenderAssetUsages, uuid::Uuid},
     camera::{RenderTarget, visibility::RenderLayers},
+    image::{ImageLoaderSettings, ImageSampler},
     input::{
         ButtonState,
         keyboard::{Key, KeyboardInput},
@@ -30,9 +31,13 @@ const SCREEN_SIZE: Vec2 = Vec2::new(420.0, 735.0);
 const SCREEN_METERS: Vec2 = Vec2::new(0.300, 0.525);
 const PHONE_LAYER: usize = 1;
 const PHONE_POINTER: PointerId = PointerId::Custom(Uuid::from_u128(0x416c657850686f6e65));
-const INK: Color = Color::srgb(0.94, 0.93, 0.88);
-const MUTED: Color = Color::srgb(0.72, 0.76, 0.73);
-const BUTTON: Color = Color::srgb(0.15, 0.21, 0.21);
+const INK: Color = Color::srgb(0.96, 0.98, 1.0);
+const MUTED: Color = Color::srgb(0.67, 0.79, 0.84);
+const BUTTON: Color = Color::srgb(0.10, 0.20, 0.28);
+const FRAME: Color = Color::srgb(0.18, 0.37, 0.45);
+const ACCENT: Color = Color::srgb(0.32, 0.82, 0.85);
+
+mod launcher;
 
 pub struct PhonePlugin;
 
@@ -47,7 +52,6 @@ pub(crate) enum PhonePage {
     Bank,
     History,
     Reports,
-    Status,
     Household,
     ConfirmSale(HouseholdItem),
     Contacts,
@@ -66,7 +70,6 @@ impl PhonePage {
             Self::Bank => "Bank",
             Self::History => "History",
             Self::Reports => "Daily reports",
-            Self::Status => "Status",
             Self::Household => "Household / sales",
             Self::ConfirmSale(_) => "Confirm permanent sale",
             Self::Contacts => "Contacts",
@@ -89,8 +92,6 @@ impl PhonePage {
             Self::History
         } else if matches!(self, Self::ConfirmSale(_)) {
             Self::Household
-        } else if self == Self::Household {
-            Self::Status
         } else if self == Self::DailyCap {
             Self::Support
         } else if matches!(self, Self::Roulette | Self::Slots | Self::Football) {
@@ -185,6 +186,7 @@ struct PhoneAssets {
 impl Plugin for PhonePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Phone>()
+            .init_resource::<launcher::Skin>()
             .add_message::<PhoneAppClosed>()
             .add_systems(Startup, setup)
             .add_systems(
@@ -243,6 +245,7 @@ fn setup(
     );
     image.texture_descriptor.usage =
         TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST | TextureUsages::RENDER_ATTACHMENT;
+    image.sampler = ImageSampler::nearest();
     let target = images.add(image);
     let camera = commands
         .spawn((
@@ -1015,10 +1018,12 @@ fn phone_content(phone: &Phone, c: &Campaign) -> (String, Vec<(String, PhoneComm
 fn game_controls(parent: &mut ChildSpawnerCommands, font: &Handle<Font>, phone: &Phone) {
     parent
         .spawn((
-            BackgroundColor(Color::srgb(0.09, 0.16, 0.13)),
+            BackgroundColor(BUTTON),
+            BorderColor::all(FRAME),
             Node {
                 width: percent(100),
                 min_height: px(58),
+                border: UiRect::all(px(1)),
                 padding: UiRect::all(px(10)),
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
@@ -1026,15 +1031,7 @@ fn game_controls(parent: &mut ChildSpawnerCommands, font: &Handle<Font>, phone: 
                 ..default()
             },
         ))
-        .with_children(|p| {
-            text(
-                p,
-                font,
-                game_visual(phone),
-                25.0,
-                Color::srgb(0.9, 0.87, 0.58),
-            )
-        });
+        .with_children(|p| text(p, font, game_visual(phone), 25.0, ACCENT));
     if let Some(round) = phone
         .settled_round
         .as_ref()
@@ -1172,7 +1169,7 @@ fn page_content(page: PhonePage, c: &Campaign) -> (String, Vec<(String, PhoneCom
     let nav = |label: &str, page| (label.into(), PhoneCommand::Page(page));
     let action = |label: &str, action| (label.into(), PhoneCommand::Apply(action));
     match page {
-        Home => (home_reminder(c), vec![nav("Betting", Betting), nav("Bank", Bank), nav("History", History), nav("Status", Status), nav("Contacts / messages", Contacts), nav("Support", Support), nav("Food", Food)]),
+        Home => (home_reminder(c), launcher::APPS.iter().map(|&(page, label)| nav(label, page)).collect()),
         Betting => ("Fictional games. Stakes and returns use campaign reais.\n\nEach choice returns 90% on average over many bets. A win is never guaranteed.\n\nOne shared session buys up to 3 rounds per PA. Leaving the app forfeits unused rounds.".into(), vec![nav("Roulette", Roulette), nav("Slots", Slots), nav("Football", Football)]),
         Roulette | Slots | Football => phone_content(&Phone { page, ..default() }, c),
         Bank => {
@@ -1198,14 +1195,6 @@ fn page_content(page: PhonePage, c: &Campaign) -> (String, Vec<(String, PhoneCom
         }
         History => (super::routine::history_text(c), vec![nav("Read all daily reports / free", Reports)]),
         Reports => (super::routine::reports_text(c), vec![]),
-        Status => {
-            let a = &c.attributes;
-            let mut text = format!("Exact attributes / 0 to 100\n\nHunger: {}\nBoredom: {}\nStress: {}\nUrge: {}\nRelationships: {}\n\nFood: {} portions\nMess: {} / 3\nPower: {}\nPA remaining: {} / 6\n\nHousehold\n", a.hunger, a.boredom, a.stress, a.urge, a.relationships, c.household.food_portions, c.household.mess, if c.has_power() { "On" } else { "Off" }, c.clock.remaining_pa());
-            for item in [HouseholdItem::Tv, HouseholdItem::Fridge, HouseholdItem::Stove, HouseholdItem::Cookware, HouseholdItem::Couch, HouseholdItem::Books, HouseholdItem::Pipoca] {
-                text.push_str(&format!("\n{}: {}", item.label(), if c.household.owns(item) { "At home" } else { "Sold" }));
-            }
-            (text, vec![nav("Household / permanent sales", Household), nav("Food options", Food)])
-        }
         Household => {
             let mut text = format!("Balance: {}\nPA remaining: {} / 6\n\nSales are voluntary and permanent. Each sale takes 1 PA.\n\n", reais(c.balance_cents), c.clock.remaining_pa());
             let mut choices = vec![];
@@ -1423,8 +1412,11 @@ fn button(
             Button,
             PhoneButton(page, command),
             BackgroundColor(BUTTON),
+            BorderColor::all(FRAME),
             Node {
                 width: percent(100),
+                border: UiRect::all(px(1)),
+                border_radius: BorderRadius::all(px(8)),
                 min_height: px(if page.is_game() { 44.0 } else { 53.0 }),
                 padding: UiRect::axes(
                     px(if page.is_game() { 7.0 } else { 14.0 }),
@@ -1440,7 +1432,7 @@ fn button(
             |over: On<Pointer<Over>>,
              mut colors: Query<&mut BackgroundColor, With<PhoneButton>>| {
                 if let Ok(mut c) = colors.get_mut(over.entity) {
-                    c.0 = Color::srgb(0.25, 0.34, 0.32);
+                    c.0 = Color::srgb(0.15, 0.32, 0.41);
                 }
             },
         )
@@ -1467,6 +1459,7 @@ fn present(
     phone: Res<Phone>,
     store: Res<CampaignStore>,
     assets: Res<PhoneAssets>,
+    skin: Res<launcher::Skin>,
     existing: Query<Entity, With<PhoneUi>>,
     mut previous: Local<String>,
 ) {
@@ -1498,206 +1491,191 @@ fn present(
         .spawn((
             PhoneUi,
             UiTargetCamera(assets.camera),
-            BackgroundColor(Color::srgb(0.055, 0.085, 0.085)),
+            BackgroundColor(Color::srgb(0.035, 0.085, 0.13)),
             Node {
                 width: percent(100),
                 height: percent(100),
                 flex_direction: FlexDirection::Column,
-                padding: UiRect::all(px(18)),
-                row_gap: px(12),
                 ..default()
             },
         ))
-        .with_children(|root| {
-            root.spawn(Node {
-                flex_direction: FlexDirection::Column,
-                row_gap: px(6),
-                flex_shrink: 0.0,
-                ..default()
-            })
-            .with_children(|header| {
-                text(
-                    header,
-                    &assets.font,
-                    format!(
-                        "Day {} / {} / {} PA",
-                        c.clock.day,
-                        c.clock.period().label(),
-                        c.clock.remaining_pa()
-                    ),
-                    20.0,
-                    MUTED,
-                );
-                text(header, &assets.font, phone.page.title(), 36.0, INK);
-                if phone.page.is_game() {
-                    text(
-                        header,
-                        &assets.font,
-                        format!(
-                            "Balance {} / Stake {}",
-                            reais(c.balance_cents),
-                            reais(phone.stake_cents)
-                        ),
-                        21.0,
-                        INK,
-                    );
-                    let session = c
-                        .betting
-                        .session
-                        .as_ref()
-                        .map(|s| {
-                            format!(
-                                "Session {} / round {} / {} paid left",
-                                s.id, s.rounds, s.paid_rounds_remaining
-                            )
-                        })
-                        .unwrap_or_else(|| "New session / next bet: 1 PA".into());
-                    text(header, &assets.font, session, 19.0, MUTED);
-                }
-            });
-            if !store.notice.is_empty() {
-                text(
-                    root,
-                    &assets.font,
-                    &store.notice,
-                    20.0,
-                    Color::srgb(1.0, 0.79, 0.55),
-                );
-                button(
-                    root,
-                    &assets.font,
-                    "Retry saving",
-                    phone.page,
-                    PhoneCommand::RetrySave,
-                );
+        .with_children(|shell| {
+            if phone.page == PhonePage::Home {
+                shell.spawn((
+                    ImageNode::new(skin.wallpaper.clone()),
+                    Node {
+                        position_type: PositionType::Absolute,
+                        width: percent(100),
+                        height: percent(100),
+                        ..default()
+                    },
+                    Pickable::IGNORE,
+                ));
             }
-            if !phone.feedback.is_empty() {
-                text(
-                    root,
-                    &assets.font,
-                    &phone.feedback,
-                    21.0,
-                    Color::srgb(1.0, 0.83, 0.59),
-                );
-            }
-            root.spawn((
-                PhoneScroll,
-                ScrollPosition::default(),
-                Node {
-                    flex_direction: FlexDirection::Column,
-                    row_gap: px(9),
+            launcher::status_bar(shell, &skin, c);
+            shell
+                .spawn(Node {
+                    width: percent(100),
                     flex_grow: 1.0,
                     min_height: px(0),
-                    overflow: Overflow::scroll_y(),
+                    padding: UiRect::all(px(16)),
+                    row_gap: px(12),
+                    flex_direction: FlexDirection::Column,
                     ..default()
-                },
-            ))
-            .with_children(|body| {
-                if phone.page.is_game() {
-                    game_controls(body, &assets.font, &phone);
-                }
-                if phone.page == PhonePage::DailyCap {
-                    cap_controls(body, &assets.font, &phone);
-                }
-                if phone.page.is_game()
-                    || matches!(phone.page, PhonePage::DailyCap | PhonePage::History)
-                {
-                    for (index, (label, command)) in choices.iter().enumerate() {
-                        button(
-                            body,
+                })
+                .with_children(|root| {
+                    if phone.page != PhonePage::Home {
+                        root.spawn((
+                            Node {
+                                flex_direction: FlexDirection::Column,
+                                row_gap: px(6),
+                                flex_shrink: 0.0,
+                                padding: UiRect::bottom(px(10)),
+                                border: UiRect::bottom(px(1)),
+                                ..default()
+                            },
+                            BorderColor::all(FRAME),
+                        ))
+                        .with_children(|header| {
+                            text(
+                                header,
+                                &assets.font,
+                                format!(
+                                    "Day {} / {} / {} PA",
+                                    c.clock.day,
+                                    c.clock.period().label(),
+                                    c.clock.remaining_pa()
+                                ),
+                                20.0,
+                                MUTED,
+                            );
+                            text(header, &assets.font, phone.page.title(), 32.0, INK);
+                            if phone.page.is_game() {
+                                text(
+                                    header,
+                                    &assets.font,
+                                    format!(
+                                        "Balance {} / Stake {}",
+                                        reais(c.balance_cents),
+                                        reais(phone.stake_cents)
+                                    ),
+                                    21.0,
+                                    INK,
+                                );
+                                let session = c
+                                    .betting
+                                    .session
+                                    .as_ref()
+                                    .map(|s| {
+                                        format!(
+                                            "Session {} / round {} / {} paid left",
+                                            s.id, s.rounds, s.paid_rounds_remaining
+                                        )
+                                    })
+                                    .unwrap_or_else(|| "New session / next bet: 1 PA".into());
+                                text(header, &assets.font, session, 19.0, MUTED);
+                            }
+                        });
+                    }
+                    if !store.notice.is_empty() {
+                        text(
+                            root,
                             &assets.font,
-                            &format!("{}  {label}", index + 1),
+                            &store.notice,
+                            20.0,
+                            Color::srgb(1.0, 0.79, 0.55),
+                        );
+                        button(
+                            root,
+                            &assets.font,
+                            "Retry saving",
                             phone.page,
-                            *command,
+                            PhoneCommand::RetrySave,
                         );
                     }
-                    if phone.page.is_game() {
-                        game_modes(body, &assets.font, phone.page);
+                    if !phone.feedback.is_empty() {
+                        text(
+                            root,
+                            &assets.font,
+                            &phone.feedback,
+                            21.0,
+                            Color::srgb(1.0, 0.83, 0.59),
+                        );
                     }
-                }
-                body.spawn(Node {
-                    flex_direction: FlexDirection::Column,
-                    flex_shrink: 0.0,
-                    margin: UiRect::bottom(px(10)),
-                    ..default()
-                })
-                .with_children(|copy_node| {
-                    text(
-                        copy_node,
-                        &assets.font,
-                        copy,
-                        if phone.page.is_game() { 22.0 } else { 25.0 },
-                        INK,
-                    )
+                    if phone.page == PhonePage::Home {
+                        launcher::home(root, &skin, c);
+                    } else {
+                        root.spawn((
+                            PhoneScroll,
+                            ScrollPosition::default(),
+                            Node {
+                                flex_direction: FlexDirection::Column,
+                                row_gap: px(9),
+                                flex_grow: 1.0,
+                                min_height: px(0),
+                                overflow: Overflow::scroll_y(),
+                                ..default()
+                            },
+                        ))
+                        .with_children(|body| {
+                            if phone.page.is_game() {
+                                game_controls(body, &assets.font, &phone);
+                            }
+                            if phone.page == PhonePage::DailyCap {
+                                cap_controls(body, &assets.font, &phone);
+                            }
+                            if phone.page.is_game()
+                                || matches!(phone.page, PhonePage::DailyCap | PhonePage::History)
+                            {
+                                for (index, (label, command)) in choices.iter().enumerate() {
+                                    button(
+                                        body,
+                                        &assets.font,
+                                        &format!("{}  {label}", index + 1),
+                                        phone.page,
+                                        *command,
+                                    );
+                                }
+                                if phone.page.is_game() {
+                                    game_modes(body, &assets.font, phone.page);
+                                }
+                            }
+                            body.spawn(Node {
+                                flex_direction: FlexDirection::Column,
+                                flex_shrink: 0.0,
+                                margin: UiRect::bottom(px(10)),
+                                ..default()
+                            })
+                            .with_children(|copy_node| {
+                                text(
+                                    copy_node,
+                                    &assets.font,
+                                    copy,
+                                    if phone.page.is_game() { 22.0 } else { 25.0 },
+                                    INK,
+                                )
+                            });
+                            for (index, (label, command)) in
+                                choices.iter().enumerate().filter(|_| {
+                                    !phone.page.is_game()
+                                        && !matches!(
+                                            phone.page,
+                                            PhonePage::DailyCap | PhonePage::History
+                                        )
+                                })
+                            {
+                                button(
+                                    body,
+                                    &assets.font,
+                                    &format!("{}  {label}", index + 1),
+                                    phone.page,
+                                    *command,
+                                );
+                            }
+                        });
+                    }
                 });
-                for (index, (label, command)) in choices.iter().enumerate().filter(|_| {
-                    !phone.page.is_game()
-                        && !matches!(phone.page, PhonePage::DailyCap | PhonePage::History)
-                }) {
-                    button(
-                        body,
-                        &assets.font,
-                        &format!("{}  {label}", index + 1),
-                        phone.page,
-                        *command,
-                    );
-                }
-            });
-            root.spawn(Node {
-                flex_direction: FlexDirection::Row,
-                column_gap: px(8),
-                flex_shrink: 0.0,
-                ..default()
-            })
-            .with_children(|nav| {
-                nav.spawn(Node {
-                    flex_grow: 1.0,
-                    flex_basis: px(0),
-                    ..default()
-                })
-                .with_children(|b| {
-                    button(
-                        b,
-                        &assets.font,
-                        "Home",
-                        phone.page,
-                        PhoneCommand::Page(PhonePage::Home),
-                    )
-                });
-                nav.spawn(Node {
-                    flex_grow: 1.0,
-                    flex_basis: px(0),
-                    ..default()
-                })
-                .with_children(|b| {
-                    button(
-                        b,
-                        &assets.font,
-                        "Back",
-                        phone.page,
-                        PhoneCommand::Page(phone.page.back()),
-                    )
-                });
-                nav.spawn(Node {
-                    flex_grow: 1.0,
-                    flex_basis: px(0),
-                    ..default()
-                })
-                .with_children(|b| {
-                    button(b, &assets.font, "Close", phone.page, PhoneCommand::Close)
-                });
-            });
-            text(
-                root,
-                &assets.font,
-                if cfg!(target_arch = "wasm32") {
-                    "H: Home / Backspace: Back\nTab: Lower / Wheel: Scroll / P: Pause\nEsc: Release mouse and pause"
-                } else {
-                    "H: Home / Backspace: Back\nTab / Esc: Lower / Wheel: Scroll / P: Pause"
-                },
-                18.0,
-                MUTED,
-            );
+            launcher::navigation(shell, &skin, phone.page);
         });
 }
 
@@ -1829,7 +1807,10 @@ mod tests {
 
     fn app() -> App {
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
+        app.add_plugins((MinimalPlugins, bevy::asset::AssetPlugin::default()))
+            .init_asset::<Image>()
+            .init_asset::<Font>()
+            .init_resource::<launcher::Skin>()
             .insert_resource(State::new(GameState::Playing))
             .init_resource::<NextState<GameState>>()
             .init_resource::<ButtonInput<KeyCode>>()
@@ -1911,12 +1892,55 @@ mod tests {
     }
 
     #[test]
-    fn household_sales_are_under_status_and_each_confirmation_explains_permanent_loss() {
+    fn launcher_icons_open_every_existing_app_and_navigation_preserves_campaign() {
+        let mut app = app();
+        app.insert_resource(PhoneAssets {
+            camera: Entity::PLACEHOLDER,
+            target: Handle::default(),
+            font: Handle::default(),
+        })
+        .add_systems(Update, present);
+        opened(&mut app, PhonePage::Home);
+        app.update();
+        let before = app
+            .world()
+            .resource::<CampaignStore>()
+            .campaign()
+            .unwrap()
+            .clone();
+        let buttons: Vec<_> = app
+            .world_mut()
+            .query::<&PhoneButton>()
+            .iter(app.world())
+            .map(|button| button.1)
+            .collect();
+        assert_eq!(buttons.len(), launcher::APPS.len() + 3);
+        for (page, _) in launcher::APPS {
+            assert_eq!(
+                buttons
+                    .iter()
+                    .filter(|&&cmd| cmd == PhoneCommand::Page(page))
+                    .count(),
+                1
+            );
+            click_command(&mut app, PhoneCommand::Page(page));
+            assert_eq!(app.world().resource::<Phone>().page, page);
+            click_command(&mut app, PhoneCommand::Page(PhonePage::Home));
+        }
+        click_command(&mut app, PhoneCommand::Close);
+        assert!(!app.world().resource::<Phone>().opened);
+        assert_eq!(
+            app.world().resource::<CampaignStore>().campaign(),
+            Some(&before)
+        );
+    }
+
+    #[test]
+    fn household_sales_are_on_home_and_each_confirmation_explains_permanent_loss() {
         let mut c = Campaign::new(5);
-        let (_, status) = page_content(PhonePage::Status, &c);
+        let (_, home) = page_content(PhonePage::Home, &c);
         assert!(
-            status
-                .iter()
+            home.iter()
                 .any(|(_, cmd)| *cmd == PhoneCommand::Page(PhonePage::Household))
         );
         assert!(page_content(PhonePage::Household, &c).1.is_empty());
@@ -1947,7 +1971,7 @@ mod tests {
                 assert_eq!(choices.len(), 1);
             }
         }
-        assert_eq!(PhonePage::Household.back(), PhonePage::Status);
+        assert_eq!(PhonePage::Household.back(), PhonePage::Home);
         c.apply(Action::Sell(HouseholdItem::Stove)).unwrap();
         assert_eq!(
             page_content(PhonePage::Food, &c).1,
@@ -2165,7 +2189,7 @@ mod tests {
         assert!(app.world().resource::<Phone>().opened);
         assert!(app.world().resource::<GameplayOverlay>().blocks_world());
         key(&mut app, KeyCode::Digit4);
-        assert_eq!(app.world().resource::<Phone>().page, PhonePage::Status);
+        assert_eq!(app.world().resource::<Phone>().page, PhonePage::Household);
         key(&mut app, KeyCode::KeyH);
         key(&mut app, KeyCode::Digit1);
         key(&mut app, KeyCode::Digit2);
@@ -2226,7 +2250,7 @@ mod tests {
                 phone.pointer = Some(Vec2::splat(50.0));
                 phone.pending = Some((
                     if scenario == 0 {
-                        PhonePage::Status
+                        PhonePage::Household
                     } else {
                         PhonePage::Food
                     },

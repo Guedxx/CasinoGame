@@ -6,6 +6,7 @@ pub(crate) mod cursor;
 #[cfg(any(target_arch = "wasm32", test))]
 mod cluster_settings;
 pub(crate) mod household;
+mod hud;
 mod lighting_fast_path;
 mod obligations;
 pub(crate) mod phone;

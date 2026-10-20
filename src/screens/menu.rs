@@ -1,5 +1,6 @@
 use bevy::{
     asset::{LoadState, RecursiveDependencyLoadState},
+    image::{ImageLoaderSettings, ImageSampler},
     input::mouse::{MouseScrollUnit, MouseWheel},
     input_focus::{
         FocusCause, InputFocus,
@@ -9,6 +10,7 @@ use bevy::{
     world_serialization::{WorldInstance, WorldInstanceSpawner},
 };
 
+use super::title_render::TitleRender;
 use crate::{
     graphics::{AntiAliasing, ApplyGraphics, GraphicsOptions, GraphicsSettings, Quality},
     state::GameState,
@@ -17,6 +19,7 @@ use crate::{
 pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
+        super::title_render::install(app);
         app.add_plugins(TabNavigationPlugin)
             .init_resource::<SettingsOrigin>()
             .init_resource::<NewGameConfirmation>()
@@ -94,6 +97,8 @@ struct Sleeper;
 #[derive(Component)]
 struct TitleStatus;
 #[derive(Component)]
+struct TitleLoadingCover;
+#[derive(Component)]
 struct TitleHeading;
 #[derive(Component)]
 struct TitleControls;
@@ -113,7 +118,9 @@ fn spawn_sleeper(
     assets: Res<AssetServer>,
     sleepers: Query<(), With<Sleeper>>,
     mut cameras: Query<&mut Transform, With<crate::game::camera::MainCamera>>,
+    mut render: ResMut<TitleRender>,
 ) {
+    *render = default();
     if sleepers.is_empty() {
         commands.spawn((
             Name::new("Title sleeper"),
@@ -196,12 +203,20 @@ fn title_loading(
     >,
     campaign: Res<crate::game::campaign_save::CampaignStore>,
     mut texts: Query<&mut Text, With<TitleStatus>>,
+    mut covers: Query<&mut Node, With<TitleLoadingCover>>,
+    meshes: Res<Assets<Mesh>>,
+    images: Res<Assets<Image>>,
+    mut render: ResMut<TitleRender>,
     mut announced: Local<bool>,
 ) {
     if texts.is_empty() {
         return;
     }
-    let mut message = "";
+    let mut message = if scenes.iter().count() < 2 {
+        "Loading apartment…"
+    } else {
+        ""
+    };
     for (root, instance) in &scenes {
         match assets.get_load_states(root.0.id()) {
             Some((LoadState::Failed(_), _, _))
@@ -209,11 +224,42 @@ fn title_loading(
                 message = "Could not load the title scene. Restart the game to retry.";
                 break;
             }
-            _ if instance.is_none_or(|id| !spawner.instance_is_ready(**id)) => {
+            _ if !assets.is_loaded_with_dependencies(root.0.id())
+                || instance.is_none_or(|id| !spawner.instance_is_ready(**id)) =>
+            {
                 message = "Loading apartment…";
             }
             _ => {}
         }
+    }
+    if message.is_empty() && render.meshes.is_empty() {
+        render.meshes = meshes
+            .iter()
+            .filter(|(_, mesh)| {
+                mesh.asset_usage
+                    .contains(bevy::asset::RenderAssetUsages::RENDER_WORLD)
+            })
+            .map(|(id, _)| id)
+            .collect();
+        render.images = images
+            .iter()
+            .filter(|(_, image)| {
+                image
+                    .asset_usage
+                    .contains(bevy::asset::RenderAssetUsages::RENDER_WORLD)
+            })
+            .map(|(id, _)| id)
+            .collect();
+    }
+    if message.is_empty() && !render.is_ready() {
+        message = "Preparing apartment…";
+    }
+    for mut cover in &mut covers {
+        cover.display = if render.is_ready() && message.is_empty() {
+            Display::None
+        } else {
+            Display::Flex
+        };
     }
     for mut text in &mut texts {
         **text = if campaign.notice.is_empty() {
@@ -237,7 +283,12 @@ impl FromWorld for MenuSkin {
     fn from_world(world: &mut World) -> Self {
         let assets = world.resource::<AssetServer>();
         Self {
-            panel: assets.load("ui/pause-panel.png"),
+            panel: assets
+                .load_builder()
+                .with_settings(|settings: &mut ImageLoaderSettings| {
+                    settings.sampler = ImageSampler::nearest();
+                })
+                .load("ui/pause-panel.png"),
             font: assets.load("fonts/LiberationSans-Bold.ttf"),
         }
     }
@@ -254,10 +305,10 @@ impl MenuSkin {
         ImageNode {
             image: self.panel.clone(),
             image_mode: bevy::ui::widget::NodeImageMode::Sliced(TextureSlicer {
-                border: BorderRect::all(44.0),
+                border: BorderRect::all(11.0),
                 center_scale_mode: SliceScaleMode::Stretch,
                 sides_scale_mode: SliceScaleMode::Stretch,
-                max_corner_scale: corners,
+                max_corner_scale: corners * 4.0,
             }),
             ..default()
         }
@@ -363,6 +414,26 @@ fn choices(
 }
 // The apartment is the title art: sleeper left, warm ivory type and familiar controls right.
 fn setup_title(mut commands: Commands, skin: Res<MenuSkin>, mut focus: ResMut<InputFocus>) {
+    commands.spawn((
+        DespawnOnExit(GameState::Title),
+        TitleLoadingCover,
+        GlobalZIndex(1000),
+        BackgroundColor(Color::BLACK),
+        Node {
+            position_type: PositionType::Absolute,
+            width: percent(100),
+            height: percent(100),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            ..default()
+        },
+        children![(
+            TitleStatus,
+            Text::new("Loading apartment…"),
+            skin.font(18.0),
+            TextColor(INK)
+        )],
+    ));
     let mut index = 0;
     let mut first = None;
     commands
@@ -727,7 +798,7 @@ fn setup(
                                                 ..default()
                                             })
                                             .with_children(|hint| {
-                                                label(hint, &skin, if cfg!(target_arch = "wasm32") { "Select Resume to continue. Esc releases mouse." } else { "ESC to resume" }, 18.0, MUTED);
+                                                label(hint, &skin, "Select Resume to continue. Esc again releases mouse.", 18.0, MUTED);
                                             });
                                     }
                                 });
@@ -751,7 +822,11 @@ fn actions(
     windows: Query<&Window, With<bevy::window::PrimaryWindow>>,
     buttons: Query<(Entity, &Action, &Interaction), With<Button>>,
     changed: Query<(Entity, &Action, &Interaction), (With<Button>, Changed<Interaction>)>,
+    covers: Query<&Node, With<TitleLoadingCover>>,
 ) {
+    if covers.iter().any(|cover| cover.display != Display::None) {
+        return;
+    }
     if !windows.single().is_ok_and(|window| window.focused) {
         return;
     }
@@ -902,12 +977,7 @@ fn status(
             } else if !options.notice.is_empty() {
                 options.notice.clone()
             } else if *state.get() == GameState::Settings {
-                if cfg!(target_arch = "wasm32") {
-                    "Live preview. Cancel restores saved settings. Esc releases mouse."
-                } else {
-                    "Live preview. Esc cancels."
-                }
-                .into()
+                "Live preview. Cancel restores saved settings.".into()
             } else {
                 String::new()
             };
@@ -976,6 +1046,14 @@ mod tests {
         .add_plugins(MenuPlugin);
         app.world_mut().run_schedule(OnEnter(GameState::Title));
         assert!(app.world().contains_resource::<MenuSkin>());
+        assert_eq!(
+            app.world_mut()
+                .query_filtered::<&BackgroundColor, With<TitleLoadingCover>>()
+                .single(app.world())
+                .unwrap()
+                .0,
+            Color::BLACK
+        );
         assert_eq!(
             app.world_mut()
                 .query_filtered::<Entity, With<TitleHeading>>()
@@ -1071,6 +1149,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins((MinimalPlugins, bevy::asset::AssetPlugin::default()))
             .init_asset::<bevy::world_serialization::WorldAsset>()
+            .init_resource::<TitleRender>()
             .add_systems(Update, spawn_sleeper);
         let main = app
             .world_mut()

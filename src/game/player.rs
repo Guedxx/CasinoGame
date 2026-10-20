@@ -268,8 +268,7 @@ fn prepare_apartment(
     ));
     info!("First-person player ready at {SPAWN:?}; static colliders registered");
     for mut text in &mut text {
-        **text =
-            "Click to play | WASD move | Shift sprint | Space jump | E interact | Tab phone | P pause | Esc release/menu".into();
+        text.clear();
     }
 }
 

@@ -1,0 +1,15 @@
+{
+  "purpose": "Focused real Chromium Escape capture sequence; isolated Low graphics profile",
+  "checks": [
+    "Click captures pointer and Escape in fullscreen",
+    "First Escape retains actual browser pointer and keyboard capture",
+    "Second Escape releases pointer, keyboard and owned fullscreen"
+  ],
+  "errors": [],
+  "visual_checks": [
+    "First Escape shows PAUSED with digital cursor visible",
+    "Second Escape still shows PAUSED with pointer capture released"
+  ],
+  "native_test": "Added regression test for pause, held Escape, menu click, second Escape and stuck button release; native execution skipped because dependencies require a cold engine rebuild.",
+  "build_id": "e6a1a0cd69dbbed9"
+}

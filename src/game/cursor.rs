@@ -100,21 +100,32 @@ fn capture(
     };
     let locked = window.focused && pointer_locked(&cursor);
     let playing = *state.get() == GameState::Playing;
-    // Browser Escape releases pointer lock itself, so preserve an open app as a focus pause.
     let browser_escape = cfg!(target_arch = "wasm32")
         && (locked || mouse.captured)
         && keys.just_pressed(KeyCode::Escape);
+    #[cfg(target_arch = "wasm32")]
+    let browser_escape = browser_escape
+        && !web_sys::window()
+            .and_then(|window| window.document())
+            .and_then(|document| document.document_element())
+            .is_some_and(|root| root.has_attribute("data-game-escape-lock"));
     let lost = !window.focused || (mouse.captured && !locked) || browser_escape;
     let title_escape = *state.get() == GameState::Title && keys.just_pressed(KeyCode::Escape);
-    if lost || title_escape {
+    let menu_escape =
+        *state.get() == GameState::Menu && locked && keys.just_pressed(KeyCode::Escape);
+    if lost || title_escape || menu_escape {
         cursor.grab_mode = CursorGrabMode::None;
         cursor.visible = true;
         mouse.position = None;
         if playing && lost {
             next.set(GameState::Menu);
         }
-        if lost {
-            keys.reset_all();
+        if lost || menu_escape {
+            if lost {
+                keys.reset_all();
+            } else {
+                keys.clear_just_pressed(KeyCode::Escape);
+            }
             buttons.clear();
             buttons.release_all();
         }
@@ -123,6 +134,7 @@ fn capture(
             || (keys.just_pressed(KeyCode::Escape) && !overlay.blocks_world())
         {
             next.set(GameState::Menu);
+            keys.clear_just_pressed(KeyCode::Escape);
         } else if !locked
             && !overlay.blocks_world()
             && buttons.just_pressed(MouseButton::Left)
@@ -545,6 +557,60 @@ mod tests {
                 Some(OverlayKind::Phone)
             );
         }
+    }
+
+    #[test]
+    fn escape_opens_pause_with_capture_and_second_escape_releases_without_resuming() {
+        let (mut app, window) = app();
+        app.world_mut()
+            .resource_mut::<ButtonInput<KeyCode>>()
+            .press(KeyCode::Escape);
+        app.update();
+        assert!(app.world().resource::<GameCursor>().captured);
+        assert!(
+            !app.world()
+                .resource::<ButtonInput<KeyCode>>()
+                .just_pressed(KeyCode::Escape)
+        );
+        assert!(matches!(
+            *app.world().resource::<NextState<GameState>>(),
+            NextState::Pending(GameState::Menu)
+        ));
+        app.insert_resource(State::new(GameState::Menu));
+        app.insert_resource(NextState::<GameState>::Unchanged);
+        app.update();
+        assert!(app.world().resource::<GameCursor>().captured);
+        app.world_mut()
+            .resource_mut::<ButtonInput<MouseButton>>()
+            .press(MouseButton::Left);
+        app.update();
+        assert!(app.world().resource::<GameCursor>().captured);
+        app.world_mut()
+            .resource_mut::<ButtonInput<KeyCode>>()
+            .release(KeyCode::Escape);
+        app.world_mut()
+            .resource_mut::<ButtonInput<KeyCode>>()
+            .press(KeyCode::Escape);
+        app.update();
+        assert!(!app.world().resource::<GameCursor>().captured);
+        assert_eq!(
+            app.world().get::<CursorOptions>(window).unwrap().grab_mode,
+            CursorGrabMode::None
+        );
+        assert!(matches!(
+            *app.world().resource::<NextState<GameState>>(),
+            NextState::Unchanged
+        ));
+        assert!(
+            !app.world()
+                .resource::<ButtonInput<KeyCode>>()
+                .just_pressed(KeyCode::Escape)
+        );
+        assert!(
+            !app.world()
+                .resource::<ButtonInput<MouseButton>>()
+                .pressed(MouseButton::Left)
+        );
     }
 
     #[test]
