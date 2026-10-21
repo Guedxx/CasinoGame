@@ -1,0 +1,82 @@
+{
+  "mode": "Built-in image_gen",
+  "sources": [
+    {
+      "path": "/home/xigo/.codex/generated_images/01a15bd6-e8a4-7f31-9022-24c9c7a4436a/exec-c3f45680-ba5b-4d13-bd6c-508900e0a234.png",
+      "prompt": "Use case: stylized-concept. Asset type: full-frame football broadcast image displayed on a small in-world CRT in a PSX-style game. Primary request: a wide elevated sideline overview of an association football match, with the center circle and a broad section of green pitch, several small low-poly players from two fictional teams wearing solid contrasting red shirts with white shorts and blue shirts with dark shorts. One small white football at the feet of a red player just left of the center circle; another red player waits a short pass away to the right. Style: authentic late-1990s low-poly console sports game screenshot, flat shaded polygonal forms, coarse textures, restrained colors, clear simple white field markings and a thin strip of simple distant stadium stands. Landscape 4:3 composition, fixed elevated camera looking diagonally down across midfield, large readable shapes that survive reduction to 160x120 and 16 colors. Show only the broadcast picture filling the image. No television body, room, text, scoreboard, clock, logos, advertising, watermark, close-ups, photorealism or tiny decorative detail.",
+      "reference_frame": null,
+      "sha256": "9ebb3b83a241dbc2088b572bdd9b84168ca8532889073fdc5d3711ea42ac9ed8"
+    },
+    {
+      "path": "/home/xigo/.codex/generated_images/01a15bd6-e8a4-7f31-9022-24c9c7a4436a/exec-62474217-9cf1-4fc7-bb2b-24fe45272d48.png",
+      "prompt": "Use case: stylized-concept. Asset type: second frame of the same tiny PSX football broadcast loop. Edit the reference image: keep the exact fixed camera, framing, pitch markings, stadium, lighting, all team colors and all players. Change only the action by about half a second: the red player with the ball inside the left half of the center circle has just kicked a short ground pass toward his red teammate in the lower-right half of the circle. Move the single white ball a modest distance right along that pass, still between those two red players; adjust the passer's kicking pose and the receiver's ready stance slightly. Move other players only a small step. The result should be nearly identical to the first frame, with no camera movement or field jumps. Preserve the low-poly late-1990s console game style, opaque 4:3 broadcast image, readable at 160x120 and 16 colors. No text, scoreboard, clock, logos, advertising, watermark, television frame, room or additional balls.",
+      "reference_frame": 1,
+      "sha256": "fc8d0916e919f0484651ff3169808753acc75374d3c0fcbfeca6d2d3a5d6b4eb"
+    },
+    {
+      "path": "/home/xigo/.codex/generated_images/01a15bd6-e8a4-7f31-9022-24c9c7a4436a/exec-a128213e-88c2-42ae-8e64-2381feb1d0d5.png",
+      "prompt": "Use case: stylized-concept. Asset type: third frame of the same tiny PSX football broadcast loop. Edit the reference image: keep the exact fixed camera, framing, pitch markings, stadium, lighting, all team colors and all players. Change only the action by about one second: the red player inside the left half of the center circle has completed a short ground pass toward his red teammate in the lower-right half of the circle. Move the single white football from the left red player's feet to just in front of the right red player's feet as he receives it; change those two players' leg poses slightly and move the nearby blue midfielder one small step toward the receiver. All other players remain in practically the same positions. The result should be nearly identical to the first frame, no camera movement or field jumps. Preserve the low-poly late-1990s console game style, opaque 4:3 broadcast image, readable at 160x120 and 16 colors. No text, scoreboard, clock, logos, advertising, watermark, television frame, room or additional balls.",
+      "reference_frame": 1,
+      "sha256": "630d3fea8c985cc509de0f995e21ba8772940b8cd93669e27bb5dd3ea5283172"
+    }
+  ],
+  "processing": "BOX resize; original TV UVs; transposed into rounded glass; shared 15 opaque colors + transparent black; 4-bit indexed PNG; nearest sampling",
+  "frame_seconds": 0.5,
+  "assets": [
+    {
+      "path": "assets/models/tv-football-1.png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "bytes": 2724,
+      "palette_entries": 16,
+      "bit_depth": 4
+    },
+    {
+      "path": "assets/models/tv-football-2.png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "bytes": 2884,
+      "palette_entries": 16,
+      "bit_depth": 4
+    },
+    {
+      "path": "assets/models/tv-football-3.png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "bytes": 2691,
+      "palette_entries": 16,
+      "bit_depth": 4
+    }
+  ],
+  "total_bytes": 8299,
+  "decoded_rgba_bytes": 3145728,
+  "original_atlas_glass_pixels_inclusive": [
+    70,
+    88,
+    115,
+    136
+  ],
+  "glass_radius": 8,
+  "material": "Original lit TV material; UV1 relocates antenna samples into unused atlas pixels; cloned base atlas blacks out glass; animated screen-only emissive atlas",
+  "runtime_base_clone_bytes": 262144,
+  "antenna_uv_patch": {
+    "source": [
+      108,
+      124
+    ],
+    "target": [
+      128,
+      0
+    ],
+    "size": [
+      8,
+      8
+    ]
+  }
+}

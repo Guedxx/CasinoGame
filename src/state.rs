@@ -6,5 +6,6 @@ pub enum GameState {
     Title,
     Menu,
     Settings,
+    Intro,
     Playing,
 }

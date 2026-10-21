@@ -28,6 +28,7 @@ impl Plugin for MenuPlugin {
             .add_systems(OnEnter(GameState::Menu), setup)
             .add_systems(OnEnter(GameState::Settings), setup)
             .add_systems(OnEnter(GameState::Playing), remove_sleeper)
+            .add_systems(OnEnter(GameState::Intro), remove_sleeper)
             .add_systems(
                 Update,
                 (
@@ -43,7 +44,7 @@ impl Plugin for MenuPlugin {
                     )
                         .after(ApplyGraphics),
                 )
-                    .run_if(not(in_state(GameState::Playing))),
+                    .run_if(not(in_state(GameState::Playing)).and_then(not(in_state(GameState::Intro)))),
             );
     }
 }
@@ -903,7 +904,7 @@ fn actions(
                     Ok(_) => {
                         confirmation.0 = false;
                         commands.trigger(crate::game::campaign_save::CampaignReplaced);
-                        next.set(GameState::Playing);
+                        next.set(GameState::Intro);
                     }
                     Err(error) => campaign.notice = error,
                 }
@@ -1118,7 +1119,8 @@ mod tests {
                 notice: String::new(),
             })
             .add_systems(Update, actions)
-            .add_systems(OnEnter(GameState::Playing), remove_sleeper);
+            .add_systems(OnEnter(GameState::Playing), remove_sleeper)
+            .add_systems(OnEnter(GameState::Intro), remove_sleeper);
         app.world_mut().spawn((
             Window {
                 focused: true,
@@ -1170,6 +1172,18 @@ mod tests {
         );
         assert!(app.world().get_entity(sleeper).is_err());
         assert!(app.world().get_entity(apartment).is_ok());
+    }
+
+    #[test]
+    fn new_game_enters_opening_and_removes_title_sleeper() {
+        use crate::game::campaign_save::{CampaignStore, SnapshotState};
+        let mut app = app(GameState::Title);
+        app.insert_resource(CampaignStore::for_test(None, SnapshotState::Missing));
+        let sleeper = app.world_mut().spawn(Sleeper).id();
+        select(&mut app, Action::NewGame);
+        assert_eq!(*app.world().resource::<State<GameState>>().get(), GameState::Intro);
+        assert!(app.world().get_entity(sleeper).is_err());
+        assert!(app.world().resource::<CampaignStore>().campaign().is_some());
     }
 
     #[test]

@@ -130,11 +130,15 @@ async function main() {
       };
     });
     const titleReady = page.waitForEvent('console', { predicate: m => m.text().includes('Title screen ready'), timeout: 180000 });
-    const ready = page.waitForEvent('console', { predicate: m => m.text().includes('First-person player ready'), timeout: 180000 });
+    const started = page.waitForEvent('console', { predicate: m => /Opening cutscene ready|Gameplay resumed/.test(m.text()), timeout: 180000 });
     await page.goto(url);
     await titleReady;
     await page.keyboard.press('Enter');
-    await ready;
+    if ((await started).text().includes('Opening cutscene ready')) {
+      const playing = page.waitForEvent('console', { predicate: m => m.text().includes('Gameplay resumed'), timeout: 10000 });
+      await page.keyboard.press('Enter', { delay: 1200 });
+      await playing;
+    }
     await page.bringToFront();
     await page.waitForTimeout(10000);
     for (const key of setupKeys) await page.keyboard.press(key);

@@ -10,8 +10,12 @@ cargo run
 
 The game opens on the apartment couch with a sleeping man, a subtle chest-breathing animation,
 and **Continue / New Game / Settings** on the right. New Game starts Alex's ten-day campaign;
-replacing existing progress requires confirmation. Continue restores the retained campaign,
-including a daily report or ending. Wait for loading, then **click** to capture the mouse.
+replacing existing progress requires confirmation. A 45-second first-person opening follows:
+Alex wakes on the couch, blinks into focus, watches football on TV, reflects on his hands,
+and stands up. Dialogue appears as subtitles. **Hold Enter for one second** to skip after
+releasing the key used to start the game. Losing focus freezes the opening until you return.
+Continue bypasses the opening and restores the retained campaign, including a daily report
+or ending. Wait for loading and the opening, then **click** to capture the mouse.
 Use **WASD** to walk, **Shift** to sprint, **Space** to jump, and the **mouse** to look.
 **P** pauses with the mouse captured. The in-game cursor operates the phone, household panels,
 reports, pause menu and settings; closing them resumes control immediately.
@@ -160,6 +164,20 @@ Built-in imagegen prompts, source hashes and crop rectangles are recorded in
 a combined 32 KiB budget. Source manifests record the original generation paths;
 raw generated masters are not included in the browser assets.
 
+The TV loops three generated PSX football frames at two frames per second on its original
+mesh and rounded glass UVs. Three 512×512 screen-only emissive atlases share 15 picture
+colors plus transparent black in 4-bit indexed PNGs: 8,299 bytes on disk and 3 MiB decoded
+RGBA. A 256 KiB runtime copy of the original case texture blacks out only the glass;
+the bezel, case pixels and material lighting stay intact. A second UV set isolates the
+antenna's shared glass samples in an unused atlas patch so the broadcast cannot light it.
+The original off material uses the original UVs and returns in Title or when power is off;
+household sales hide the existing TV mesh. The broadcast
+stops advancing while paused or unfocused. Built-in imagegen
+prompts, source hashes and processing details are in `art/tv-football-generation.json`;
+`python3 tools/build_tv_football.py` repacks retained generated sources with format and size
+assertions. The opening body uses Alex's existing character texture and one animation clip,
+exported alongside the title sleeper by `tools/build_menu_character.py`.
+
 The settings page's FPS counter measures game rendering cadence. Browser performance reports use
 WebGPU canvas acquisitions per second; neither is a measurement of displayed frames.
 
@@ -174,6 +192,8 @@ src/
   game/
     mod.rs            Shared gameplay plugins
     camera.rs         Persistent 3D camera
+    intro.rs          New-game waking animation, subtitles, skip, and control handoff
+    tv.rs             Compact football broadcast loop on the apartment TV
     player.rs         First-person controls, static collision, and physics checks
     campaign.rs       Authoritative ten-day state, actions, clock, ledger, and reports
     campaign_save.rs  Validated versioned autosave and retained session

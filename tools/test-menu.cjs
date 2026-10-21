@@ -40,8 +40,14 @@ const url = process.argv[3] || 'http://127.0.0.1:8080/';
     await page.waitForTimeout(1500); await screenshot('title-640');
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.waitForTimeout(1000);
-    const playing = page.waitForEvent('console', { predicate: m => m.text().includes('First-person player ready'), timeout: 60000 });
-    await page.mouse.click(900, 350, { delay: 100 }); await playing; await page.waitForTimeout(1500);
+    const started = page.waitForEvent('console', { predicate: m => /Opening cutscene ready|Gameplay resumed/.test(m.text()), timeout: 180000 });
+    await page.mouse.click(900, 350, { delay: 100 });
+    if ((await started).text().includes('Opening cutscene ready')) {
+      const playing = page.waitForEvent('console', { predicate: m => m.text().includes('Gameplay resumed'), timeout: 10000 });
+      await page.keyboard.press('Enter', { delay: 1200 });
+      await playing;
+    }
+    await page.waitForTimeout(1500);
     await screenshot('started');
     await page.bringToFront();
     await page.mouse.click(400, 360); await page.waitForTimeout(1000);

@@ -43,8 +43,14 @@ async function main() {
   const screenshot = name => page.screenshot({ path: `${directory}/${name}.png` });
   const ready = async () => {
     const titleReady = page.waitForEvent('console', { predicate: m => m.text().includes('Title screen ready'), timeout: 180000 });
-    const loaded = page.waitForEvent('console', { predicate: m => m.text().includes('First-person player ready'), timeout: 180000 });
-    await page.goto(url); await titleReady; await page.keyboard.press('Enter'); await loaded; await page.waitForTimeout(5000);
+    const started = page.waitForEvent('console', { predicate: m => /Opening cutscene ready|Gameplay resumed/.test(m.text()), timeout: 180000 });
+    await page.goto(url); await titleReady; await page.keyboard.press('Enter');
+    if ((await started).text().includes('Opening cutscene ready')) {
+      const playing = page.waitForEvent('console', { predicate: m => m.text().includes('Gameplay resumed'), timeout: 10000 });
+      await page.keyboard.press('Enter', { delay: 1200 });
+      await playing;
+    }
+    await page.waitForTimeout(5000);
     await key('F9');
   };
   let focus = 0;

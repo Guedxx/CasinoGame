@@ -98,6 +98,14 @@ fn capture(
     let Ok((window, mut cursor)) = windows.single_mut() else {
         return;
     };
+    if *state.get() == GameState::Intro {
+        cursor.grab_mode = CursorGrabMode::None;
+        cursor.visible = !window.focused;
+        mouse.captured = false;
+        mouse.position = None;
+        mouse.suppress_look = true;
+        return;
+    }
     let locked = window.focused && pointer_locked(&cursor);
     let playing = *state.get() == GameState::Playing;
     let browser_escape = cfg!(target_arch = "wasm32")
@@ -184,8 +192,7 @@ fn route(
             .bypass_change_detection()
             .set_cursor_position(mouse.position);
     }
-    let position = window
-        .focused
+    let position = (window.focused && *state.get() != GameState::Intro)
         .then(|| {
             if mouse.captured {
                 ui.then_some(mouse.position).flatten()
@@ -395,6 +402,24 @@ mod tests {
         app.world_mut().spawn(Player::default());
         app.update();
         (app, entity)
+    }
+
+    #[test]
+    fn opening_releases_capture_hides_cursor_and_does_not_route_clicks_or_pause() {
+        let (mut app, window) = app();
+        app.insert_resource(State::new(GameState::Intro));
+        app.world_mut().resource_mut::<ButtonInput<MouseButton>>().press(MouseButton::Left);
+        app.world_mut().resource_mut::<ButtonInput<KeyCode>>().press(KeyCode::KeyP);
+        app.update();
+        let cursor = app.world().get::<CursorOptions>(window).unwrap();
+        assert_eq!(cursor.grab_mode, CursorGrabMode::None);
+        assert!(!cursor.visible);
+        let mouse = app.world().resource::<GameCursor>();
+        assert!(!mouse.captured && mouse.position.is_none() && mouse.previous_pointer.is_none());
+        assert!(matches!(app.world().resource::<NextState<GameState>>(), NextState::Unchanged));
+        app.world_mut().get_mut::<Window>(window).unwrap().focused = false;
+        app.update();
+        assert!(app.world().get::<CursorOptions>(window).unwrap().visible);
     }
 
     #[test]

@@ -25,6 +25,8 @@ PY
 mkdir -p dist/assets/models
 cp assets/models/apartment_windows.glb dist/assets/models/
 cp assets/models/menu_sleeper.glb dist/assets/models/
+cp assets/models/opening_body.glb dist/assets/models/
+cp assets/models/tv-football-{1,2,3}.png dist/assets/models/
 cp assets/models/phone_hand.glb dist/assets/models/
 cp assets/models/{pipoca,food_portion,waste_paper,waste_meal,waste_bag}.glb dist/assets/models/
 cp -R assets/audio dist/assets/
@@ -35,6 +37,10 @@ fi
 test -s dist/CasinoGame_bg.wasm
 test -s dist/assets/models/apartment_windows.glb
 test -s dist/assets/models/menu_sleeper.glb
+test -s dist/assets/models/opening_body.glb
+for frame in 1 2 3; do
+    test -s "dist/assets/models/tv-football-$frame.png"
+done
 test -s dist/assets/models/phone_hand.glb
 for model in pipoca food_portion waste_paper waste_meal waste_bag; do
     test -s "dist/assets/models/$model.glb"

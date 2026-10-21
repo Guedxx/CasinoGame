@@ -8,6 +8,7 @@ mod cluster_settings;
 pub(crate) mod cursor;
 pub(crate) mod household;
 mod hud;
+pub(crate) mod intro;
 mod lighting_fast_path;
 mod obligations;
 pub(crate) mod phone;
@@ -16,6 +17,7 @@ pub(crate) mod player;
 mod review;
 pub(crate) mod routine;
 mod support;
+pub(crate) mod tv;
 
 use bevy::prelude::*;
 
@@ -33,6 +35,8 @@ impl Plugin for GamePlugin {
             routine::RoutinePlugin,
             phone::PhonePlugin,
             household::HouseholdPlugin,
+            intro::IntroPlugin,
+            tv::TvPlugin,
         ));
         app.add_systems(Update, lighting_fast_path::install);
         #[cfg(target_arch = "wasm32")]

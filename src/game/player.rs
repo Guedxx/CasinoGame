@@ -37,15 +37,19 @@ impl Plugin for PlayerPlugin {
                 substeps: 1,
             })
             .add_observer(reset_new_campaign)
+            .add_observer(finish_opening)
             .init_resource::<Controls>()
             .init_resource::<GameplayOverlay>()
             .add_systems(OnEnter(GameState::Playing), loading)
+            .add_systems(OnEnter(GameState::Intro), loading)
             .add_systems(OnExit(GameState::Playing), release)
             .add_systems(OnEnter(GameState::Playing), resume)
             .add_systems(Update, loading_visibility)
             .add_systems(
                 Update,
-                prepare_apartment.run_if(in_state(GameState::Playing)),
+                (prepare_apartment, prepare_opening_spawn.run_if(in_state(GameState::Intro)))
+                    .chain()
+                    .run_if(in_state(GameState::Playing).or_else(in_state(GameState::Intro))),
             )
             .add_systems(
                 PreUpdate,
@@ -81,7 +85,7 @@ struct CollisionFailed;
 #[derive(Component)]
 struct Loading;
 #[derive(Component)]
-struct StatusText;
+pub(crate) struct StatusText;
 #[derive(Component, Default)]
 pub(crate) struct Player {
     vertical_speed: f32,
@@ -151,6 +155,63 @@ fn loading(
             TextFont::from_font_size(24.0)
         )],
     ));
+}
+
+fn prepare_opening_spawn(
+    mut opening: ResMut<super::intro::Opening>,
+    context: ReadRapierContext,
+    players: Query<Entity, With<Player>>,
+    colliders: Query<(), (With<Collider>, Without<RapierColliderHandle>)>,
+) {
+    if opening.spawn_ready || !opening.error.is_empty() || !colliders.is_empty() {
+        return;
+    }
+    let (Ok(player), Ok(context)) = (players.single(), context.single()) else { return };
+    let position = super::intro::END_POSITION;
+    let capsule = Collider::capsule_y(0.6, 0.3);
+    let filter = QueryFilter::default().exclude_collider(player);
+    let mut overlaps = false;
+    context.intersect_shape(position, Quat::IDENTITY, capsule.raw.as_ref(), filter, |_| {
+        overlaps = true;
+        false
+    });
+    let supported = context
+        .cast_ray_and_get_normal(position, Vec3::NEG_Y, 1.0, true, filter)
+        .is_some_and(|(_, hit)| hit.normal.y > 0.7 && hit.time_of_impact > 0.9);
+    if overlaps || !supported {
+        opening.error = "Cannot safely stand up in the apartment. Press Escape for title.".into();
+        error!("Opening exit blocked or unsupported: overlap={overlaps}, supported={supported}");
+    } else {
+        opening.spawn_ready = true;
+    }
+}
+
+fn finish_opening(
+    _: On<super::intro::OpeningFinished>,
+    mut controls: ResMut<Controls>,
+    mut players: Query<(&mut Transform, &mut Player, &mut KinematicCharacterController), Without<MainCamera>>,
+    mut cameras: Query<&mut Transform, With<MainCamera>>,
+    mut keys: ResMut<ButtonInput<KeyCode>>,
+    mut buttons: ResMut<ButtonInput<MouseButton>>,
+    mut motion: ResMut<AccumulatedMouseMotion>,
+    mut next: ResMut<NextState<GameState>>,
+) {
+    let position = super::intro::END_POSITION;
+    *controls = Controls { yaw: super::intro::END_YAW, pitch: super::intro::END_PITCH, ..default() };
+    for (mut transform, mut player, mut controller) in &mut players {
+        transform.translation = position;
+        player.previous = position;
+        player.vertical_speed = 0.0;
+        controller.translation = Some(Vec3::ZERO);
+    }
+    for mut camera in &mut cameras {
+        *camera = Transform::from_translation(position + Vec3::Y * EYE_OFFSET)
+            .with_rotation(Quat::from_euler(EulerRot::YXZ, controls.yaw, controls.pitch, 0.0));
+    }
+    keys.reset_all();
+    buttons.reset_all();
+    motion.delta = Vec2::ZERO;
+    next.set(GameState::Playing);
 }
 
 fn prepare_apartment(
@@ -625,8 +686,7 @@ mod tests {
         step(app, 1);
     }
 
-    #[test]
-    fn apartment_long_session_preserves_walking_and_jumping() {
+    fn apartment_room() -> (App, Entity) {
         let (mut app, player) = room();
         let colliders: Vec<_> = app
             .world_mut()
@@ -666,6 +726,62 @@ mod tests {
             }
         }
         step(&mut app, 5);
+        (app, player)
+    }
+
+    #[test]
+    fn opening_exit_is_safe_in_the_actual_apartment_and_handoff_survives_loading() {
+        use super::super::intro::{END_PITCH, END_POSITION, END_YAW, Opening, OpeningFinished};
+        let (mut app, player) = apartment_room();
+        app.init_resource::<Opening>()
+            .init_resource::<NextState<GameState>>()
+            .init_resource::<ButtonInput<KeyCode>>()
+            .init_resource::<ButtonInput<MouseButton>>()
+            .init_resource::<AccumulatedMouseMotion>()
+            .add_observer(finish_opening)
+            .add_systems(Update, (loading, prepare_opening_spawn).chain());
+        let camera = app.world_mut().spawn((MainCamera, Transform::default())).id();
+        app.update();
+        assert!(app.world().resource::<Opening>().spawn_ready,
+            "{}", app.world().resource::<Opening>().error);
+        {
+            let mut controls = app.world_mut().resource_mut::<Controls>();
+            controls.movement = Vec2::ONE;
+            controls.jump = true;
+            controls.captured = true;
+        }
+        app.world_mut().resource_mut::<ButtonInput<KeyCode>>().press(KeyCode::Space);
+        app.world_mut().resource_mut::<AccumulatedMouseMotion>().delta = Vec2::splat(500.0);
+        app.world_mut().trigger(OpeningFinished);
+        assert_eq!(position(&app, player), END_POSITION);
+        assert_eq!(app.world().get::<Player>(player).unwrap().previous, END_POSITION);
+        assert_eq!(app.world().get::<Player>(player).unwrap().vertical_speed, 0.0);
+        assert_eq!(app.world().get::<KinematicCharacterController>(player).unwrap().translation, Some(Vec3::ZERO));
+        assert!(!app.world().resource::<ButtonInput<KeyCode>>().pressed(KeyCode::Space));
+        assert_eq!(app.world().resource::<AccumulatedMouseMotion>().delta, Vec2::ZERO);
+        let eye = app.world().get::<Transform>(camera).unwrap();
+        assert_eq!(eye.translation, END_POSITION + Vec3::Y * EYE_OFFSET);
+        assert!(eye.rotation.abs_diff_eq(Quat::from_euler(EulerRot::YXZ, END_YAW, END_PITCH, 0.0), 1e-6));
+        app.update();
+        let controls = app.world().resource::<Controls>();
+        assert_eq!((controls.yaw, controls.pitch), (END_YAW, END_PITCH));
+        assert!(!controls.jump && !controls.captured);
+        assert!(matches!(app.world().resource::<NextState<GameState>>(), NextState::Pending(GameState::Playing)));
+
+        let obstacle = app.world_mut().spawn((
+            Transform::from_translation(END_POSITION), Collider::cuboid(0.1, 0.1, 0.1),
+        )).id();
+        step(&mut app, 1);
+        app.world_mut().resource_mut::<Opening>().spawn_ready = false;
+        app.update();
+        assert!(!app.world().resource::<Opening>().spawn_ready);
+        assert!(!app.world().resource::<Opening>().error.is_empty());
+        app.world_mut().despawn(obstacle);
+    }
+
+    #[test]
+    fn apartment_long_session_preserves_walking_and_jumping() {
+        let (mut app, player) = apartment_room();
         step(&mut app, 60 * 60);
         let start = position(&app, player);
         assert!((start.y - 0.915).abs() < 0.015, "idle position: {start}");

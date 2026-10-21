@@ -330,7 +330,7 @@ fn sync_visuals(
     if *state.get() == GameState::Title {
         presentation.title = true;
     }
-    if *state.get() == GameState::Playing {
+    if matches!(*state.get(), GameState::Intro | GameState::Playing) {
         presentation.title = false;
     }
     for (entity, visual, mut visibility, disabled) in &mut visuals {
@@ -366,6 +366,12 @@ fn visual_visible(visual: HouseholdVisual, campaign: Option<&Campaign>, title: b
 fn pressure(stress: u8) -> f32 {
     (f32::from(stress) - 40.0).max(0.0) / 60.0
 }
+
+fn bulb_brightness(seconds: f32) -> f32 {
+    1.0 + 0.012 * (seconds * 11.7).sin() + 0.007 * (seconds * 23.9).sin()
+        - 0.035 * (seconds * 1.9).sin().max(0.0).powi(12)
+}
+
 fn thought(c: &Campaign) -> &'static str {
     if c.betting.history.is_empty() || c.attributes.urge < 60 {
         ""
@@ -397,9 +403,10 @@ fn environment(
     };
     let powered = presentation.title || campaign.is_none_or(Campaign::has_power);
     let pulse = (time.elapsed_secs() * 0.9).sin() * 0.015 * stress;
+    let brightness = bulb_brightness(time.elapsed_secs());
     for mut light in &mut lights {
         light.intensity = if powered {
-            40_000.0 * (1.0 - 0.12 * stress + pulse)
+            40_000.0 * (1.0 - 0.12 * stress + pulse) * brightness
         } else {
             0.0
         };
@@ -434,7 +441,7 @@ fn environment(
 mod tests {
     use super::super::campaign_save::{SnapshotState, decode_campaign, encode_campaign};
     use super::*;
-    use bevy::ecs::system::RunSystemOnce;
+    use bevy::{ecs::system::RunSystemOnce, time::Real};
     use bevy_rapier3d::prelude::*;
 
     fn offered() -> Campaign {
@@ -735,11 +742,13 @@ mod tests {
             Some(Campaign::new(7)),
             SnapshotState::Protected,
         ));
-        app.insert_resource(State::new(GameState::Playing));
+        app.insert_resource(State::new(GameState::Intro));
         step(&mut app);
+        assert!(!app.world().resource::<Presentation>().title);
         for (entity, _) in &entities {
             assert!(enabled(&mut app, *entity));
         }
+        app.insert_resource(State::new(GameState::Playing));
         app.insert_resource(CampaignStore::for_test(
             Some(decode_campaign(&saved).unwrap()),
             SnapshotState::Protected,
@@ -748,6 +757,22 @@ mod tests {
         for (entity, _) in &entities {
             assert!(!enabled(&mut app, *entity));
         }
+    }
+
+    #[test]
+    fn incandescent_flicker_stays_subtle_and_smooth() {
+        let mut previous = bulb_brightness(0.0);
+        let mut dimmest = previous;
+        let mut brightest = previous;
+        for frame in 1..3600 {
+            let brightness = bulb_brightness(frame as f32 / 60.0);
+            assert!((0.946..=1.0191).contains(&brightness));
+            assert!((brightness - previous).abs() < 0.009);
+            dimmest = dimmest.min(brightness);
+            brightest = brightest.max(brightness);
+            previous = brightness;
+        }
+        assert!(brightest - dimmest > 0.04);
     }
 
     #[test]
@@ -824,7 +849,7 @@ mod tests {
         app.update();
         assert_eq!(
             app.world().get::<SpotLight>(interior).unwrap().intensity,
-            40_000.0
+            40_000.0 * bulb_brightness(app.world().resource::<Time<Real>>().elapsed_secs())
         );
         let fresh = Campaign::new(5);
         assert!(!visual_visible(HouseholdVisual::Food(1), None, false));
