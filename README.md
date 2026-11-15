@@ -2,6 +2,8 @@
 
 A Rust / Bevy 0.19.1 project with a furnished first-person apartment and a dense urban exterior.
 
+**[Play in your browser](https://guedxx.github.io/CasinoGame/)** — requires WebGPU and hardware acceleration; progress saves in this browser only.
+
 ## Run
 
 ```sh
@@ -62,6 +64,11 @@ Install the native dependencies for your platform from the
 [Bevy setup guide](https://bevy.org/learn/quick-start/getting-started/setup/).
 
 ## Browser
+
+The [Pages workflow](.github/workflows/pages.yml) builds and deploys the game on every
+push to `master`, or manually from GitHub Actions. In repository **Settings → Pages**,
+the source must be **GitHub Actions**. Only the built HTML, JavaScript, WASM and runtime
+assets are published; development sources and review galleries are excluded.
 
 With Python 3, `wasm-bindgen-cli` 0.2.129 on your PATH, and the Rust
 `wasm32-unknown-unknown` target installed:
