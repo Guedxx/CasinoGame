@@ -12,7 +12,7 @@ use bevy::{
 
 use super::title_render::TitleRender;
 use crate::{
-    graphics::{AntiAliasing, ApplyGraphics, GraphicsOptions, GraphicsSettings, Quality},
+    graphics::{ApplyGraphics, GraphicsOptions, GraphicsSettings, Quality},
     state::GameState,
 };
 
@@ -67,7 +67,6 @@ enum Action {
     Reset,
     Preset(Quality),
     Lighting(Quality),
-    AntiAliasing(AntiAliasing),
     TextureWarping(bool),
     VertexJitter(bool),
 }
@@ -76,7 +75,6 @@ impl Action {
         match self {
             Self::Preset(q) => settings == GraphicsSettings::preset(q),
             Self::Lighting(q) => settings.lighting == q,
-            Self::AntiAliasing(mode) => settings.anti_aliasing == mode,
             Self::TextureWarping(enabled) => settings.texture_warping == enabled,
             Self::VertexJitter(enabled) => settings.vertex_jitter == enabled,
             _ => false,
@@ -86,7 +84,6 @@ impl Action {
         match self {
             Self::Preset(_) => Some("Quality preset"),
             Self::Lighting(_) => Some("Lighting quality"),
-            Self::AntiAliasing(_) => Some("Anti-aliasing"),
             Self::TextureWarping(_) => Some("Texture warping"),
             Self::VertexJitter(_) => Some("Model jitter"),
             _ => None,
@@ -695,21 +692,6 @@ fn setup(
                                         choices(
                                             body,
                                             &skin,
-                                            "Anti-aliasing",
-                                            &[
-                                                ("Off", Action::AntiAliasing(AntiAliasing::Off)),
-                                                ("FXAA", Action::AntiAliasing(AntiAliasing::Fxaa)),
-                                                ("SMAA", Action::AntiAliasing(AntiAliasing::Smaa)),
-                                                (
-                                                    "4x MSAA",
-                                                    Action::AntiAliasing(AntiAliasing::Msaa4),
-                                                ),
-                                            ],
-                                            &mut index,
-                                        );
-                                        choices(
-                                            body,
-                                            &skin,
                                             "Texture warping",
                                             &[
                                                 ("Off", Action::TextureWarping(false)),
@@ -931,7 +913,6 @@ fn actions(
         Action::Reset => options.current = GraphicsSettings::default(),
         Action::Preset(q) => options.current = GraphicsSettings::preset(q),
         Action::Lighting(q) => options.current.lighting = q,
-        Action::AntiAliasing(mode) => options.current.anti_aliasing = mode,
         Action::TextureWarping(enabled) => options.current.texture_warping = enabled,
         Action::VertexJitter(enabled) => options.current.vertex_jitter = enabled,
     }

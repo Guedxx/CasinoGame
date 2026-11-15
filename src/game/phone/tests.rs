@@ -1837,32 +1837,3 @@ fn audio_skip_reveals_once_and_restored_results_stay_silent() {
     app.update();
     assert!(app.world().resource::<HeardSounds>().0.is_empty());
 }
-
-#[test]
-fn foreground_matches_world_msaa_without_changing_world_or_texture_camera() {
-    let mut app = App::new();
-    app.add_systems(Update, sync_view_msaa);
-    let main = app
-        .world_mut()
-        .spawn((
-            super::super::camera::MainCamera,
-            Camera3d::default(),
-            Msaa::Sample4,
-        ))
-        .id();
-    let view = app
-        .world_mut()
-        .spawn((PhoneCamera, Camera3d::default(), Msaa::Off))
-        .id();
-    let texture = app
-        .world_mut()
-        .spawn((TextureCamera, Camera2d, Msaa::Off))
-        .id();
-    for mode in [Msaa::Sample4, Msaa::Off, Msaa::Sample4] {
-        *app.world_mut().get_mut::<Msaa>(main).unwrap() = mode;
-        app.update();
-        assert_eq!(*app.world().get::<Msaa>(main).unwrap(), mode);
-        assert_eq!(*app.world().get::<Msaa>(view).unwrap(), mode);
-        assert_eq!(*app.world().get::<Msaa>(texture).unwrap(), Msaa::Off);
-    }
-}

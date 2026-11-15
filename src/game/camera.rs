@@ -1,7 +1,12 @@
 use bevy::{
-    core_pipeline::prepass::DepthPrepass,
+    core_pipeline::{
+        prepass::DepthPrepass,
+        tonemapping::{DebandDither, Tonemapping},
+    },
+    light::ShadowFilteringMethod,
     light::cluster::{ClusterConfig, ClusterFarZMode, ClusterZConfig},
     prelude::*,
+    ui_render::UiAntiAlias,
 };
 
 #[derive(Component)]
@@ -19,6 +24,11 @@ fn spawn_camera(mut commands: Commands, clear_color: Res<ClearColor>) {
     let far = 2000.0;
     commands.spawn((
         Camera3d::default(),
+        Msaa::Off,
+        Tonemapping::None,
+        DebandDither::Disabled,
+        UiAntiAlias::Off,
+        ShadowFilteringMethod::Hardware2x2,
         MainCamera,
         IsDefaultUiCamera,
         DepthPrepass,

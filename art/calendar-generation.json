@@ -1,0 +1,23 @@
+{
+  "generator": "Built-in image_gen tool",
+  "prompt": "Use case: stylized-concept\nAsset type: blank wall-calendar face texture for the existing first-person PSX-style apartment game.\nInput image: the supplied apartment screenshot is a STYLE REFERENCE only. Match its worn, low-resolution materials and subdued warm ivory, brown and olive tones. Do not reproduce the room.\nPrimary request: one blank, front-facing rectangular paper wall-calendar, 4:5 width-to-height ratio, filling the entire image edge to edge. Warm ivory paper with faint coarse paper grain and restrained wear; a narrow muted brown binding strip contained in the top 8 percent, with small simple binding marks. Subtle layered page shading along the outermost edges suggests a thin paper stack, not a chunky frame. Large central and lower areas remain empty, flat and light for the game's live grid, numbers and bill labels.\nStyle/medium: textured low-poly 3D game material, PS1-era pre-rendered texture, coarse limited muted palette, subtle dithering, matte paper. Orthographic straight-on face with no perspective distortion. Soft neutral baked shading only at the edges; in-game geometry provides the actual shallow 3D depth.\nConstraints: fully opaque rectangular face; exactly 4:5 proportions; no surrounding margin, wall, room, props or background; no printed grid, dates, numbers, letters, logos, symbols or watermark; no illustration or picture panel; no large stains or shadows across the empty center; no glossy effects. Output only the blank calendar texture.",
+  "style_reference": "art/review/opening-refinement/08-gameplay.png",
+  "source": "/home/xigo/.codex/generated_images/01a170fd-817c-7c00-8b87-7e9db953f9fa/exec-76a27507-945f-41ac-ac1b-8640c035efd6.png",
+  "asset": "assets/ui/wall-calendar.png",
+  "dimensions": [
+    512,
+    640
+  ],
+  "pixel_grid": [
+    256,
+    320
+  ],
+  "palette_colors": 32,
+  "processing": "BOX downsample to 256x320; 32-color Floyd-Steinberg quantization; NEAREST upscale to 512x640; optimized indexed PNG. Opaque paper face.",
+  "usage": "Lit 80x100 cm wall calendar with a 2 cm paper backing. A nearest-sampled 512x640 UI render target combines the generated paper with a live ten-day grid, today marker and bill labels. Low textured emission maintains legibility in the dim wall corner.",
+  "font": "Unmodified assets/fonts/LiberationSans-Bold.ttf; FontSmoothing::None.",
+  "validation": "Asset assertions: 512x640 indexed PNG, at most 32 colors, fully opaque, at most 128 KiB. Focused campaign-driven calendar tests and room inspection.",
+  "source_sha256": "dcf1cadb398f42073ccee5bfb2421dff362364e2a842dc6a8989a7424b771bf4",
+  "asset_sha256": "d23c3190f4bfe3970826b65ba418d770f7f00757d4caba4f0da8f073d494eaf4",
+  "file_bytes": 55099
+}

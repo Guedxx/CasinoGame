@@ -1,0 +1,17 @@
+{
+  "purpose": "Focused Sales before/after an actual TV sale and HUD inspection; isolated browser save",
+  "captures": [
+    "hud",
+    "no-sales",
+    "offers",
+    "confirmation",
+    "just-sold",
+    "remaining-offers",
+    "sold-history"
+  ],
+  "errors": [],
+  "sold": [
+    "Tv"
+  ],
+  "balance_cents": 20700
+}

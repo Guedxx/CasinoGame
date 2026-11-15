@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-20",
+  "browser": "Chromium 153",
+  "scope": "Adapter-only probe; no game workload or performance measurements",
+  "before": {
+    "args": [
+      "--enable-unsafe-webgpu",
+      "--ozone-platform=x11"
+    ],
+    "adapter": {
+      "vendor": "google",
+      "architecture": "swiftshader",
+      "device": "",
+      "description": "",
+      "isFallbackAdapter": true
+    },
+    "renderer": "ANGLE (AMD, AMD Radeon RX 6750 XT (radeonsi navi22 ACO), OpenGL 4.6 (Core Profile) Mesa 26.2.3-arch1.1)",
+    "vulkan": "disabled_off"
+  },
+  "after": {
+    "args": [
+      "--enable-unsafe-webgpu",
+      "--ozone-platform=x11",
+      "--use-angle=vulkan",
+      "--enable-features=Vulkan,VulkanFromANGLE"
+    ],
+    "adapter": {
+      "vendor": "amd",
+      "architecture": "rdna-2",
+      "device": "",
+      "description": "",
+      "isFallbackAdapter": false
+    },
+    "renderer": "ANGLE (AMD, Vulkan 1.4.354 (AMD Radeon RX 6750 XT (RADV NAVI22) (0x000073DF)), radv-26.2.3)",
+    "vulkan": "enabled_on"
+  }
+}

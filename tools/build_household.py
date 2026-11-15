@@ -51,7 +51,7 @@ dog['samplers'] = [{'magFilter': 9728, 'minFilter': 9728}]
 dog['textures'] = [{'source': 0, 'sampler': 0}]
 dog['materials'][0]['pbrMetallicRoughness'] = {
     'baseColorTexture': {'index': 0}, 'metallicFactor': 0, 'roughnessFactor': 0.95}
-dog['animations'] = [a for a in dog['animations'] if a['name'] == 'Dog1_Lay_Loop']
+dog['animations'] = [a for a in dog['animations'] if a['name'] == 'Dog1_Sit_Loop']
 assert len(dog['animations']) == 1 and len(dog['skins']) == 1
 assert dog['meshes'][0]['primitives'][0]['attributes'].keys() >= {'JOINTS_0', 'WEIGHTS_0', 'TEXCOORD_0'}
 write_glb('pipoca.glb', dog, blob)
@@ -153,4 +153,4 @@ with wave.open(str(audio / 'pressure.wav'), 'wb') as output:
     output.setparams((1, 2, rate, len(samples), 'NONE', 'not compressed'))
     output.writeframes(struct.pack('<' + 'h' * len(samples), *samples))
 assert all(hashlib.sha256(p.read_bytes()).hexdigest() == digest for p, digest in originals.items())
-print('Household: dog skin/lay clip + exact PNG, supplied food UV atlas, 3 normalized litter GLBs, pressure WAV; sources unchanged')
+print('Household: dog skin/sit clip + exact PNG, supplied food UV atlas, 3 normalized litter GLBs, pressure WAV; sources unchanged')

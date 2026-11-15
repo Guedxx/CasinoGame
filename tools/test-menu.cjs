@@ -7,7 +7,9 @@ const url = process.argv[3] || 'http://127.0.0.1:8080/';
 
 (async () => {
   mkdirSync(directory, { recursive: true });
-  const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', headless: false, args: ['--no-sandbox'] });
+  const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', headless: false,
+    args: ['--no-sandbox', '--ozone-platform=x11', '--enable-unsafe-webgpu',
+      '--use-angle=vulkan', '--enable-features=Vulkan,VulkanFromANGLE'] });
   const probe = await browser.newPage({ viewport: null });
   const deviceScaleFactor = await probe.evaluate(() => devicePixelRatio);
   await probe.close();

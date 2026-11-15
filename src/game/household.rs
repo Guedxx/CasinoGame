@@ -234,17 +234,19 @@ fn setup(
     );
     commands
         .spawn((
-            Name::new("Pipoca resting by the window"),
+            Name::new("Pipoca sitting by the window"),
             Pipoca,
             HouseholdVisual::Owned(HouseholdItem::Pipoca),
             WorldAssetRoot(assets.load(GltfAssetLabel::Scene(0).from_asset("models/pipoca.glb"))),
-            Transform::from_xyz(2.88, 0.011, 1.70).with_scale(Vec3::splat(0.16)),
+            Transform::from_xyz(2.72, 0.02, 1.70)
+                .with_rotation(Quat::from_rotation_y(std::f32::consts::FRAC_PI_2))
+                .with_scale(Vec3::splat(0.28)),
             DogAnimation(graphs.add(graph), index),
             // Collider dimensions are local, scaled with the supplied rig's runtime root.
             Collider::compound(vec![(
-                Vec3::new(0.0, 0.8, 0.0),
+                Vec3::new(0.0, 1.4, 0.3),
                 Quat::IDENTITY,
-                Collider::cuboid(0.8, 0.8, 2.4),
+                Collider::cuboid(0.65, 1.5, 2.1),
             )]),
         ))
         .observe(animate_dog);

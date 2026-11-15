@@ -1,0 +1,13 @@
+{
+  "purpose": "Focused recapture of corrected views and actual contact-row mouse click",
+  "captures": [
+    "roulette-selected",
+    "roulette-result",
+    "contact-mouse-click",
+    "marina-thread",
+    "bank",
+    "food",
+    "daily-cap"
+  ],
+  "errors": []
+}

@@ -20,7 +20,7 @@ fn review(
     keys: Res<ButtonInput<KeyCode>>,
     mut view: ResMut<ReviewView>,
     mut cameras: Query<&mut Transform, With<super::camera::MainCamera>>,
-    mut text: Query<&mut Visibility, With<Text>>,
+    mut text: Query<&mut Visibility, (With<Text>, Without<super::calendar::CalendarText>)>,
 ) {
     let views = [
         (Vec3::new(1.45, 1.65, 3.8), Vec3::new(-0.03, 1.4, 2.7)),
@@ -42,6 +42,8 @@ fn review(
         (Vec3::new(1.4, 1.6, 2.2), Vec3::new(2.88, 0.25, 1.7)),
         (Vec3::new(1.2, 1.6, 3.1), Vec3::new(2.9, 1.2, 4.7)),
         (Vec3::new(1.8, 1.65, 2.0), Vec3::new(1.0, 0.9, -0.6)),
+        (Vec3::new(2.15, 1.67, -0.90), Vec3::new(0.05, 1.50, 0.40)),
+        (Vec3::new(0.85, 1.75, 1.35), Vec3::new(0.05, 1.80, 0.95)),
     ];
     for (index, key) in [
         KeyCode::F1,
@@ -63,6 +65,8 @@ fn review(
         KeyCode::Home,
         KeyCode::Insert,
         KeyCode::Delete,
+        KeyCode::End,
+        KeyCode::PageDown,
     ]
     .into_iter()
     .enumerate()

@@ -31,6 +31,8 @@ Losing window focus or browser pointer lock also opens the menu. The closed door
 furniture, walls, floor, and ceiling are solid.
 
 Use **E** near an object for household actions and **Tab** to raise or lower the phone.
+A shallow wall calendar left of the TV marks today and the electricity/rent deadlines
+across the ten-day campaign, including paid bills, overdue bills and rent extensions.
 The phone keeps a modern blue/teal home screen, colorful app icons, rounded widgets and
 a favorites dock, with low-resolution, palette-limited bitmaps for a PSX look. It contains
 fictional betting games, banking, financial/betting history and saved daily
@@ -77,12 +79,23 @@ The local server disables HTTP caching for the page, code and assets. For an exi
 cached tab, disable the HTTP cache in browser developer tools and reload once;
 keep the toolbox open while developing. Keep site storage to preserve campaign saves.
 Startup reports an error if the browser cannot provide a WebGPU graphics device.
-On this Linux development PC, Chromium needs WebGPU enabled explicitly.
+Zen builds using Firefox 152–156 can crash on Linux during WebGPU canvas teardown
+with `Queue[Id(...)] does not exist` ([Mozilla bug 2037013](https://bugzilla.mozilla.org/show_bug.cgi?id=2037013)).
+Upgrade to a browser engine containing the Firefox 157 fix, or use Chromium.
+The local readback workaround was removed because it substantially reduced FPS;
+Zen uses its default shared-texture presentation again.
+On this Linux development PC, Chromium needs WebGPU and the Vulkan backend enabled
+explicitly. Enabling WebGPU alone selects the SwiftShader CPU fallback even when
+WebGL is hardware accelerated. Use the [WebGPU working group's Linux flags](https://github.com/gpuweb/gpuweb/wiki/Implementation-Status):
 Quit all Chromium windows before running this command so the flags take effect:
 
 ```sh
-chromium --ozone-platform=x11 --enable-unsafe-webgpu --ignore-gpu-blocklist http://localhost:8080/
+chromium --ozone-platform=x11 --enable-unsafe-webgpu --use-angle=vulkan --enable-features=Vulkan,VulkanFromANGLE http://localhost:8080/
 ```
+
+In the browser console, `(await navigator.gpu.requestAdapter()).info` should report
+`isFallbackAdapter: false` and the hardware vendor (`amd` on this PC), not `google` /
+`swiftshader`. The browser capture and benchmark tools use the same Vulkan flags.
 
 At High quality, both versions use one sunlight shadow cascade and six shadow-casting spotlights.
 On system Rust installations with `rust-src` but no precompiled
@@ -96,21 +109,19 @@ quicker development builds. Release linking takes longer but produces a smaller 
 
 Choose **Settings** on the title screen, or **P → Settings** during play.
 Settings returns to the screen it was opened from. The pause and settings panels are centered over the scene.
-High is the default; all presets enable PSX texture warping and model jitter.
-Presets can be adjusted individually; unmatched combinations display **Custom**.
+High is the default. Presets select shadow quality and enable both PSX effects; Lighting changes shadow quality only. Disabling either effect displays **Custom**.
 
 | Setting | Low | Medium | High |
 | --- | --- | --- | --- |
-| Lighting | Shadows off | 1024px shadows, hardware filtering | Original 2048px shadows, Gaussian filtering |
-| Anti-aliasing | Off | FXAA | 4× MSAA |
+| Lighting | Shadows off | 1024px shadows, hardware filtering | 2048px shadows, hardware filtering |
 
 All lights, fog, scene geometry and original texture dimensions stay present at every setting.
 Rendering always uses the full window resolution; there is no scaling camera or texture-resizing queue.
-Anti-aliasing can also be selected individually: **Off, FXAA, SMAA (High), or 4× MSAA**.
-FXAA is a fast post-process; SMAA preserves edges more accurately at additional processing cost.
-The web supports only 1×/4× MSAA, so 2×/8× are not offered. FXAA/SMAA turn MSAA off and are mutually exclusive.
-Implementation follows [Bevy 0.19.1 FXAA](https://raw.githubusercontent.com/bevyengine/bevy/v0.19.1/crates/bevy_anti_alias/src/fxaa/mod.rs) and
-[SMAA](https://raw.githubusercontent.com/bevyengine/bevy/v0.19.1/crates/bevy_anti_alias/src/smaa/mod.rs).
+Antialiasing is permanently disabled for the scene, phone, UI edges, and text.
+Game textures use nearest-neighbor sampling, without linear, mipmap blending, or anisotropic filtering.
+Shadows retain Bevy's linear comparison samplers for hardware 2×2 filtering to avoid blocky shadow-map edges.
+Tone mapping and debanding are disabled.
+These choices are fixed for a sharper PSX appearance and have no settings toggles.
 **Texture warping** blends 20% affine UVs with 80% perspective-correct UVs, capped at 0.01 UV
 units per axis to keep large tiled surfaces subtle. Cutout materials retain perspective-correct UVs to preserve their silhouettes and shadow masks. **Model jitter**
 snaps vertices to a one-pixel screen grid in the camera color and depth passes only; shadow maps
@@ -125,8 +136,9 @@ Changes preview immediately;
 **Save settings** commits them, while **Cancel** restores the last saved settings. Escape also
 cancels on native or with browser Escape capture active. Without browser Escape capture,
 the first Escape while captured releases the mouse and keeps settings open.
-Version-one saved preferences migrate lighting and anti-aliasing only; removed texture and resolution values are discarded.
-Version-two saves also migrate with both PSX effects enabled. New saves use schema version three in the existing storage location.
+Version-one and version-two preferences retain lighting only; removed antialiasing, texture, and resolution choices are discarded.
+Older preferences enable both PSX effects by default. Existing PSX worktree saves retain their effect choices while discarding antialiasing.
+New saves use schema version three in the existing storage location.
 
 Settings are stored in browser localStorage (`casino-game.graphics.v1`), or in
 `CasinoGame/casino-game.graphics.v1.json` under the native user configuration directory
@@ -278,6 +290,15 @@ blender --background --factory-startup --python tools/build_apartment_city.py
 tools/build-web.sh
 ```
 
+The ten personal photos reuse the two original frame atlases and mesh UVs.
+`art/apartment-photos/` contains the finished 256×256 and 242×178 indexed PNGs
+(64 colors each, 80% saturation), plus their attachment-to-frame mapping and crops.
+They total 42,467 bytes on disk and 434,448 bytes decoded RGBA, 93.3% and 75% less
+than the stock atlases. Blender packs these textures into both apartment exports;
+the full-resolution personal photos are not included. To regenerate the atlases,
+run `python3 tools/build_apartment_photos.py` with the ten original photo paths in
+attachment order, then rebuild the Blender scene as above.
+
 The Blender builder verifies one retained Home, four remaining solid windows,
 sealed entrance-side wall sections, measured clearances between windows and mounted
 fixtures, balcony door/floor alignment, source provenance for the exterior,
@@ -379,7 +400,7 @@ The browser uses Bevy's CPU light assignment for this six-spotlight scene.
 The spotlight shader skips direct shadow/BRDF work only when the existing range/cone
 attenuation is exactly zero, and skips a direct BRDF with exactly zero shadow visibility.
 Positive lighting and diffuse transmission keep their original calculations.
-Fog, light sources, shadows, MSAA, textures, geometry and render resolution are unchanged.
+That optimization preserves fog, light sources, geometry and render resolution; the fixed unfiltered rendering policy above applies at every quality.
 
 Bevy is pinned to `=0.19.1` because the shader guard patches that version's embedded
 WGSL. An unrecognized shader keeps the original source and logs a warning. Recheck
@@ -388,11 +409,12 @@ the scene grows substantially beyond its current six spotlights.
 
 The [original settings report](art/review/performance/settings/index.html) is historical: its preset FPS measurements include the removed texture and resolution reductions.
 Current presets retain full resolution and original textures, so those figures do not describe current preset performance.
-The [anti-aliasing checks](art/review/performance/antialiasing/interaction/results.json) cover actual GPU passes, fixed scene/UI size, migration, saving and cancellation. Reproduce
-the settings checks against a running `scene-review` build with Playwright on `NODE_PATH`:
+The [anti-aliasing report](art/review/performance/antialiasing/interaction/results.json) is also historical; its selectable AA modes have been removed.
+The settings script now checks single-sample rendering without FXAA/SMAA at every lighting preset, legacy migration, saving and cancellation.
+Run it only when browser regression checks are requested, against a `scene-review` build with Playwright on `NODE_PATH`:
 
 ```sh
-node tools/test-settings.cjs art/review/performance/antialiasing/interaction http://127.0.0.1:8080/
+node tools/test-settings.cjs art/review/performance/unfiltered/interaction http://127.0.0.1:8080/
 ```
 
 ## Checks

@@ -1,0 +1,35 @@
+{
+  "purpose": "Focused visual inspection of corrected opening palms and raise/lower transitions",
+  "method": "Blender Workbench render of exported opening_body.glb using its animated IntroEye; body only, no apartment",
+  "captures": [
+    {
+      "seconds": 26.5,
+      "image": "01-raising.png"
+    },
+    {
+      "seconds": 28.5,
+      "image": "02-palms-raised.png"
+    },
+    {
+      "seconds": 31.5,
+      "image": "03-palms-sway.png"
+    },
+    {
+      "seconds": 34.5,
+      "image": "04-palms-return.png"
+    },
+    {
+      "seconds": 38,
+      "image": "05-palms-held.png"
+    },
+    {
+      "seconds": 39,
+      "image": "06-lowering.png"
+    }
+  ],
+  "checks": [
+    "Both palms face camera at raised poses",
+    "Raise and lower poses retain continuous wrist and sleeve attachment"
+  ],
+  "browser_note": "Browser and asset loading had no errors, but software renderer was too slow to reach raised-hand shot in captured interval."
+}

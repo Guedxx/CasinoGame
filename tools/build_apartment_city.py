@@ -78,6 +78,14 @@ for o in list(bpy.context.scene.objects):
         bpy.data.objects.remove(o, do_unlink=True)
 assert len(kept) > 100 and sum(o.name == 'Home' for o in kept) == 1
 
+# Keep the ten personal photos in the original two shared frame atlases.
+for name in ('Photo_frame', 'Picture_frames'):
+    material = bpy.data.materials[name]
+    texture = next(n for n in material.node_tree.nodes if n.type == 'TEX_IMAGE')
+    texture.image = bpy.data.images.load(str(ROOT / 'art/apartment-photos' / (name + '.png')))
+    texture.interpolation = 'Closest'
+    assert max(texture.image.size) <= 256
+
 # Remove the porch, stairs, chassis skirt, and overhanging trailer roof.
 home = bpy.data.objects['Home']
 bm = bmesh.new()
@@ -369,7 +377,9 @@ HOST_WEST, HOST_EAST, HOST_FRONT, HOST_BACK = -11.34, 3.66, -8.05, 9.45
 for y in FLOORS:
     # Floor wings and the corridor landing leave a real opening over the stair flights.
     slab((-6.845,y-.245,.70),8.99,17.5,thickness=.23,label='host_west_floor')
-    slab((1.755,y-.245,.70),3.81,17.5,thickness=.23,label='host_apartment_floor')
+    # The occupied apartment's plaster ceiling already closes this storey.
+    if y != 3.0:
+        slab((1.755,y-.245,.70),3.81,17.5,thickness=.23,label='host_apartment_floor')
     slab((-1.25,y-.245,2.50),2.2,13.9,thickness=.23,label='host_corridor_floor')
     for i in range(6):
         z=HOST_FRONT+(i+.5)*17.5/6
@@ -584,6 +594,8 @@ for o in interior.objects:
         hit,point,normal,face,object_hit,matrix=bpy.context.scene.ray_cast(bpy.context.evaluated_depsgraph_get(),blender((4,center.y,center.z)),blender((-1,0,0)),distance=1)
         assert hit and object_hit==home and point.x>hi.x, f'Picture exposed outside shell: {o.name}'
 for o in city.objects:
+    if o.name.startswith('Urban_host_apartment_floor'):
+        assert not 2.7 < bounds([o])[0].y < 2.8, 'Concrete slab overlaps apartment ceiling'
     if o.name.startswith('Urban_stair_half_landing'):
         assert bounds([o])[0].z>HOST_FRONT+.03, 'Stair landing intersects exterior wall'
 assert not any(o.name.startswith(('Terrain', 'Background', 'Home.')) for o in bpy.context.scene.objects)

@@ -1,0 +1,174 @@
+{
+  "style": "Half resolution, 80% saturation, 64 colors per atlas, nearest sampling",
+  "atlases": {
+    "Picture_frames": {
+      "size": [
+        256,
+        256
+      ],
+      "png_bytes": 25754,
+      "rgba_bytes": 262144,
+      "original_png_bytes": 359217,
+      "mirrored_for_original_uvs": true,
+      "photos": [
+        {
+          "attachment": 1,
+          "object": "Apartment_Picture_frames.007",
+          "subject": "Friends at the restaurant",
+          "aperture": [
+            34,
+            34,
+            231,
+            171
+          ],
+          "source_crop": null
+        },
+        {
+          "attachment": 2,
+          "object": "Apartment_Picture_frames.008",
+          "subject": "Friends at the restaurant, reverse angle",
+          "aperture": [
+            282,
+            29,
+            488,
+            187
+          ],
+          "source_crop": null
+        },
+        {
+          "attachment": 4,
+          "object": "Apartment_Picture_frames.009",
+          "subject": "Shirt and tie portrait",
+          "aperture": [
+            31,
+            234,
+            166,
+            427
+          ],
+          "source_crop": [
+            100,
+            235,
+            800,
+            1235
+          ]
+        },
+        {
+          "attachment": 7,
+          "object": "Apartment_Picture_frames.010",
+          "subject": "Playing guitar",
+          "aperture": [
+            214,
+            230,
+            341,
+            342
+          ],
+          "source_crop": [
+            0,
+            370,
+            899,
+            1230
+          ]
+        },
+        {
+          "attachment": 5,
+          "object": "Apartment_Picture_frames.011",
+          "subject": "Friends in the classroom",
+          "aperture": [
+            214,
+            372,
+            341,
+            473
+          ],
+          "source_crop": null
+        },
+        {
+          "attachment": 3,
+          "object": "Apartment_Picture_frames.012",
+          "subject": "Golden retriever",
+          "aperture": [
+            377,
+            323,
+            447,
+            394
+          ],
+          "source_crop": [
+            80,
+            215,
+            645,
+            790
+          ]
+        },
+        {
+          "attachment": 6,
+          "object": "Apartment_Picture_frames.013",
+          "subject": "Curly haired portrait",
+          "aperture": [
+            369,
+            224,
+            408,
+            286
+          ],
+          "source_crop": [
+            160,
+            235,
+            920,
+            1400
+          ]
+        }
+      ]
+    },
+    "Photo_frame": {
+      "size": [
+        242,
+        178
+      ],
+      "png_bytes": 16713,
+      "rgba_bytes": 172304,
+      "original_png_bytes": 279331,
+      "mirrored_for_original_uvs": false,
+      "photos": [
+        {
+          "attachment": 10,
+          "object": "Apartment_Photo_frame.002",
+          "subject": "University building on the living room shelf",
+          "aperture": [
+            258,
+            235,
+            400,
+            326
+          ],
+          "source_crop": null
+        },
+        {
+          "attachment": 9,
+          "object": "Apartment_Photo_frame_01.002",
+          "subject": "University courtyard in the bedroom",
+          "aperture": [
+            262,
+            39,
+            455,
+            170
+          ],
+          "source_crop": [
+            280,
+            135,
+            1361,
+            925
+          ]
+        },
+        {
+          "attachment": 8,
+          "object": "Apartment_Photo_frame_02.002",
+          "subject": "Fallen tree on the living room shelf",
+          "aperture": [
+            43,
+            41,
+            185,
+            216
+          ],
+          "source_crop": null
+        }
+      ]
+    }
+  }
+}

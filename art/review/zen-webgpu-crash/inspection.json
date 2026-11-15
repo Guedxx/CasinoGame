@@ -1,0 +1,44 @@
+{
+  "observed_crash": {
+    "process": "zen-bin",
+    "thread": "CanvasRenderer",
+    "timestamp": "2026-10-20T15:19:45-03:00",
+    "signal": "SIGSEGV",
+    "reason": "Queue[Id(0,3)] does not exist",
+    "source": "third_party/rust/wgpu-core/src/storage.rs",
+    "inspection": "Local ELF core inspected with GDB; REA crash provider unavailable (caller-supplied pwntools missing)."
+  },
+  "browser": {
+    "zen": "1.21.8b",
+    "gecko": "152.0.6",
+    "build_id": "20260716083326"
+  },
+  "diagnosis": {
+    "matched_upstream_bug": "https://bugzilla.mozilla.org/show_bug.cgi?id=2037013",
+    "mechanism": "Linux shared-texture teardown accesses an already-dropped WebGPU queue",
+    "fixed_in_gecko": 157,
+    "confidence": "Exact crash reason and affected engine match the upstream bug; full native call chain is unavailable in this stripped Zen build."
+  },
+  "workaround": {
+    "preference": "dom.webgpu.allow-present-without-readback",
+    "value": false,
+    "applied_to": "~/.zen/57io2os1.Default (release)/user.js",
+    "scope": "WebGPU canvas presentation in this Zen profile",
+    "tradeoff": "Frame readback can reduce FPS.",
+    "undo": "After updating to Gecko 157+, remove the user.js override and reset this preference in about:config.",
+    "status": "Removed at user request because the frame readback reduced FPS; user.js deleted and saved preference reset."
+  },
+  "verification": {
+    "isolated_profile": true,
+    "repeated_loads_with_advancing_canvas": 9,
+    "gameplay_seconds": 15,
+    "final_probe": {
+      "frames": 1349,
+      "errors": [],
+      "lost": []
+    },
+    "native_log_confirms_shared_texture_disabled": true,
+    "full_suites_run": false,
+    "scope": "Historical verification while the workaround was enabled; does not describe current settings."
+  }
+}

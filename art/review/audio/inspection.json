@@ -1,0 +1,151 @@
+{
+  "result": {
+    "contexts": [
+      "running"
+    ],
+    "phases": {
+      "startup": {
+        "buffers": 2,
+        "peak": 0,
+        "rms": 0
+      },
+      "start": {
+        "buffers": 68,
+        "peak": 0.2762276530265808,
+        "rms": 0.029549151292110044
+      },
+      "apartment": {
+        "buffers": 15,
+        "peak": 0.05678039789199829,
+        "rms": 0.022097151092313402
+      },
+      "footsteps": {
+        "buffers": 58,
+        "peak": 0.29272568225860596,
+        "rms": 0.08926169584740833
+      },
+      "slots": {
+        "buffers": 82,
+        "peak": 0.29719722270965576,
+        "rms": 0.043370066144919124
+      },
+      "roulette": {
+        "buffers": 83,
+        "peak": 0.46497297286987305,
+        "rms": 0.2032522922823468
+      },
+      "football": {
+        "buffers": 76,
+        "peak": 0.5006629824638367,
+        "rms": 0.20690479176176418
+      },
+      "pause": {
+        "buffers": 15,
+        "peak": 0,
+        "rms": 0
+      }
+    },
+    "campaign": [
+      "Slots",
+      "RouletteRed",
+      "FootballDraw",
+      "RouletteRed",
+      "FootballHome"
+    ]
+  },
+  "audioRequests": [
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/click.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/open.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/back.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/error.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/notify.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/confirm.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/tick.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/chip.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/door.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/bell.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/bag.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/cook.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/cloth.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/clean.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/vibrate.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/dog.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/tv.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/roulette.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/step1.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/room.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/fridge.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/whistle.wav",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:8080/assets/audio/pressure.wav",
+      "status": 200
+    }
+  ],
+  "errors": []
+}

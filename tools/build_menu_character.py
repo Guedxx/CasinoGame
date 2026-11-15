@@ -203,7 +203,7 @@ for seconds, lean, raised, wrist_turn, standing, position, yaw, pitch in poses:
         if raised:
             point_bone(side + 'Hand', (1, -sign * .05, .12))
             hand = rig.pose.bones['mixamorig:' + side + 'Hand']
-            hand.rotation_quaternion @= Quaternion((0, 1, 0), sign * (.85 + wrist_turn))
+            hand.rotation_quaternion @= Quaternion((0, 1, 0), sign * (-.85 + wrist_turn))
     bpy.context.view_layer.update()
     target_hip = Vector((3.03, .90, .68))
     if standing:
@@ -229,10 +229,17 @@ bpy.context.view_layer.update()
 assert (conversion @ eye.location - Vector((3.26, 1.40, -.90))).length < 1e-5
 bpy.context.scene.frame_set(45 * 24)
 assert (conversion @ eye.location - Vector((2.15, 1.67, -.90))).length < 1e-5
-for seconds, *_ in poses:
+for seconds, _, raised, *_ in poses:
     bpy.context.scene.frame_set(seconds * 24)
     posed = source.evaluated_get(bpy.context.evaluated_depsgraph_get())
     assert all(math.isfinite(value) for v in posed.data.vertices for value in v.co)
+    if raised:
+        for side, sign in [('Left', 1), ('Right', -1)]:
+            hand = rig.matrix_world @ rig.pose.bones['mixamorig:' + side + 'Hand'].matrix
+            # The source palms face opposite directions along each hand's local Z axis.
+            palm = (hand.to_3x3() @ Vector((0, 0, -sign))).normalized()
+            to_eye = (eye.location - hand.translation).normalized()
+            assert palm.dot(to_eye) > .65, f'{side} palm must face the POV at {seconds}s'
 bpy.context.scene.frame_set(0)
 bpy.ops.object.select_all(action='DESELECT')
 for obj in (source, rig, body_root, eye):

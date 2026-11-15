@@ -2,13 +2,15 @@
 const assert = require('node:assert/strict');
 const { mkdirSync, writeFileSync } = require('node:fs');
 const { chromium } = require('playwright');
-const directory = process.argv[2] || 'art/review/performance/antialiasing/interaction';
+const directory = process.argv[2] || 'art/review/performance/unfiltered/interaction';
 const url = process.argv[3] || 'http://127.0.0.1:8080/';
 const storageKey = 'casino-game.graphics.v1';
 
 async function main() {
   mkdirSync(directory, { recursive: true });
-  const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', headless: false, args: ['--no-sandbox'] });
+  const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', headless: false,
+    args: ['--no-sandbox', '--ozone-platform=x11', '--enable-unsafe-webgpu',
+      '--use-angle=vulkan', '--enable-features=Vulkan,VulkanFromANGLE'] });
   const probe = await browser.newPage({ viewport: null });
   const deviceScaleFactor = await probe.evaluate(() => devicePixelRatio);
   await probe.close();
@@ -76,59 +78,63 @@ async function main() {
     // Hit-testing must continue to agree with the displayed controls.
     await page.mouse.click(940, 210, { delay: 150 }); focus = 2;
     await page.waitForTimeout(500);
-    for (const mode of ['off', 'fxaa', 'smaa', 'msaa4', 'fxaa', 'off', 'smaa']) {
-      await select(6 + ['off', 'fxaa', 'smaa', 'msaa4'].indexOf(mode));
+    for (const [index, quality] of ['low', 'medium', 'high', 'low', 'high'].entries()) {
+      await select(['low', 'medium', 'high'].indexOf(quality));
       await page.waitForTimeout(3000);
       const captured = await passes();
       const target = captured.main_opaque_pass_3d?.targets[0];
-      assert.deepEqual(target, { ...canvas, samples: mode === 'msaa4' ? 4 : 1 }, `${mode}: the scene must render at full window resolution`);
-      assert.equal(!!captured.fxaa, mode === 'fxaa', 'FXAA must run only when selected');
-      for (const label of ['SMAA edge detection pass', 'SMAA blending weight calculation pass', 'SMAA neighborhood blending pass']) {
-        assert.equal(!!captured[label], mode === 'smaa', `${label} must run only when selected`);
+      assert.deepEqual(target, { ...canvas, samples: 1 }, `${quality}: native resolution without MSAA`);
+      for (const label of ['fxaa', 'SMAA edge detection pass', 'SMAA blending weight calculation pass', 'SMAA neighborhood blending pass']) {
+        assert(!captured[label], `${quality}: ${label} must stay absent`);
       }
-      assert(originalTitle.equals(await title()), `${mode}: menu heading pixels and size must stay unchanged`);
+      assert(originalTitle.equals(await title()), `${quality}: menu heading pixels and size must stay unchanged`);
       assert.equal(await saved(), null, 'Live preview must not save');
-      await screenshot(`settings-${mode}`);
-      modes.push({ mode, target, activePasses: Object.keys(captured) });
+      await screenshot(`settings-${quality}-${index}`);
+      modes.push({ quality, target, activePasses: Object.keys(captured) });
     }
-    checks.push('Off, FXAA, SMAA and 4x MSAA execute the expected GPU passes, remain exclusive and preserve full-resolution rendering and identical menu heading pixels');
-    await select(16); // Save SMAA.
-    assert.deepEqual(JSON.parse(await saved()), { version: 3, graphics: { lighting: 'high', anti_aliasing: 'smaa', texture_warping: true, vertex_jitter: true } });
+    checks.push('Every lighting preset renders at full resolution with one sample and without FXAA/SMAA; menu heading stays unchanged');
+    await select(12); // Save High.
+    assert.deepEqual(JSON.parse(await saved()), { version: 3, graphics: { lighting: 'high', texture_warping: true, vertex_jitter: true } });
     await ready();
-    assert((await passes())['SMAA neighborhood blending pass']);
-    await settings(); await select(7); await page.waitForTimeout(1500); // Preview FXAA.
+    await settings(); await select(0); // Preview Low.
+    await page.waitForTimeout(700);
+    const cancelStart = logs.length;
     await key('Escape'); await page.waitForTimeout(1500);
-    assert((await passes())['SMAA neighborhood blending pass'], 'Cancel must restore saved SMAA');
+    assert(logs.slice(cancelStart).some(line => line.includes('lighting: High')), 'Cancel must restore saved High lighting');
     await key('Enter');
-    checks.push('Save and reload preserve SMAA; Cancel restores it after an FXAA preview');
-    // Old reduced-resolution saves must not reactivate removed features.
-    await page.evaluate(key => localStorage.setItem(key, JSON.stringify({ version: 1, graphics: {
-      lighting: 'medium', textures: 'low', render_scale: 'low', msaa: false,
-    } })), storageKey);
-    await ready();
-    assert(logs.some(line => line.includes('lighting: Medium, anti_aliasing: Off')));
-    assert.deepEqual((await passes()).main_opaque_pass_3d.targets[0], { ...canvas, samples: 1 });
-    await settings(); await select(16);
-    assert.deepEqual(JSON.parse(await saved()), { version: 3, graphics: { lighting: 'medium', anti_aliasing: 'off', texture_warping: true, vertex_jitter: true } });
-    await key('Enter');
-    checks.push('Legacy low-resolution/low-texture save migrates lighting and AA only, renders at full resolution and saves without removed fields');
-    await settings(); await select(1); // Medium preset now uses FXAA.
-    await page.waitForTimeout(1500);
-    assert((await passes()).fxaa);
+    checks.push('Save and reload preserve lighting; Cancel restores saved lighting after a Low preview');
+    // Old saves retain lighting and cannot reactivate removed rendering choices.
+    for (const legacy of [
+      { version: 1, graphics: { lighting: 'medium', textures: 'low', render_scale: 'low', msaa: true } },
+      ...['fxaa', 'smaa', 'msaa4'].map(anti_aliasing => ({ version: 2, graphics: { lighting: 'medium', anti_aliasing } })),
+    ]) {
+      await page.evaluate(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: storageKey, value: legacy });
+      const start = logs.length;
+      await ready();
+      assert(logs.slice(start).some(line => line.includes('lighting: Medium')));
+      const captured = await passes();
+      assert.deepEqual(captured.main_opaque_pass_3d.targets[0], { ...canvas, samples: 1 });
+      for (const label of ['fxaa', 'SMAA edge detection pass', 'SMAA blending weight calculation pass', 'SMAA neighborhood blending pass']) assert(!captured[label]);
+      await settings(); await select(12);
+      assert.deepEqual(JSON.parse(await saved()), { version: 3, graphics: { lighting: 'medium', texture_warping: true, vertex_jitter: true } });
+      await key('Enter');
+    }
+    checks.push('Version-one and version-two saves retain lighting, discard removed fields and cannot enable AA');
+    await settings(); await select(1);
     await page.setViewportSize({ width: 640, height: 480 });
-    await page.waitForTimeout(1500); await select(9); await page.waitForTimeout(1500);
+    await page.waitForTimeout(1500); await select(10); await page.waitForTimeout(1500);
     await screenshot('small-keyboard-scroll');
     await page.mouse.wheel(0, -1000); await page.waitForTimeout(500);
     await screenshot('small-wheel-scroll');
     await key('Escape'); await key('Enter');
-    checks.push('Medium enables FXAA; small-window keyboard and wheel scrolling keep settings usable');
+    checks.push('Small-window keyboard and wheel scrolling keep the remaining settings usable');
     await page.evaluate(key => localStorage.setItem(key, '{invalid'), storageKey);
     const start = logs.length;
     await ready();
-    assert(logs.slice(start).some(line => line.includes('lighting: High, anti_aliasing: Msaa4')));
+    assert(logs.slice(start).some(line => line.includes('lighting: High')));
     await settings();
     await page.evaluate(() => { Storage.prototype.setItem = () => { throw new DOMException('Storage disabled', 'SecurityError'); }; });
-    await select(16); await screenshot('storage-unavailable');
+    await select(12); await screenshot('storage-unavailable');
     assert(logs.some(line => line.includes('Cannot save graphics settings')));
     checks.push('Invalid storage defaults to High; failed writes keep settings usable for this session');
     assert.equal(errors.length, 0, errors.join('\n'));

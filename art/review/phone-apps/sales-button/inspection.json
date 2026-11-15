@@ -1,0 +1,13 @@
+{
+  "purpose": "Focused locked/unlocked Sell button inspection and actual mouse click; isolated browser save",
+  "captures": [
+    "locked-no-button",
+    "unlocked-button",
+    "mouse-opened-offers",
+    "sale-completed"
+  ],
+  "errors": [],
+  "sold": [
+    "Tv"
+  ]
+}

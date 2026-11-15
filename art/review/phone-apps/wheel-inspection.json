@@ -1,0 +1,8 @@
+{
+  "purpose": "Focused verification of the final roulette disk",
+  "captures": [
+    "roulette-selected",
+    "roulette-result"
+  ],
+  "errors": []
+}

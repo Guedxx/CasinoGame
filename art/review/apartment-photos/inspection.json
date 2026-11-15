@@ -1,0 +1,79 @@
+{
+  "checks": {
+    "apartment_city": {
+      "frames": [
+        "Apartment_Photo_frame.002",
+        "Apartment_Photo_frame_01.002",
+        "Apartment_Photo_frame_02.002",
+        "Apartment_Picture_frames.007",
+        "Apartment_Picture_frames.008",
+        "Apartment_Picture_frames.009",
+        "Apartment_Picture_frames.010",
+        "Apartment_Picture_frames.011",
+        "Apartment_Picture_frames.012",
+        "Apartment_Picture_frames.013"
+      ],
+      "textures": {
+        "Photo_frame": {
+          "size": [
+            242,
+            178
+          ],
+          "png_bytes": 16713,
+          "palette_colors": 64,
+          "nearest": true,
+          "sha256": "438c9cf40b105c4f7a70677ef0ca23de8d29ab34bf3031ef239e347c0dbdb608"
+        },
+        "Picture_frames": {
+          "size": [
+            256,
+            256
+          ],
+          "png_bytes": 25754,
+          "palette_colors": 64,
+          "nearest": true,
+          "sha256": "b7b0a84319a07158a4167f10e2e16c60f7111470b4bfc791a6efa587626cefb3"
+        }
+      },
+      "glb_bytes": 6368644
+    },
+    "apartment_windows": {
+      "frames": [
+        "Apartment_Photo_frame.002",
+        "Apartment_Photo_frame_01.002",
+        "Apartment_Photo_frame_02.002",
+        "Apartment_Picture_frames.007",
+        "Apartment_Picture_frames.008",
+        "Apartment_Picture_frames.009",
+        "Apartment_Picture_frames.010",
+        "Apartment_Picture_frames.011",
+        "Apartment_Picture_frames.012",
+        "Apartment_Picture_frames.013"
+      ],
+      "textures": {
+        "Photo_frame": {
+          "size": [
+            242,
+            178
+          ],
+          "png_bytes": 16713,
+          "palette_colors": 64,
+          "nearest": true,
+          "sha256": "438c9cf40b105c4f7a70677ef0ca23de8d29ab34bf3031ef239e347c0dbdb608"
+        },
+        "Picture_frames": {
+          "size": [
+            256,
+            256
+          ],
+          "png_bytes": 25754,
+          "palette_colors": 64,
+          "nearest": true,
+          "sha256": "b7b0a84319a07158a4167f10e2e16c60f7111470b4bfc791a6efa587626cefb3"
+        }
+      },
+      "glb_bytes": 6222960
+    }
+  },
+  "preview": "Unlit Blender views for crop, UV orientation, and placement; no gameplay or graphics suite run."
+}

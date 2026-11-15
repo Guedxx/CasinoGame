@@ -5,7 +5,9 @@ const { resolve } = require('node:path');
 (async () => {
   const directory = resolve(process.argv[2] || 'art/review/current');
   mkdirSync(directory, { recursive: true });
-  const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', headless: false, args: ['--no-sandbox'] });
+  const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', headless: false,
+    args: ['--no-sandbox', '--ozone-platform=x11', '--enable-unsafe-webgpu',
+      '--use-angle=vulkan', '--enable-features=Vulkan,VulkanFromANGLE'] });
   try {
     const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
     const errors = [];

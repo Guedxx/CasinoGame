@@ -1,0 +1,62 @@
+{
+  "purpose": "Focused wall-calendar inspection at normal and close oblique distances, with existing bank payment and rent extension",
+  "viewport": [
+    1280,
+    720
+  ],
+  "errors": [],
+  "logs": [
+    "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_winit-0.19.1/src/system.rs:67%c Creating new window Let It Ride (65v0) color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+    "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.19.1/src/renderer/mod.rs:288%c AdapterInfo { name: \"\", vendor: 0, device: 0, device_type: Other, device_pci_bus_id: \"\", driver: \"\", driver_info: \"\", backend: BrowserWebGpu, subgroup_min_size: 4, subgroup_max_size: 128, transient_saves_memory: false } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/cluster/mod.rs:87%c GPU clustering is supported on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.19.1/src/batching/gpu_preprocessing.rs:1372%c Some GPU preprocessing are limited on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/lighting_fast_path.rs:61%c Exact-zero spotlight fast path installed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics.rs:296%c Graphics quality High: GraphicsSettings { lighting: High, texture_warping: true, vertex_jitter: true } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics/psx.rs:188%c PSX effects: texture warping true, model jitter true color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/screens/menu.rs:276%c Title screen ready color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:331%c First-person player ready at Vec3(1.6, 0.92, 1.3); static colliders registered color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/intro.rs:344%c Opening cutscene ready color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:495%c Gameplay resumed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/review.rs:76%c City review camera 20 color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/review.rs:76%c City review camera 21 color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cWARN%c %c Tab navigation error: No tab groups found log.target = \"bevy_input_focus::tab_navigation\";\nlog.module_path = \"bevy_input_focus::tab_navigation\";\nlog.file = \"/home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_input_focus-0.19.1/src/tab_navigation.rs\";\nlog.line = 458; color: orange; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/review.rs:76%c City review camera 12 color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/review.rs:76%c City review camera 11 color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/review.rs:76%c City review camera 12 color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_winit-0.19.1/src/system.rs:67%c Creating new window Let It Ride (65v0) color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+    "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.19.1/src/renderer/mod.rs:288%c AdapterInfo { name: \"\", vendor: 0, device: 0, device_type: Other, device_pci_bus_id: \"\", driver: \"\", driver_info: \"\", backend: BrowserWebGpu, subgroup_min_size: 4, subgroup_max_size: 128, transient_saves_memory: false } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_pbr-0.19.1/src/cluster/mod.rs:87%c GPU clustering is supported on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c /home/xigo/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_render-0.19.1/src/batching/gpu_preprocessing.rs:1372%c Some GPU preprocessing are limited on this device. color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/lighting_fast_path.rs:61%c Exact-zero spotlight fast path installed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics.rs:296%c Graphics quality High: GraphicsSettings { lighting: High, texture_warping: true, vertex_jitter: true } color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/graphics/psx.rs:188%c PSX effects: texture warping true, model jitter true color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/screens/menu.rs:276%c Title screen ready color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:495%c Gameplay resumed color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/player.rs:331%c First-person player ready at Vec3(1.6, 0.92, 1.3); static colliders registered color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit",
+    "%cINFO%c src/game/review.rs:76%c City review camera 21 color: whitesmoke; background: #444 color: gray; font-style: italic color: inherit"
+  ],
+  "checks": [
+    "Two focused native calendar tests passed: due-day and paid status; campaign rendering through reports, payment, extension, TV sale/power loss, and campaign replacement without mutating campaign data.",
+    "WASM compile check and optimized scene-review build passed.",
+    "Inspected the final calendar at the normal gameplay viewpoint, from the TV area, and at a close oblique angle with High lighting and both PSX effects enabled.",
+    "Used the existing bank controls to pay electricity on day 1 and extend rent to day 10; campaign assertions passed.",
+    "Reloaded and used Continue; the calendar displays the paid electricity bill and the moved rent marker.",
+    "No browser script errors or failed asset requests in the final focused capture.",
+    "Final optimized default web build passed and replaced the inspection build in dist; scene-review shortcuts are disabled."
+  ],
+  "capture_environment": "1280x720 Chromium/Vulkan. Optional Keyboard Lock API disabled only in the capture context to avoid fullscreen permission churn; normal pointer capture and bank controls used.",
+  "screenshots": [
+    "00-gameplay.png",
+    "01-wall.png",
+    "02-oblique.png",
+    "03-paid-and-extended.png"
+  ],
+  "skipped": "Broad UI/graphics suites and graphics benchmarks.",
+  "web_build": "5d33bc3f04905814"
+}

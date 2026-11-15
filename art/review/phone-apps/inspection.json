@@ -1,0 +1,27 @@
+{
+  "purpose": "Focused affected-phone-view inspection, isolated browser saves, Low graphics, normal game build",
+  "captures": [
+    "home",
+    "betting-lobby",
+    "slots-ready",
+    "slots-spinning",
+    "slots-result",
+    "roulette-selected",
+    "roulette-result",
+    "football-selected",
+    "football-result",
+    "bank",
+    "history",
+    "reports-empty",
+    "sales",
+    "contacts",
+    "marina-thread",
+    "rafa-thread",
+    "support",
+    "daily-cap",
+    "food",
+    "sales-offers",
+    "fridge-confirm"
+  ],
+  "errors": []
+}

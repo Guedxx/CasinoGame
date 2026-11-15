@@ -6,6 +6,7 @@ pub fn run() {
     App::new()
         .add_plugins(
             DefaultPlugins
+                .set(ImagePlugin::default_nearest())
                 .set(AssetPlugin {
                     meta_check: bevy::asset::AssetMetaCheck::Never,
                     ..default()

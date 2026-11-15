@@ -58,7 +58,8 @@ async function main() {
   assert(Number.isInteger(rounds) && rounds > 0 && sampleMs >= 1000);
   mkdirSync(directory, { recursive: true });
   const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', headless: false,
-    args: ['--no-sandbox'] });
+    args: ['--no-sandbox', '--ozone-platform=x11', '--enable-unsafe-webgpu',
+      '--use-angle=vulkan', '--enable-features=Vulkan,VulkanFromANGLE'] });
   let report;
   const persist = () => writeFileSync(`${directory}/results.json`, JSON.stringify(report, null, 2) + '\n');
   try {
@@ -74,7 +75,7 @@ async function main() {
     if (preset) {
       assert(['low', 'medium', 'high'].includes(preset));
       await page.addInitScript(preset => localStorage.setItem('casino-game.graphics.v1', JSON.stringify({
-        version: 2, graphics: { lighting: preset, anti_aliasing: { low: 'off', medium: 'fxaa', high: 'msaa4' }[preset] }
+        version: 3, graphics: { lighting: preset }
       })), preset);
     }
     const errors = [];

@@ -1,5 +1,6 @@
 pub(crate) mod audio;
 pub(crate) mod betting;
+mod calendar;
 pub(crate) mod camera;
 pub(crate) mod campaign;
 pub(crate) mod campaign_save;
@@ -37,6 +38,7 @@ impl Plugin for GamePlugin {
             household::HouseholdPlugin,
             intro::IntroPlugin,
             tv::TvPlugin,
+            calendar::CalendarPlugin,
         ));
         app.add_systems(Update, lighting_fast_path::install);
         #[cfg(target_arch = "wasm32")]

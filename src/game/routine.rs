@@ -162,7 +162,7 @@ fn tag_targets(
     for dog in &dogs {
         commands.entity(dog).insert(RoutineTarget {
             kind: TargetKind::Pipoca,
-            center: Vec3::new(0.0, 0.8, 0.0),
+            center: Vec3::new(0.0, 1.4, 0.3),
         });
     }
     for (entity, mesh) in &unscanned {

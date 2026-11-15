@@ -1,0 +1,20 @@
+{
+  "native_test_build": "passed",
+  "final_focused_tests": [
+    "primary_keyboard_hints_follow_the_dispatch_inventory",
+    "roulette_stops_with_the_saved_color_under_the_top_pointer",
+    "selections_only_expose_the_current_mode_and_explicit_wager",
+    "slots_end_on_the_saved_symbols_and_football_does_not_invent_scores",
+    "food_uses_authoritative_actions_and_report_or_ending_blocks_phone",
+    "cap_amount_uses_ordered_events_and_requires_a_separate_explicit_apply",
+    "animation_progress_retains_phone_entities_and_scroll",
+    "selection_rules_and_my_bets_preserve_session_until_support",
+    "wheel_texture_has_transparent_corners_and_equal_solid_halves"
+  ],
+  "final_focused_tests_passed": 9,
+  "atlas_assertions": "passed",
+  "atlas_total_bytes": 13063,
+  "broad_ui_or_graphics_suites_run": false,
+  "benchmarks_run": false,
+  "procedural_wheel_rgba_bytes": 16384
+}

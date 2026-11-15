@@ -1,0 +1,12 @@
+{
+  "view": "F3 living-room window; F7 kitchen window also inspected",
+  "before": "Same rebuilt game with nearest shadow comparison sampling restored through browser instrumentation",
+  "after": "Unmodified rebuilt game with Bevy linear shadow comparison samplers",
+  "texture_warping": true,
+  "vertex_jitter": true,
+  "browser_errors": [],
+  "assertions": [
+    "Both shadow comparison samplers use linear min/mag filtering"
+  ],
+  "build": "cargo build with web-perf, wasm32-unknown-unknown, build-std, scene-review"
+}

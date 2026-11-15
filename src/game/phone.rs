@@ -2,6 +2,7 @@
 use bevy::{
     asset::{RenderAssetUsages, uuid::Uuid},
     camera::{RenderTarget, visibility::RenderLayers},
+    core_pipeline::tonemapping::{DebandDither, Tonemapping},
     image::{ImageLoaderSettings, ImageSampler},
     input::{
         ButtonState,
@@ -9,12 +10,14 @@ use bevy::{
         mouse::{MouseScrollUnit, MouseWheel},
     },
     light::NotShadowCaster,
+    light::ShadowFilteringMethod,
     picking::{
         PickingSystems,
         pointer::{Location, PointerAction, PointerId, PointerInput},
     },
     prelude::*,
     render::render_resource::{Extent3d, TextureDimension, TextureFormat, TextureUsages},
+    ui_render::UiAntiAlias,
     window::PrimaryWindow,
 };
 
@@ -216,7 +219,6 @@ impl Plugin for PhonePlugin {
                     tick_game,
                     scroll,
                     present,
-                    sync_view_msaa,
                     betting::animate,
                     animate,
                 )
@@ -255,6 +257,10 @@ fn setup(
         .spawn((
             TextureCamera,
             Camera2d,
+            Msaa::Off,
+            Tonemapping::None,
+            DebandDither::Disabled,
+            UiAntiAlias::Off,
             Camera {
                 order: -1,
                 is_active: false,
@@ -266,6 +272,10 @@ fn setup(
     commands.spawn((
         PhoneCamera,
         Camera3d::default(),
+        Tonemapping::None,
+        DebandDither::Disabled,
+        UiAntiAlias::Off,
+        ShadowFilteringMethod::Hardware2x2,
         Camera {
             order: 1,
             is_active: false,
@@ -1213,17 +1223,6 @@ fn scroll(
     for (mut position, node) in &mut panels {
         let max = ((node.content_size().y - node.size().y) * node.inverse_scale_factor()).max(0.0);
         position.y = (position.y + delta).clamp(0.0, max);
-    }
-}
-
-fn sync_view_msaa(
-    world: Query<&Msaa, (With<super::camera::MainCamera>, Without<PhoneCamera>)>,
-    mut foreground: Query<&mut Msaa, (With<PhoneCamera>, Without<super::camera::MainCamera>)>,
-) {
-    let Ok(msaa) = world.single() else { return };
-    // ClearNone must share the world's intermediate texture; Bevy keys it by MSAA too.
-    for mut foreground in &mut foreground {
-        foreground.set_if_neq(*msaa);
     }
 }
 

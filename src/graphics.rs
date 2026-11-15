@@ -1,8 +1,11 @@
 //! User-selected graphics quality at native resolution and original texture sizes.
 use bevy::{
-    anti_alias::{fxaa::Fxaa, smaa::Smaa},
-    light::{DirectionalLightShadowMap, ShadowFilteringMethod},
+    asset::AssetEventSystems,
+    image::{ImageFilterMode, ImageSampler},
+    light::DirectionalLightShadowMap,
     prelude::*,
+    text::FontSmoothing,
+    ui::UiSystems,
 };
 use serde::{Deserialize, Serialize};
 
@@ -30,13 +33,12 @@ impl Quality {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum AntiAliasing {
+enum LegacyAa {
     Off,
     Fxaa,
     Smaa,
-    #[default]
     Msaa4,
 }
 
@@ -44,7 +46,6 @@ pub enum AntiAliasing {
 #[serde(deny_unknown_fields)]
 pub struct GraphicsSettings {
     pub lighting: Quality,
-    pub anti_aliasing: AntiAliasing,
     #[serde(default = "enabled")]
     pub texture_warping: bool,
     #[serde(default = "enabled")]
@@ -62,34 +63,24 @@ impl GraphicsSettings {
     pub fn preset(quality: Quality) -> Self {
         Self {
             lighting: quality,
-            anti_aliasing: match quality {
-                Quality::Low => AntiAliasing::Off,
-                Quality::Medium => AntiAliasing::Fxaa,
-                Quality::High => AntiAliasing::Msaa4,
-            },
             texture_warping: true,
             vertex_jitter: true,
         }
     }
     pub fn label(self) -> &'static str {
-        Quality::ALL
-            .into_iter()
-            .find(|q| Self::preset(*q) == self)
-            .map_or("Custom", Quality::label)
+        if self.texture_warping && self.vertex_jitter {
+            self.lighting.label()
+        } else {
+            "Custom"
+        }
     }
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct SavedSettings {
+struct SavedSettings<T = GraphicsSettings> {
     version: u8,
-    graphics: GraphicsSettings,
-}
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct LegacySettings {
-    version: u8,
-    graphics: LegacyGraphics,
+    graphics: T,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -99,24 +90,40 @@ struct LegacyGraphics {
     _textures: Quality,
     #[serde(rename = "render_scale")]
     _render_scale: Quality,
-    msaa: bool,
+    #[serde(rename = "msaa")]
+    _msaa: bool,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LegacyAaGraphics {
+    lighting: Quality,
+    #[serde(rename = "anti_aliasing")]
+    _anti_aliasing: LegacyAa,
+    #[serde(default = "enabled")]
+    texture_warping: bool,
+    #[serde(default = "enabled")]
+    vertex_jitter: bool,
 }
 fn decode_settings(json: &str) -> Result<GraphicsSettings, String> {
-    if let Ok(saved) = serde_json::from_str::<LegacySettings>(json)
+    if let Ok(saved) = serde_json::from_str::<SavedSettings<LegacyGraphics>>(json)
         && saved.version == 1
     {
         return Ok(GraphicsSettings {
             lighting: saved.graphics.lighting,
-            anti_aliasing: if saved.graphics.msaa {
-                AntiAliasing::Msaa4
-            } else {
-                AntiAliasing::Off
-            },
             ..GraphicsSettings::default()
         });
     }
+    if let Ok(saved) = serde_json::from_str::<SavedSettings<LegacyAaGraphics>>(json)
+        && matches!(saved.version, 2 | 3)
+    {
+        return Ok(GraphicsSettings {
+            lighting: saved.graphics.lighting,
+            texture_warping: saved.graphics.texture_warping,
+            vertex_jitter: saved.graphics.vertex_jitter,
+        });
+    }
     let saved: SavedSettings = serde_json::from_str(json).map_err(|e| e.to_string())?;
-    if !matches!(saved.version, 2 | 3) {
+    if saved.version != 3 {
         return Err("Unsupported settings version".into());
     }
     Ok(saved.graphics)
@@ -233,16 +240,47 @@ impl Plugin for GraphicsPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<GraphicsOptions>()
             .add_systems(Update, apply_graphics.in_set(ApplyGraphics))
-            .add_systems(Update, psx::apply.after(ApplyGraphics));
+            .add_systems(Update, psx::apply.after(ApplyGraphics))
+            .add_systems(PostUpdate, unfilter_text.before(UiSystems::Prepare))
+            .add_systems(PostUpdate, unfilter_images.after(AssetEventSystems));
+    }
+}
+
+fn unfilter_text(mut fonts: Query<&mut TextFont, Changed<TextFont>>) {
+    for mut font in &mut fonts {
+        if font.font_smoothing != FontSmoothing::None {
+            font.font_smoothing = FontSmoothing::None;
+        }
+    }
+}
+
+fn unfilter_sampler(sampler: &mut ImageSampler) {
+    let descriptor = sampler.get_or_init_descriptor();
+    descriptor.set_filter(ImageFilterMode::Nearest);
+    descriptor.anisotropy_clamp = 1;
+}
+
+fn unfilter_images(
+    mut events: MessageReader<AssetEvent<Image>>,
+    assets: Res<AssetServer>,
+    mut images: ResMut<Assets<Image>>,
+) {
+    for event in events.read() {
+        if let AssetEvent::Added { id } | AssetEvent::Modified { id } = event
+            && let Some(path) = assets.get_path(*id)
+            && (path.path().starts_with("models") || path.path().starts_with("ui"))
+            && let Some(image) = images.get_mut_untracked(*id)
+        {
+            // The existing asset event uploads this change; avoid emitting another event.
+            unfilter_sampler(&mut image.sampler);
+        }
     }
 }
 
 fn apply_graphics(
-    mut commands: Commands,
     options: Res<GraphicsOptions>,
     mut previous: Local<Option<GraphicsSettings>>,
     mut shadows: ResMut<DirectionalLightShadowMap>,
-    cameras: Query<(Entity, Ref<Camera3d>), With<crate::game::camera::MainCamera>>,
     mut spots: Query<&mut SpotLight>,
     mut suns: Query<&mut DirectionalLight>,
 ) {
@@ -256,33 +294,6 @@ fn apply_graphics(
             2048
         };
         info!("Graphics quality {}: {:?}", settings.label(), settings);
-    }
-    for (entity, camera) in &cameras {
-        if !changed && !camera.is_added() {
-            continue;
-        }
-        let mut camera = commands.entity(entity);
-        camera.remove::<(Fxaa, Smaa)>().insert((
-            if settings.anti_aliasing == AntiAliasing::Msaa4 {
-                Msaa::Sample4
-            } else {
-                Msaa::Off
-            },
-            if settings.lighting == Quality::High {
-                ShadowFilteringMethod::Gaussian
-            } else {
-                ShadowFilteringMethod::Hardware2x2
-            },
-        ));
-        match settings.anti_aliasing {
-            AntiAliasing::Fxaa => {
-                camera.insert(Fxaa::default());
-            }
-            AntiAliasing::Smaa => {
-                camera.insert(Smaa::default());
-            }
-            AntiAliasing::Off | AntiAliasing::Msaa4 => {}
-        }
     }
     for mut light in &mut spots {
         if (changed || light.is_added()) && light.shadow_maps_enabled != shadows_on {
@@ -300,73 +311,89 @@ fn apply_graphics(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bevy::{camera::RenderTarget, core_pipeline::prepass::DepthPrepass};
+    use bevy::{
+        core_pipeline::tonemapping::{DebandDither, Tonemapping},
+        image::{ImageAddressMode, ImageSamplerDescriptor},
+        light::ShadowFilteringMethod,
+        ui_render::UiAntiAlias,
+    };
 
     #[test]
-    fn settings_round_trip_validate_and_migrate_without_resolution_controls() {
+    fn settings_round_trip_validate_and_migrate_without_filters() {
         for quality in Quality::ALL {
             let settings = GraphicsSettings::preset(quality);
             assert_eq!(settings.label(), quality.label());
-            assert!(settings.texture_warping && settings.vertex_jitter);
-            for anti_aliasing in [
-                AntiAliasing::Off,
-                AntiAliasing::Fxaa,
-                AntiAliasing::Smaa,
-                AntiAliasing::Msaa4,
-            ] {
-                let settings = GraphicsSettings {
-                    anti_aliasing,
-                    ..settings
-                };
-                let json = serde_json::to_string(&SavedSettings {
-                    version: 3,
-                    graphics: settings,
-                })
-                .unwrap();
-                assert_eq!(decode_settings(&json).unwrap(), settings);
-                assert!(!json.contains("textures") && !json.contains("render_scale"));
+            let json = serde_json::to_string(&SavedSettings {
+                version: 3,
+                graphics: settings,
+            })
+            .unwrap();
+            assert_eq!(decode_settings(&json).unwrap(), settings);
+            assert_eq!(
+                serde_json::from_str::<serde_json::Value>(&json).unwrap(),
+                serde_json::json!({ "version": 3, "graphics": { "lighting": quality, "texture_warping": true, "vertex_jitter": true } })
+            );
+            for mode in ["off", "fxaa", "smaa", "msaa4"] {
+                let legacy = serde_json::json!({ "version": 2, "graphics": {
+                    "lighting": quality, "anti_aliasing": mode,
+                }});
+                assert_eq!(decode_settings(&legacy.to_string()).unwrap(), settings);
+            }
+            for msaa in [false, true] {
+                let legacy = serde_json::json!({ "version": 1, "graphics": {
+                    "lighting": quality, "textures": "low", "render_scale": "low", "msaa": msaa,
+                }});
+                assert_eq!(decode_settings(&legacy.to_string()).unwrap(), settings);
             }
         }
-        for msaa in [false, true] {
-            let json = format!(
-                r#"{{"version":1,"graphics":{{"lighting":"medium","textures":"low","render_scale":"low","msaa":{msaa}}}}}"#
-            );
-            assert_eq!(
-                decode_settings(&json).unwrap(),
-                GraphicsSettings {
-                    lighting: Quality::Medium,
-                    anti_aliasing: if msaa {
-                        AntiAliasing::Msaa4
-                    } else {
-                        AntiAliasing::Off
-                    },
-                    ..GraphicsSettings::default()
-                }
-            );
+        for invalid in [
+            "{}",
+            "null",
+            r#"{"version":3,"graphics":{"lighting":"high","texture_warping":1}}"#,
+            r#"{"version":3,"graphics":{"lighting":"high","vertex_jitter":"true"}}"#,
+            r#"{"version":4,"graphics":{"lighting":"high"}}"#,
+            r#"{"version":2,"graphics":{"lighting":"high","anti_aliasing":"msaa8"}}"#,
+            r#"{"version":2,"graphics":{"lighting":"high","anti_aliasing":"off","render_scale":"low"}}"#,
+            r#"{"version":1,"graphics":{"lighting":"medium","textures":"invalid","render_scale":"low","msaa":false}}"#,
+            r#"{"version":3,"graphics":{"lighting":"invalid"}}"#,
+            r#"{"version":3,"graphics":{"lighting":"high","anti_aliasing":"msaa8"}}"#,
+            r#"{"version":2,"graphics":{"lighting":"high"}}"#,
+        ] {
+            assert!(decode_settings(invalid).is_err(), "{invalid}");
         }
-        let version_two = decode_settings(
-            r#"{"version":2,"graphics":{"lighting":"low","anti_aliasing":"smaa"}}"#,
-        )
-        .unwrap();
-        assert_eq!(version_two.lighting, Quality::Low);
-        assert_eq!(version_two.anti_aliasing, AntiAliasing::Smaa);
-        assert!(version_two.texture_warping && version_two.vertex_jitter);
+        let mut options = GraphicsOptions {
+            current: GraphicsSettings::preset(Quality::Low),
+            saved: GraphicsSettings::default(),
+            notice: String::new(),
+        };
+        options.cancel();
+        assert_eq!(options.current, options.saved);
+    }
+
+    #[test]
+    fn psx_settings_preserve_effect_choices_and_migrate_both_version_three_formats() {
         for warping in [false, true] {
             for jitter in [false, true] {
                 let settings = GraphicsSettings {
+                    lighting: Quality::High,
                     texture_warping: warping,
                     vertex_jitter: jitter,
-                    ..GraphicsSettings::default()
                 };
-                let json = serde_json::to_string(&SavedSettings {
+                let saved = serde_json::to_string(&SavedSettings {
                     version: 3,
                     graphics: settings,
                 })
                 .unwrap();
-                assert_eq!(decode_settings(&json).unwrap(), settings);
-                if !warping || !jitter {
-                    assert_eq!(settings.label(), "Custom");
-                }
+                assert_eq!(decode_settings(&saved).unwrap(), settings);
+                let old_psx = serde_json::json!({ "version": 3, "graphics": {
+                    "lighting": "high", "anti_aliasing": "smaa",
+                    "texture_warping": warping, "vertex_jitter": jitter,
+                }});
+                assert_eq!(decode_settings(&old_psx.to_string()).unwrap(), settings);
+                assert_eq!(
+                    settings.label(),
+                    if warping && jitter { "High" } else { "Custom" }
+                );
                 let mut options = GraphicsOptions {
                     current: settings,
                     saved: GraphicsSettings::default(),
@@ -376,86 +403,90 @@ mod tests {
                 assert_eq!(options.current, options.saved);
             }
         }
-        for invalid in [
-            "{}",
-            "null",
-            r#"{"version":3,"graphics":{"lighting":"high","anti_aliasing":"off","texture_warping":1}}"#,
-            r#"{"version":3,"graphics":{"lighting":"high","anti_aliasing":"off","vertex_jitter":"true"}}"#,
-            r#"{"version":4,"graphics":{"lighting":"high","anti_aliasing":"msaa4"}}"#,
-            r#"{"version":2,"graphics":{"lighting":"high","anti_aliasing":"msaa8"}}"#,
-            r#"{"version":2,"graphics":{"lighting":"high","anti_aliasing":"off","render_scale":"low"}}"#,
-            r#"{"version":1,"graphics":{"lighting":"medium","textures":"invalid","render_scale":"low","msaa":false}}"#,
-        ] {
-            assert!(decode_settings(invalid).is_err());
-        }
-        let mut options = GraphicsOptions {
-            current: GraphicsSettings {
-                lighting: Quality::High,
-                anti_aliasing: AntiAliasing::Smaa,
-                ..GraphicsSettings::default()
-            },
-            saved: GraphicsSettings::default(),
-            notice: String::new(),
-        };
-        assert_eq!(options.current.label(), "Custom");
-        options.cancel();
-        assert_eq!(options.current, options.saved);
+        assert_eq!(
+            decode_settings(r#"{"version":3,"graphics":{"lighting":"high"}}"#).unwrap(),
+            GraphicsSettings::default()
+        );
     }
 
     #[test]
-    fn switching_antialiasing_is_exclusive_and_preserves_the_window_camera() {
+    fn nearest_sampler_preserves_addressing_and_text_stays_unsmoothed() {
+        let mut sampler = ImageSampler::Descriptor(ImageSamplerDescriptor {
+            address_mode_u: ImageAddressMode::Repeat,
+            address_mode_v: ImageAddressMode::MirrorRepeat,
+            anisotropy_clamp: 16,
+            ..ImageSamplerDescriptor::linear()
+        });
+        unfilter_sampler(&mut sampler);
+        let descriptor = sampler.get_or_init_descriptor();
+        assert_eq!(descriptor.mag_filter, ImageFilterMode::Nearest);
+        assert_eq!(descriptor.min_filter, ImageFilterMode::Nearest);
+        assert_eq!(descriptor.mipmap_filter, ImageFilterMode::Nearest);
+        assert_eq!(descriptor.anisotropy_clamp, 1);
+        assert_eq!(descriptor.address_mode_u, ImageAddressMode::Repeat);
+        assert_eq!(descriptor.address_mode_v, ImageAddressMode::MirrorRepeat);
         let mut app = App::new();
-        app.add_plugins(MinimalPlugins)
-            .init_resource::<DirectionalLightShadowMap>()
-            .init_resource::<UiScale>()
+        app.add_systems(Update, unfilter_text);
+        let text = app.world_mut().spawn(TextFont::default()).id();
+        app.update();
+        assert_eq!(
+            app.world().get::<TextFont>(text).unwrap().font_smoothing,
+            FontSmoothing::None
+        );
+        app.world_mut()
+            .get_mut::<TextFont>(text)
+            .unwrap()
+            .font_smoothing = FontSmoothing::AntiAliased;
+        app.update();
+        assert_eq!(
+            app.world().get::<TextFont>(text).unwrap().font_smoothing,
+            FontSmoothing::None
+        );
+    }
+
+    #[test]
+    fn lighting_presets_preserve_unfiltered_camera_and_shadow_quality() {
+        let mut app = App::new();
+        app.init_resource::<DirectionalLightShadowMap>()
             .insert_resource(GraphicsOptions {
                 current: GraphicsSettings::default(),
                 saved: GraphicsSettings::default(),
                 notice: String::new(),
             })
+            .insert_resource(ClearColor::default())
+            .add_plugins(crate::game::camera::CameraPlugin)
             .add_systems(Update, apply_graphics);
-        let camera = app
-            .world_mut()
-            .spawn((
-                Camera3d::default(),
-                DepthPrepass,
-                crate::game::camera::MainCamera,
-            ))
-            .id();
-        for mode in [
-            AntiAliasing::Msaa4,
-            AntiAliasing::Fxaa,
-            AntiAliasing::Smaa,
-            AntiAliasing::Off,
-            AntiAliasing::Smaa,
-            AntiAliasing::Fxaa,
-            AntiAliasing::Msaa4,
-        ] {
-            app.world_mut()
-                .resource_mut::<GraphicsOptions>()
-                .current
-                .anti_aliasing = mode;
+        let spot = app.world_mut().spawn(SpotLight::default()).id();
+        for quality in Quality::ALL {
+            app.world_mut().resource_mut::<GraphicsOptions>().current =
+                GraphicsSettings::preset(quality);
             app.update();
-            let camera = app.world().entity(camera);
-            assert_eq!(camera.contains::<Fxaa>(), mode == AntiAliasing::Fxaa);
-            assert_eq!(camera.contains::<Smaa>(), mode == AntiAliasing::Smaa);
+            let world = app.world_mut();
+            let mut cameras = world.query::<(
+                &Msaa,
+                &Tonemapping,
+                &DebandDither,
+                &UiAntiAlias,
+                &ShadowFilteringMethod,
+            )>();
+            let (msaa, tone, dither, ui, shadow) = cameras.single(world).unwrap();
+            assert_eq!(*msaa, Msaa::Off);
+            assert_eq!(*tone, Tonemapping::None);
+            assert_eq!(*dither, DebandDither::Disabled);
+            assert_eq!(*ui, UiAntiAlias::Off);
+            assert_eq!(*shadow, ShadowFilteringMethod::Hardware2x2);
             assert_eq!(
-                *camera.get::<Msaa>().unwrap(),
-                if mode == AntiAliasing::Msaa4 {
-                    Msaa::Sample4
+                world.get::<SpotLight>(spot).unwrap().shadow_maps_enabled,
+                quality != Quality::Low
+            );
+            assert_eq!(
+                world.resource::<DirectionalLightShadowMap>().size,
+                if quality == Quality::Medium {
+                    1024
                 } else {
-                    Msaa::Off
+                    2048
                 }
             );
-            assert!(camera.contains::<DepthPrepass>());
-            assert!(matches!(
-                camera.get::<RenderTarget>(),
-                Some(RenderTarget::Window(_))
-            ));
-            assert!(camera.get::<Camera>().unwrap().viewport.is_none());
-            assert_eq!(app.world().resource::<UiScale>().0, 1.0);
         }
-        let world = app.world_mut();
-        assert_eq!(world.query::<&Camera>().iter(world).count(), 1);
     }
 }
