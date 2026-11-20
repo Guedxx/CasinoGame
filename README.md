@@ -1,4 +1,4 @@
-# Let It Ride
+# Saldo Zero
 
 A Rust / Bevy 0.19.1 project with a furnished first-person apartment and a dense urban exterior.
 

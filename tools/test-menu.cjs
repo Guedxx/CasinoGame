@@ -27,7 +27,7 @@ const url = process.argv[3] || 'http://127.0.0.1:8080/';
   try {
     const ready = page.waitForEvent('console', { predicate: m => m.text().includes('Title screen ready'), timeout: 180000 });
     await page.goto(url); await ready; await page.waitForTimeout(5000);
-    assert.equal(await page.title(), 'Let It Ride');
+    assert.equal(await page.title(), 'Saldo Zero');
     await screenshot('title-1280');
     await key('Escape');
     assert(!logs.some(line => line.includes('First-person player ready')));

@@ -766,6 +766,7 @@ fn present(
     context: Res<Context>,
     existing: Query<Entity, With<RoutineUi>>,
     mut previous: Local<String>,
+    localization: Res<crate::localization::Localization>,
 ) {
     let Some(campaign) = store.campaign() else {
         return;
@@ -812,7 +813,7 @@ fn present(
         commands.entity(entity).despawn();
     }
     if !modal && overlay.active.is_none() {
-        hud::spawn(&mut commands, campaign, &skin);
+        hud::spawn(&mut commands, campaign, &skin, &localization);
         if let Some(target) = context.nearby {
             hud::interaction(&mut commands, target.label(), &skin);
         }
