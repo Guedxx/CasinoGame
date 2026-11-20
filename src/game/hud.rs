@@ -4,6 +4,7 @@ use super::{
     campaign::Campaign,
     routine::{RoutineUi, reais},
 };
+use crate::localization::Localization;
 
 const IVORY: Color = Color::srgb(0.94, 0.90, 0.79);
 const BRASS: Color = Color::srgb(0.72, 0.59, 0.38);
@@ -41,7 +42,7 @@ impl HudSkin {
     }
 }
 
-pub(super) fn spawn(commands: &mut Commands, campaign: &Campaign, skin: &HudSkin) {
+pub(super) fn spawn(commands: &mut Commands, campaign: &Campaign, skin: &HudSkin, localization: &Localization) {
     commands
         .spawn((
             RoutineUi,
@@ -84,10 +85,11 @@ pub(super) fn spawn(commands: &mut Commands, campaign: &Campaign, skin: &HudSkin
                 ));
                 row.spawn((
                     Text::new(format!(
-                        "Day {} / 10\n{}\n{} actions left",
+                        "{} {} / 10\n{}\n{} {}",
+                        localization.text("day"),
                         campaign.clock.day,
-                        campaign.clock.period().label(),
-                        campaign.clock.remaining_pa()
+                        localization.period(campaign.clock.period().label()),
+                        campaign.clock.remaining_pa(), localization.text("actions_left")
                     )),
                     skin.font(17.0),
                     TextColor(IVORY),
@@ -96,11 +98,11 @@ pub(super) fn spawn(commands: &mut Commands, campaign: &Campaign, skin: &HudSkin
             });
             let a = &campaign.attributes;
             let traits = [
-                ("Hunger", a.hunger),
-                ("Boredom", a.boredom),
-                ("Stress", a.stress),
-                ("Urge", a.urge),
-                ("Relationships", a.relationships),
+                (localization.text("hunger"), a.hunger),
+                (localization.text("boredom"), a.boredom),
+                (localization.text("stress"), a.stress),
+                (localization.text("urge"), a.urge),
+                (localization.text("relationships"), a.relationships),
             ];
             for indices in [&[0, 1][..], &[3, 4][..]] {
                 hud.spawn(Node {

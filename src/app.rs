@@ -13,7 +13,7 @@ pub fn run() {
                 })
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        title: "Let It Ride".into(),
+                        title: "Saldo Zero".into(),
                         resolution: (1280, 720).into(),
                         fit_canvas_to_parent: true,
                         ..default()
@@ -28,6 +28,7 @@ pub fn run() {
             ..default()
         })
         .init_state::<GameState>()
+        .init_resource::<crate::localization::Localization>()
         .add_plugins((crate::graphics::GraphicsPlugin, GamePlugin, ScreensPlugin))
         .run();
 }

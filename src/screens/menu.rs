@@ -13,6 +13,7 @@ use bevy::{
 use super::title_render::TitleRender;
 use crate::{
     graphics::{ApplyGraphics, GraphicsOptions, GraphicsSettings, Quality},
+    localization::{Language, Localization},
     state::GameState,
 };
 
@@ -69,6 +70,7 @@ enum Action {
     Lighting(Quality),
     TextureWarping(bool),
     VertexJitter(bool),
+    Language(Language),
 }
 impl Action {
     fn selected(self, settings: GraphicsSettings) -> bool {
@@ -473,7 +475,7 @@ fn setup_title(mut commands: Commands, skin: Res<MenuSkin>, mut focus: ResMut<In
                 })
                 .with_children(|panel| {
                     panel.spawn((
-                        Text::new("Let It Ride"),
+                        Text::new("Saldo Zero"),
                         TitleHeading,
                         skin.font(64.0),
                         TextColor(INK),
@@ -522,11 +524,14 @@ fn title_controls(
     roots: Query<(Entity, &Children), With<TitleControls>>,
     mut focus: ResMut<InputFocus>,
     mut previous: Local<String>,
+    localization: Res<Localization>,
+    assets: Res<AssetServer>,
 ) {
     for (entity, children) in &roots {
         let signature = format!(
-            "{entity:?}{}{}{:?}{}",
+            "{entity:?}{}{:?}{}{:?}{}",
             confirmation.0,
+            localization.language,
             store.campaign().is_some(),
             store.snapshot_state(),
             store.notice.is_empty()
@@ -547,15 +552,20 @@ fn title_controls(
                 button(buttons, &skin, "Replace / New Game", Action::ConfirmNewGame, &mut index);
             } else {
                 if store.campaign().is_some() {
-                    first = Some(button(buttons, &skin, "Continue", Action::Start, &mut index));
+                    first = Some(button(buttons, &skin, localization.text("continue"), Action::Start, &mut index));
                 }
-                let new = button(buttons, &skin, "New Game", Action::NewGame, &mut index);
+                let new = button(buttons, &skin, localization.text("new_game"), Action::NewGame, &mut index);
                 first.get_or_insert(new);
-                button(buttons, &skin, "Settings", Action::Settings, &mut index);
+                button(buttons, &skin, localization.text("settings"), Action::Settings, &mut index);
                 if store.campaign().is_some() && !store.notice.is_empty() {
-                    button(buttons, &skin, "Retry campaign save", Action::RetryCampaignSave, &mut index);
+                    button(buttons, &skin, localization.text("retry"), Action::RetryCampaignSave, &mut index);
                 }
             }
+            label(buttons, &skin, localization.text("language"), 20.0, INK);
+            buttons.spawn(Node { flex_direction: FlexDirection::Row, column_gap: px(8), justify_content: JustifyContent::Center, ..default() }).with_children(|languages| {
+                language_button(languages, &skin, &assets, Language::English, localization.language, localization.text("english"), &mut index);
+                language_button(languages, &skin, &assets, Language::Portuguese, localization.language, localization.text("portuguese"), &mut index);
+            });
         });
         if let Some(first) = first {
             focus.set(first, FocusCause::Navigated);
@@ -563,11 +573,18 @@ fn title_controls(
     }
 }
 
+fn language_button(parent: &mut ChildSpawnerCommands, skin: &MenuSkin, assets: &AssetServer, language: Language, selected: Language, name: &str, index: &mut i32) {
+    let path = if language == Language::English { "ui/flag-us.png" } else { "ui/flag-br.png" };
+    parent.spawn((Button, Action::Language(language), TabIndex(*index), Node { width: px(92), height: px(70), flex_direction: FlexDirection::Column, align_items: AlignItems::Center, justify_content: JustifyContent::Center, row_gap: px(4), border: UiRect::all(px(2)), ..default() }, BorderColor::all(if language == selected { Color::WHITE } else { Color::NONE }), children![(ImageNode { image: assets.load(path), ..default() }, Node { width: px(30), height: px(30), ..default() }), (Text::new(name), skin.font(15.0), TextColor(INK))]));
+    *index += 1;
+}
+
 fn setup(
     mut commands: Commands,
     state: Res<State<GameState>>,
     skin: Res<MenuSkin>,
     mut focus: ResMut<InputFocus>,
+    localization: Res<Localization>,
 ) {
     let settings = *state.get() == GameState::Settings;
     let mut first = None;
@@ -629,7 +646,7 @@ fn setup(
                                     label(
                                         heading,
                                         &skin,
-                                        if settings { "GRAPHICS" } else { "PAUSED" },
+                                        if settings { "GRAPHICS" } else { localization.text("paused") },
                                         48.0,
                                         INK,
                                     );
@@ -720,14 +737,14 @@ fn setup(
                                         first = Some(button(
                                             body,
                                             &skin,
-                                            "RESUME",
+                                            localization.text("resume"),
                                             Action::Resume,
                                             &mut index,
                                         ));
                                         button(
                                             body,
                                             &skin,
-                                            "SETTINGS",
+                                            localization.text("settings_upper"),
                                             Action::Settings,
                                             &mut index,
                                         );
@@ -807,7 +824,7 @@ fn setup(
                                                 ..default()
                                             })
                                             .with_children(|hint| {
-                                                label(hint, &skin, "Select Resume to continue. Esc again releases mouse.", 18.0, MUTED);
+                                                label(hint, &skin, localization.text("pause_hint"), 18.0, MUTED);
                                             });
                                     }
                                 });
@@ -828,6 +845,7 @@ fn actions(
     mut options: ResMut<GraphicsOptions>,
     mut next: ResMut<NextState<GameState>>,
     mut campaign: ResMut<crate::game::campaign_save::CampaignStore>,
+    mut localization: ResMut<Localization>,
     windows: Query<&Window, With<bevy::window::PrimaryWindow>>,
     buttons: Query<(Entity, &Action, &Interaction), With<Button>>,
     changed: Query<(Entity, &Action, &Interaction), (With<Button>, Changed<Interaction>)>,
@@ -915,6 +933,7 @@ fn actions(
         Action::Lighting(q) => options.current.lighting = q,
         Action::TextureWarping(enabled) => options.current.texture_warping = enabled,
         Action::VertexJitter(enabled) => options.current.vertex_jitter = enabled,
+        Action::Language(language) => localization.language = language,
     }
 }
 fn appearance(

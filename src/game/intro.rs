@@ -12,7 +12,7 @@ use bevy::{
 };
 
 use super::{camera::MainCamera, player::StatusText, tv};
-use crate::state::GameState;
+use crate::{localization::{Language, Localization}, state::GameState};
 
 pub(crate) const END_POSITION: Vec3 = Vec3::new(2.15, 0.92, -0.90);
 pub(crate) const END_YAW: f32 = 1.97;
@@ -262,12 +262,12 @@ fn body_ready(
     }
 }
 
-fn subtitle(seconds: f32) -> &'static str {
+fn subtitle(seconds: f32, language: Language) -> &'static str {
     match seconds {
-        t if (14.0..19.0).contains(&t) => "I've fallen asleep watching TV again...",
-        t if (20.0..25.0).contains(&t) => "I gotta stop working late hours...",
-        t if (28.0..34.0).contains(&t) => "But what I make is barely enough to cover the bills.",
-        t if (35.0..38.0).contains(&t) => "I'll find a way.",
+        t if (14.0..19.0).contains(&t) => if language == Language::Portuguese { "Dormi assistindo TV de novo…" } else { "I've fallen asleep watching TV again..." },
+        t if (20.0..25.0).contains(&t) => if language == Language::Portuguese { "Preciso parar de trabalhar até tão tarde…" } else { "I gotta stop working late hours..." },
+        t if (28.0..34.0).contains(&t) => if language == Language::Portuguese { "Mas o que ganho mal dá para pagar as contas." } else { "But what I make is barely enough to cover the bills." },
+        t if (35.0..38.0).contains(&t) => if language == Language::Portuguese { "Vou encontrar um jeito." } else { "I'll find a way." },
         _ => "",
     }
 }
@@ -312,6 +312,7 @@ fn tick(
     statuses: Query<&Text, (With<StatusText>, Without<OpeningText>)>,
     mut texts: Query<(&mut Text, &mut Node, Has<Subtitle>), With<OpeningText>>,
     mut blur: Query<(Entity, &mut DepthOfField), With<MainCamera>>,
+    localization: Res<Localization>,
 ) {
     if opening.finished {
         return;
@@ -371,17 +372,18 @@ fn tick(
             if !opening.error.is_empty() {
                 opening.error.clone()
             } else if !opening.ready {
-                "Loading opening…\nEscape: return to title".into()
+                localization.text("loading_opening").into()
             } else {
-                subtitle(opening.elapsed).into()
+                subtitle(opening.elapsed, localization.language).into()
             }
         } else if opening.ready && opening.skip_hold > 0.0 {
-            format!(
-                "Hold Enter to skip  {}%",
-                (opening.skip_hold * 100.0).min(100.0) as u32
-            )
+            if localization.language == Language::Portuguese {
+                format!("Segure Enter para pular  {}%", (opening.skip_hold * 100.0).min(100.0) as u32)
+            } else {
+                format!("Hold Enter to skip  {}%", (opening.skip_hold * 100.0).min(100.0) as u32)
+            }
         } else if opening.ready {
-            "Hold Enter to skip".into()
+            localization.text("skip").into()
         } else {
             String::new()
         };
