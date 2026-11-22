@@ -9,6 +9,8 @@ use bevy::{
 };
 use serde::{Deserialize, Serialize};
 
+use crate::preferences;
+
 mod psx;
 
 // Keep the existing storage location so version-one preferences can migrate.
@@ -137,7 +139,7 @@ pub struct GraphicsOptions {
 }
 impl Default for GraphicsOptions {
     fn default() -> Self {
-        let (settings, notice) = match read_settings() {
+        let (settings, notice) = match preferences::read(STORAGE_KEY) {
             Ok(Some(raw)) => match decode_settings(&raw) {
                 Ok(settings) => (settings, String::new()),
                 Err(_) => (
@@ -169,7 +171,7 @@ impl GraphicsOptions {
             graphics: self.saved,
         })
         .map_err(|e| e.to_string())
-        .and_then(|json| write_settings(&json));
+        .and_then(|json| preferences::write(STORAGE_KEY, &json));
         self.notice = match result {
             Ok(()) => String::new(),
             Err(error) => {
@@ -178,59 +180,6 @@ impl GraphicsOptions {
             }
         };
     }
-}
-
-#[cfg(target_arch = "wasm32")]
-fn storage() -> Result<web_sys::Storage, String> {
-    web_sys::window()
-        .ok_or("No browser window")?
-        .local_storage()
-        .map_err(|e| format!("{e:?}"))?
-        .ok_or("Local storage is disabled".into())
-}
-#[cfg(target_arch = "wasm32")]
-fn read_settings() -> Result<Option<String>, String> {
-    storage()?
-        .get_item(STORAGE_KEY)
-        .map_err(|e| format!("{e:?}"))
-}
-#[cfg(target_arch = "wasm32")]
-fn write_settings(json: &str) -> Result<(), String> {
-    storage()?
-        .set_item(STORAGE_KEY, json)
-        .map_err(|e| format!("{e:?}"))
-}
-#[cfg(not(target_arch = "wasm32"))]
-fn settings_path() -> Result<std::path::PathBuf, String> {
-    use std::{env, path::PathBuf};
-    let root = if cfg!(target_os = "windows") {
-        env::var_os("APPDATA").map(PathBuf::from)
-    } else if cfg!(target_os = "macos") {
-        env::var_os("HOME").map(|p| PathBuf::from(p).join("Library/Application Support"))
-    } else {
-        env::var_os("XDG_CONFIG_HOME")
-            .filter(|p| !p.is_empty())
-            .map(PathBuf::from)
-            .or_else(|| env::var_os("HOME").map(|p| PathBuf::from(p).join(".config")))
-    }
-    .ok_or("No user configuration directory")?;
-    Ok(root.join("CasinoGame").join(format!("{STORAGE_KEY}.json")))
-}
-#[cfg(not(target_arch = "wasm32"))]
-fn read_settings() -> Result<Option<String>, String> {
-    match std::fs::read_to_string(settings_path()?) {
-        Ok(json) => Ok(Some(json)),
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
-        Err(e) => Err(e.to_string()),
-    }
-}
-#[cfg(not(target_arch = "wasm32"))]
-fn write_settings(json: &str) -> Result<(), String> {
-    let path = settings_path()?;
-    std::fs::create_dir_all(path.parent().unwrap()).map_err(|e| e.to_string())?;
-    let temporary = path.with_extension("tmp");
-    std::fs::write(&temporary, json).map_err(|e| e.to_string())?;
-    std::fs::rename(temporary, path).map_err(|e| e.to_string())
 }
 
 pub struct GraphicsPlugin;

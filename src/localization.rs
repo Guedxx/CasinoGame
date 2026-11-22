@@ -1,5 +1,9 @@
 use crate::game::campaign::{BillKind, HouseholdItem};
+use crate::preferences;
 use bevy::prelude::*;
+
+// Read by web/index.html before the game starts.
+const STORAGE_KEY: &str = "casino-game.language.v1";
 
 macro_rules! format_text {
     ($localization:expr, $english:literal, $portuguese:literal $(, $argument:expr)* $(,)?) => {
@@ -17,6 +21,18 @@ pub enum Language {
     Portuguese,
 }
 
+impl Language {
+    fn tag(self) -> &'static str {
+        match self {
+            Self::English => "en",
+            Self::Portuguese => "pt-BR",
+        }
+    }
+}
+
+#[derive(Event)]
+pub struct LanguageSelected;
+
 #[derive(Resource)]
 pub struct Localization {
     pub language: Language,
@@ -31,6 +47,38 @@ impl Default for Localization {
 }
 
 impl Localization {
+    pub fn load() -> Self {
+        let saved = preferences::read(STORAGE_KEY).ok().flatten();
+        Self::from_saved_language(saved.as_deref())
+    }
+
+    fn from_saved_language(saved: Option<&str>) -> Self {
+        let tag = saved.and_then(|json| serde_json::from_str::<String>(json).ok());
+        if tag.as_deref() == Some(Language::English.tag()) {
+            return Self {
+                language: Language::English,
+            };
+        }
+        Self::default()
+    }
+
+    pub fn save_selection(_: On<LanguageSelected>, localization: Res<Self>) {
+        let tag = localization.language.tag();
+        let result = serde_json::to_string(tag)
+            .map_err(|error| error.to_string())
+            .and_then(|json| preferences::write(STORAGE_KEY, &json));
+        if let Err(error) = result {
+            warn!("Cannot save language preference: {error}");
+        }
+        #[cfg(target_arch = "wasm32")]
+        if let Some(root) = web_sys::window()
+            .and_then(|window| window.document())
+            .and_then(|document| document.document_element())
+        {
+            let _ = root.set_attribute("lang", tag);
+        }
+    }
+
     #[cfg(test)]
     pub const ENGLISH: Self = Self {
         language: Language::English,
@@ -120,7 +168,7 @@ impl Localization {
             "The stake is too large." => "O valor da aposta é alto demais.",
             "Enter a whole-real stake of at least R$1." => "Digite um valor inteiro em reais, de pelo menos R$1.",
             "The stake exceeds your available balance. Lower the stake." => "O valor da aposta é maior que seu saldo disponível. Aposte um valor menor.",
-            "Betting is blocked until tomorrow morning. Support stays available." => "As apostas estão bloqueadas até amanhã de manhã. O Respiro continua disponível.",
+            "Betting is blocked until tomorrow morning. Support stays available." => "As apostas estão bloqueadas até amanhã de manhã. O app de Apoio continua disponível.",
             "This stake exceeds your remaining daily wagering cap." => "O valor da aposta ultrapassa o restante do seu limite diário.",
             "No more betting sessions are available." => "Não há mais sessões de apostas disponíveis.",
             "End this session before another round." => "Encerre a sessão atual antes de iniciar outra rodada.",
@@ -199,6 +247,10 @@ impl Localization {
             (Language::Portuguese, "continue") => "Continuar",
             (Language::Portuguese, "new_game") => "Novo jogo",
             (Language::Portuguese, "settings") => "Configurações",
+            (Language::Portuguese, "phone_history") => "Histórico",
+            (Language::Portuguese, "phone_betting") => "Apostas",
+            (Language::Portuguese, "phone_support") => "Apoio",
+            (Language::Portuguese, "phone_chats") => "Conversas",
             (Language::Portuguese, "language") => "Idioma",
             (Language::Portuguese, "english") => "Inglês",
             (Language::Portuguese, "portuguese") => "Português",
@@ -272,6 +324,10 @@ impl Localization {
             (_, "continue") => "Continue",
             (_, "new_game") => "New Game",
             (_, "settings") => "Settings",
+            (_, "phone_history") => "History",
+            (_, "phone_betting") => "Betting",
+            (_, "phone_support") => "Support",
+            (_, "phone_chats") => "Chats",
             (_, "language") => "Language",
             (_, "english") => "English",
             (_, "portuguese") => "Portuguese",
@@ -347,5 +403,21 @@ impl Localization {
             _ => label,
         }
         .into()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn saved_language_tags_restore_with_portuguese_as_the_fallback() {
+        for language in [Language::English, Language::Portuguese] {
+            let json = serde_json::to_string(language.tag()).unwrap();
+            assert_eq!(Localization::from_saved_language(Some(&json)).language, language);
+        }
+        for saved in [None, Some(r#""fr""#), Some("invalid JSON")] {
+            assert_eq!(Localization::from_saved_language(saved).language, Language::Portuguese);
+        }
     }
 }

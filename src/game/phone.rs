@@ -989,7 +989,7 @@ fn page_actions(phone: &Phone, c: &Campaign, localization: &Localization) -> Vec
     match phone.page {
         PhonePage::Home => launcher::APPS
             .iter()
-            .map(|&(page, english, portuguese, _)| (localization.choose(english, portuguese).into(), PhoneCommand::Page(page)))
+            .map(|&(page, label, _)| (localization.text(label).into(), PhoneCommand::Page(page)))
             .collect(),
         page if page.is_betting() => betting::actions(phone, c, localization),
         PhonePage::Household | PhonePage::SaleOffers | PhonePage::ConfirmSale(_) => {

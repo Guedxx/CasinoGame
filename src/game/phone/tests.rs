@@ -1419,6 +1419,24 @@ fn home_reminder_combines_todays_calls_and_bill_counts_during_a_blackout() {
 }
 
 #[test]
+fn phone_headings_match_the_launcher_in_both_languages() {
+    use crate::localization::Language;
+
+    let campaign = campaign_after_landlord(5);
+    for (language, chats, support) in [
+        (Language::English, "Chats", "Support"),
+        (Language::Portuguese, "Conversas", "Apoio"),
+    ] {
+        let launcher = rendered_copy_in_language(PhonePage::Home, &campaign, language);
+        for (page, label) in [(PhonePage::Contacts, chats), (PhonePage::Support, support)] {
+            assert!(launcher.lines().any(|text| text == label));
+            let copy = rendered_copy_in_language(page, &campaign, language);
+            assert!(copy.lines().any(|text| text == label));
+        }
+    }
+}
+
+#[test]
 fn portuguese_phone_copy_follows_the_campaign_on_all_apps() {
     use crate::localization::Language::Portuguese;
 

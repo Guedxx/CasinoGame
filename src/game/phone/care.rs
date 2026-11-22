@@ -102,7 +102,7 @@ pub(super) fn render(
     let choices = actions(phone, c, localization);
     match phone.page {
         PhonePage::Contacts => {
-            text(parent, &assets.font, "Conversa", 30.0, GREEN);
+            text(parent, &assets.font, localization.text("phone_chats"), 30.0, GREEN);
             text(parent, &art.regular, localization.choose("Messages", "Mensagens"), 18.0, MUTED);
             for (index, (contact, (_, command))) in [Contact::Marina, Contact::Rafa]
                 .into_iter()
@@ -169,7 +169,7 @@ pub(super) fn render(
             }
         }
         PhonePage::Support => {
-            text(parent, &assets.font, "Respiro", 30.0, GREEN);
+            text(parent, &assets.font, localization.text("phone_support"), 30.0, GREEN);
             text(
                 parent,
                 &art.regular,

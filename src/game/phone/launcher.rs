@@ -1,11 +1,11 @@
 //! Modern phone launcher with PSX bitmap sampling; app contents stay in `phone.rs`.
 use super::*;
 
-pub(super) const APPS: [(PhonePage, &str, &str, usize); 4] = [
-    (PhonePage::History, "History", "Histórico", 2),
-    (PhonePage::Betting, "Betting", "Apostas", 0),
-    (PhonePage::Support, "Support", "Apoio", 5),
-    (PhonePage::Contacts, "Chats", "Conversas", 4),
+pub(super) const APPS: [(PhonePage, &str, usize); 4] = [
+    (PhonePage::History, "phone_history", 2),
+    (PhonePage::Betting, "phone_betting", 0),
+    (PhonePage::Support, "phone_support", 5),
+    (PhonePage::Contacts, "phone_chats", 4),
 ];
 
 #[derive(Resource)]
@@ -216,9 +216,8 @@ pub(super) fn home(parent: &mut ChildSpawnerCommands, skin: &Skin, c: &Campaign,
                 ..default()
             })
             .with_children(|apps| {
-                for (page, english, portuguese, icon) in APPS {
-                    let label = localization.choose(english, portuguese);
-                    shortcut(apps, skin, page, label, icon);
+                for (page, label, icon) in APPS {
+                    shortcut(apps, skin, page, localization.text(label), icon);
                 }
             });
         });
