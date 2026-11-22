@@ -59,6 +59,11 @@ fn adjust_with_relief(value: &mut u8, gap: &mut u8, change: i16) {
 impl Campaign {
     /// All permanent stress/boredom effects must use these helpers while relief can be active.
     pub(super) fn adjust_stress(&mut self, change: i16) {
+        let change = if change > 0 {
+            change.saturating_add(2 + i16::from(self.household.mess))
+        } else {
+            change
+        };
         if let Some(relief) = &mut self.betting.relief {
             adjust_with_relief(&mut self.attributes.stress, &mut relief.stress, change);
         } else {
@@ -162,6 +167,7 @@ impl Campaign {
         if total_return_cents > 0 {
             self.record_money(LedgerKind::BetPayout, total_return_cents)?;
         }
+        Attributes::adjust(&mut self.attributes.urge, 3);
         if chasing {
             Attributes::adjust(&mut self.attributes.urge, 8);
         }
@@ -329,7 +335,7 @@ mod tests {
     #[test]
     fn cumulative_daily_overflow_rejects_atomically_and_keeps_the_day_payable_and_reportable() {
         use super::super::campaign_save::{CampaignStore, SnapshotState};
-        let mut c = Campaign::new(5);
+        let mut c = Campaign::legacy(5);
         for index in 0..31 {
             if c.clock.remaining_pa() == 0
                 && c.betting.session.as_ref().unwrap().paid_rounds_remaining == 0
@@ -470,7 +476,16 @@ mod tests {
 
     #[test]
     fn invalid_stakes_caps_blocks_and_empty_pa_are_atomic_including_rng() {
-        for stake in [i64::MIN, -100, 0, 1, 99, 101, 12_100, i64::MAX] {
+        for stake in [
+            i64::MIN,
+            -100,
+            0,
+            1,
+            99,
+            101,
+            INITIAL_BALANCE_CENTS + 100,
+            i64::MAX,
+        ] {
             let mut c = Campaign::new(42);
             let before = c.clone();
             assert!(
@@ -643,7 +658,7 @@ mod tests {
             let urge = c.attributes.urge;
             force_next(&mut c, BetChoice::RouletteRed, next_win);
             bet(&mut c, BetChoice::RouletteRed, 200);
-            assert_eq!(c.attributes.urge, urge + 8 + if next_win { 7 } else { 0 });
+            assert_eq!(c.attributes.urge, urge + 11 + if next_win { 7 } else { 0 });
         }
         let mut c = Campaign::new(0);
         force_next(&mut c, BetChoice::Slots, false);
@@ -652,7 +667,7 @@ mod tests {
         let urge = c.attributes.urge;
         force_next(&mut c, BetChoice::Slots, false);
         bet(&mut c, BetChoice::Slots, 200);
-        assert_eq!(c.attributes.urge, urge);
+        assert_eq!(c.attributes.urge, urge + 3);
     }
 
     #[test]
@@ -688,12 +703,12 @@ mod tests {
         let mut c = Campaign::new(9);
         force_next(&mut c, BetChoice::RouletteRed, true);
         bet(&mut c, BetChoice::RouletteRed, 100);
-        assert_eq!((c.attributes.boredom, c.attributes.stress), (25, 21));
+        assert_eq!((c.attributes.boredom, c.attributes.stress), (25, 26));
         c.apply(Action::EndBetSession).unwrap();
         force_next(&mut c, BetChoice::RouletteRed, true);
         bet(&mut c, BetChoice::RouletteRed, 100);
         assert_eq!(c.clock.period(), Period::Afternoon);
-        assert_eq!((c.attributes.boredom, c.attributes.stress), (28, 21));
+        assert_eq!((c.attributes.boredom, c.attributes.stress), (28, 26));
         assert_eq!(c.betting.relief.as_ref().unwrap().stress, 4);
         // Reopening in the same afternoon gets no additional boredom relief.
         c.apply(Action::EndBetSession).unwrap();
@@ -704,7 +719,7 @@ mod tests {
         c.apply(Action::WatchTv).unwrap();
         assert!(c.betting.session.is_none());
         assert!(c.betting.relief.is_none());
-        assert_eq!(c.attributes.stress, 22);
+        assert_eq!(c.attributes.stress, 27);
         assert_eq!(c.attributes.boredom, 22);
     }
 }

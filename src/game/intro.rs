@@ -11,13 +11,22 @@ use bevy::{
     world_serialization::{WorldAsset, WorldInstanceReady},
 };
 
-use super::{camera::MainCamera, player::StatusText, tv};
-use crate::{localization::{Language, Localization}, state::GameState};
+use super::{
+    camera::MainCamera,
+    player::{PlayerCamera, StatusText},
+    routine::{GameplayOverlay, OverlayKind},
+    tv,
+};
+use crate::{
+    localization::{Language, Localization},
+    state::GameState,
+};
 
 pub(crate) const END_POSITION: Vec3 = Vec3::new(2.15, 0.92, -0.90);
 pub(crate) const END_YAW: f32 = 1.97;
 pub(crate) const END_PITCH: f32 = -0.24;
 const DURATION: f32 = 45.0;
+const WAKE_DURATION: f32 = 3.4;
 
 pub(crate) struct IntroPlugin;
 
@@ -59,6 +68,9 @@ impl Opening {
 #[derive(Event)]
 pub(crate) struct OpeningFinished;
 
+#[derive(Event)]
+pub(super) struct WakeRequested;
+
 #[derive(Resource)]
 struct OpeningAssets {
     scene: Handle<WorldAsset>,
@@ -94,6 +106,27 @@ struct OpeningText;
 #[derive(Component)]
 struct Subtitle;
 
+#[derive(Component)]
+struct WakeUi;
+
+#[derive(Default)]
+struct WakePlayback {
+    elapsed: f32,
+    skip_armed: bool,
+}
+
+impl WakePlayback {
+    fn advance(&mut self, delta: f32, focused: bool, enter: bool) -> bool {
+        if !focused {
+            self.skip_armed = false;
+            return false;
+        }
+        self.skip_armed |= !enter;
+        self.elapsed += delta.min(0.1);
+        self.elapsed >= WAKE_DURATION || (self.skip_armed && enter)
+    }
+}
+
 impl Plugin for IntroPlugin {
     fn build(&self, app: &mut App) {
         embedded_asset!(app, "eyelids.wgsl");
@@ -113,6 +146,13 @@ impl Plugin for IntroPlugin {
                     .after(AnimationSystems)
                     .before(TransformSystems::Propagate)
                     .run_if(in_state(GameState::Intro)),
+            )
+            .add_systems(
+                PostUpdate,
+                wake.after(PlayerCamera)
+                    .before(bevy::ui::UiSystems::Prepare)
+                    .before(TransformSystems::Propagate)
+                    .run_if(in_state(GameState::Playing)),
             )
             .add_systems(OnExit(GameState::Intro), cleanup);
     }
@@ -139,6 +179,7 @@ fn load(
 }
 
 fn enter(
+    localization: Res<Localization>,
     mut commands: Commands,
     mut opening: ResMut<Opening>,
     assets: Res<OpeningAssets>,
@@ -168,6 +209,23 @@ fn enter(
     }
     commands.spawn((
         DespawnOnExit(GameState::Intro),
+        eyelid_overlay(assets.eyelids.clone(), true),
+    ));
+    commands.spawn((
+        OpeningText,
+        Subtitle,
+        DespawnOnExit(GameState::Intro),
+        dialogue_box(localization.text("loading_opening"), assets.font.clone()),
+    ));
+    commands.spawn((
+        OpeningText,
+        DespawnOnExit(GameState::Intro),
+        skip_hint("", assets.font.clone()),
+    ));
+}
+
+fn eyelid_overlay(eyelids: Handle<Eyelids>, closed: bool) -> impl Bundle {
+    (
         GlobalZIndex(1000),
         Node {
             position_type: PositionType::Absolute,
@@ -175,29 +233,47 @@ fn enter(
             height: percent(100),
             ..default()
         },
-        MaterialNode(assets.eyelids.clone()),
+        MaterialNode(eyelids),
         Pickable::IGNORE,
         FocusPolicy::Pass,
-        // Cover the existing first black second while the material pipeline warms up.
+        // Keep the viewport black while the material pipeline warms up.
         children![(
             OpeningCover,
             Node {
                 width: percent(100),
                 height: percent(100),
+                display: if closed { Display::Flex } else { Display::None },
                 ..default()
             },
             BackgroundColor(Color::BLACK),
             Pickable::IGNORE,
             FocusPolicy::Pass,
         )],
-    ));
-    commands.spawn((
-        OpeningText,
-        Subtitle,
-        DespawnOnExit(GameState::Intro),
+    )
+}
+
+fn skip_hint(text: &'static str, font: Handle<Font>) -> impl Bundle {
+    (
         GlobalZIndex(1001),
-        Text::new("Loading opening…"),
-        TextFont::from_font_size(24.0).with_font(assets.font.clone()),
+        Text::new(text),
+        TextFont::from_font_size(16.0).with_font(font),
+        TextColor(Color::srgb(0.85, 0.84, 0.79)),
+        Node {
+            position_type: PositionType::Absolute,
+            bottom: px(20),
+            right: px(24),
+            ..default()
+        },
+        Pickable::IGNORE,
+        FocusPolicy::Pass,
+    )
+}
+
+pub(super) fn dialogue_box(text: impl Into<String>, font: Handle<Font>) -> impl Bundle {
+    (
+        GlobalZIndex(1001),
+        Text::new(text),
+        TextFont::from_font_size(24.0).with_font(font),
         TextColor(Color::srgb(0.95, 0.93, 0.87)),
         TextLayout::justify(Justify::Center),
         BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.75)),
@@ -211,27 +287,12 @@ fn enter(
         },
         Pickable::IGNORE,
         FocusPolicy::Pass,
-    ));
-    commands.spawn((
-        OpeningText,
-        DespawnOnExit(GameState::Intro),
-        GlobalZIndex(1001),
-        Text::new(""),
-        TextFont::from_font_size(16.0).with_font(assets.font.clone()),
-        TextColor(Color::srgb(0.85, 0.84, 0.79)),
-        Node {
-            position_type: PositionType::Absolute,
-            bottom: px(20),
-            right: px(24),
-            ..default()
-        },
-        Pickable::IGNORE,
-        FocusPolicy::Pass,
-    ));
+    )
 }
 
 fn body_ready(
     ready: On<WorldInstanceReady>,
+    localization: Res<Localization>,
     mut commands: Commands,
     assets: Res<OpeningAssets>,
     children: Query<&Children>,
@@ -258,18 +319,18 @@ fn body_ready(
         }
     }
     if !found_eye || !found_actor {
-        opening.error = "The opening animation is incomplete. Press Escape for title.".into();
+        opening.error = localization.choose("The opening animation is incomplete. Press Escape for title.", "A animação de abertura está incompleta. Pressione Esc para voltar ao menu principal.").into();
     }
 }
 
 fn subtitle(seconds: f32, language: Language) -> &'static str {
-    match seconds {
-        t if (14.0..19.0).contains(&t) => if language == Language::Portuguese { "Dormi assistindo TV de novo…" } else { "I've fallen asleep watching TV again..." },
-        t if (20.0..25.0).contains(&t) => if language == Language::Portuguese { "Preciso parar de trabalhar até tão tarde…" } else { "I gotta stop working late hours..." },
-        t if (28.0..34.0).contains(&t) => if language == Language::Portuguese { "Mas o que ganho mal dá para pagar as contas." } else { "But what I make is barely enough to cover the bills." },
-        t if (35.0..38.0).contains(&t) => if language == Language::Portuguese { "Vou encontrar um jeito." } else { "I'll find a way." },
+    Localization { language }.text(match seconds {
+        t if (14.0..19.0).contains(&t) => "sleep",
+        t if (20.0..25.0).contains(&t) => "work",
+        t if (28.0..34.0).contains(&t) => "bills",
+        t if (35.0..38.0).contains(&t) => "way",
         _ => "",
-    }
+    })
 }
 
 fn lid_height(seconds: f32) -> f32 {
@@ -309,7 +370,7 @@ fn tick(
     mut next: ResMut<NextState<GameState>>,
     mut actors: Query<&mut AnimationPlayer, With<OpeningActor>>,
     eyes: Query<(), With<OpeningEye>>,
-    statuses: Query<&Text, (With<StatusText>, Without<OpeningText>)>,
+    statuses: Query<(&Text, &StatusText), Without<OpeningText>>,
     mut texts: Query<(&mut Text, &mut Node, Has<Subtitle>), With<OpeningText>>,
     mut blur: Query<(Entity, &mut DepthOfField), With<MainCamera>>,
     localization: Res<Localization>,
@@ -324,14 +385,22 @@ fn tick(
             | Some((_, _, RecursiveDependencyLoadState::Failed(error))) =
                 assets.get_load_states(id)
             {
-                opening.error = format!("Could not load opening: {error}\nPress Escape for title.");
+                opening.error = match localization.language {
+                    Language::English => format!("Could not load opening: {error}\nPress Escape for title."),
+                    Language::Portuguese => "Não foi possível carregar a abertura. Pressione Esc para voltar ao menu principal.".into(),
+                };
             }
         }
-        if let Some(message) = statuses.iter().find(|text| text.0.contains("Press Escape")) {
+        if let Some((message, _)) = statuses.iter().find(|(_, status)| status.failed) {
             opening.error = message.0.replace("for menu", "for title");
         }
         match tv::readiness(&assets, &television) {
-            Err(error) => opening.error = format!("{error}\nPress Escape for title."),
+            Err(error) => {
+                opening.error = match localization.language {
+                    Language::English => format!("{error}\nPress Escape for title."),
+                    Language::Portuguese => "Não foi possível preparar a TV para a abertura. Pressione Esc para voltar ao menu principal.".into(),
+                };
+            }
             Ok(tv_ready)
                 if tv_ready
                     && opening.spawn_ready
@@ -377,11 +446,7 @@ fn tick(
                 subtitle(opening.elapsed, localization.language).into()
             }
         } else if opening.ready && opening.skip_hold > 0.0 {
-            if localization.language == Language::Portuguese {
-                format!("Segure Enter para pular  {}%", (opening.skip_hold * 100.0).min(100.0) as u32)
-            } else {
-                format!("Hold Enter to skip  {}%", (opening.skip_hold * 100.0).min(100.0) as u32)
-            }
+            format!("{}  {}%", localization.text("skip"), (opening.skip_hold * 100.0).min(100.0) as u32)
         } else if opening.ready {
             localization.text("skip").into()
         } else {
@@ -404,15 +469,98 @@ fn animate_eyelids(
     mut materials: ResMut<Assets<Eyelids>>,
     mut covers: Query<&mut Node, With<OpeningCover>>,
 ) {
+    set_eyelids(opening.elapsed, &assets, &mut materials, &mut covers);
+}
+
+fn set_eyelids(
+    seconds: f32,
+    assets: &OpeningAssets,
+    materials: &mut Assets<Eyelids>,
+    covers: &mut Query<&mut Node, With<OpeningCover>>,
+) {
     if let Some(mut material) = materials.get_mut(&assets.eyelids) {
-        material.opening.x = 1.0 - lid_height(opening.elapsed) / 51.0;
+        material.opening.x = 1.0 - lid_height(seconds) / 51.0;
     }
-    for mut cover in &mut covers {
-        cover.display = if opening.elapsed <= 1.0 {
+    for mut cover in covers {
+        cover.display = if seconds <= 1.0 {
             Display::Flex
         } else {
             Display::None
         };
+    }
+}
+
+pub(super) fn wake_pose(elapsed: f32, standing: Transform) -> Transform {
+    // shortcut: these poses fit the shipped bedroom, recalibrate if the bed or nearby walls move.
+    let lying = Transform::from_xyz(2.97, 1.17, 8.36).with_rotation(Quat::from_euler(
+        EulerRot::YXZ,
+        std::f32::consts::FRAC_PI_2,
+        1.22,
+        -0.08,
+    ));
+    let seated = Transform::from_xyz(2.18, 1.39, 7.83).with_rotation(Quat::from_euler(
+        EulerRot::YXZ,
+        0.28,
+        -0.34,
+        0.0,
+    ));
+    let (from, to, t) = if elapsed < 2.22 {
+        (lying, seated, (elapsed - 0.85) / 1.37)
+    } else {
+        (seated, standing, (elapsed - 2.22) / (WAKE_DURATION - 2.22))
+    };
+    let t = t.clamp(0.0, 1.0);
+    let t = t * t * (3.0 - 2.0 * t);
+    Transform::from_translation(from.translation.lerp(to.translation, t))
+        .with_rotation(from.rotation.slerp(to.rotation, t))
+}
+
+fn wake(
+    mut commands: Commands,
+    mut overlay: ResMut<GameplayOverlay>,
+    mut playback: Local<WakePlayback>,
+    time: Res<Time<Real>>,
+    keys: Res<ButtonInput<KeyCode>>,
+    windows: Query<&Window, With<PrimaryWindow>>,
+    localization: Res<Localization>,
+    assets: Res<OpeningAssets>,
+    mut materials: ResMut<Assets<Eyelids>>,
+    mut covers: Query<&mut Node, With<OpeningCover>>,
+    ui: Query<Entity, With<WakeUi>>,
+    mut cameras: Query<&mut Transform, With<MainCamera>>,
+) {
+    let Some(OverlayKind::Wake { bedside }) = overlay.active else {
+        *playback = WakePlayback::default();
+        return;
+    };
+    let focused = windows.single().is_ok_and(|window| window.focused);
+    if ui.is_empty() {
+        playback.skip_armed = false;
+    }
+    if playback.advance(time.delta_secs(), focused, keys.pressed(KeyCode::Enter)) {
+        *playback = WakePlayback::default();
+        overlay.active = None;
+        for entity in &ui {
+            commands.entity(entity).despawn();
+        }
+        return;
+    }
+    let eye_seconds = playback.elapsed * 6.0;
+    if ui.is_empty() {
+        commands.spawn((
+            WakeUi,
+            DespawnOnExit(GameState::Playing),
+            eyelid_overlay(assets.eyelids.clone(), eye_seconds <= 1.0),
+        ));
+        commands.spawn((
+            WakeUi,
+            DespawnOnExit(GameState::Playing),
+            skip_hint(localization.text("skip_wake"), assets.font.clone()),
+        ));
+    }
+    set_eyelids(eye_seconds, &assets, &mut materials, &mut covers);
+    if bedside && let Ok(mut camera) = cameras.single_mut() {
+        *camera = wake_pose(playback.elapsed, *camera);
     }
 }
 
@@ -436,6 +584,89 @@ fn cleanup(mut commands: Commands, cameras: Query<Entity, With<MainCamera>>) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn waking_ignores_held_report_enter_and_cleans_up_after_skip_or_playback() {
+        let mut app = App::new();
+        app.init_resource::<Time<Real>>()
+            .init_resource::<ButtonInput<KeyCode>>()
+            .init_resource::<Assets<Eyelids>>()
+            .init_resource::<Localization>()
+            .init_resource::<GameplayOverlay>()
+            .add_systems(Update, wake);
+        let eyelids = app
+            .world_mut()
+            .resource_mut::<Assets<Eyelids>>()
+            .add(Eyelids { opening: Vec4::ONE });
+        app.insert_resource(OpeningAssets {
+            scene: default(),
+            clip: default(),
+            graph: default(),
+            animation: AnimationNodeIndex::new(0),
+            font: default(),
+            eyelids: eyelids.clone(),
+        });
+        app.world_mut().spawn((
+            Window {
+                focused: true,
+                ..default()
+            },
+            PrimaryWindow,
+        ));
+        app.world_mut()
+            .resource_mut::<Time<Real>>()
+            .advance_by(std::time::Duration::from_millis(100));
+        let active = Some(OverlayKind::Wake { bedside: false });
+        let enter = |app: &mut App, pressed| {
+            let mut keys = app.world_mut().resource_mut::<ButtonInput<KeyCode>>();
+            if pressed {
+                keys.press(KeyCode::Enter);
+            } else {
+                keys.release(KeyCode::Enter);
+            }
+        };
+        let aperture = |app: &App| {
+            app.world()
+                .resource::<Assets<Eyelids>>()
+                .get(&eyelids)
+                .unwrap()
+                .opening
+                .x
+        };
+        app.world_mut().resource_mut::<GameplayOverlay>().active = active;
+        enter(&mut app, true);
+        app.update();
+        assert_eq!(aperture(&app), 0.0);
+        assert_eq!(app.world().resource::<GameplayOverlay>().active, active);
+        enter(&mut app, false);
+        app.update();
+        let mut nodes = app.world_mut().query_filtered::<Entity, With<WakeUi>>();
+        let paused_nodes: Vec<_> = nodes.iter(app.world()).collect();
+        for entity in paused_nodes {
+            app.world_mut().despawn(entity);
+        }
+        enter(&mut app, true);
+        app.update();
+        assert_eq!(app.world().resource::<GameplayOverlay>().active, active);
+        enter(&mut app, false);
+        app.update();
+        enter(&mut app, true);
+        app.update();
+        assert_eq!(app.world().resource::<GameplayOverlay>().active, None);
+        assert_eq!(nodes.iter(app.world()).count(), 0);
+
+        enter(&mut app, false);
+        app.world_mut().resource_mut::<GameplayOverlay>().active = active;
+        for _ in 0..20 {
+            app.update();
+        }
+        assert_eq!(aperture(&app), 1.0);
+        for _ in 0..16 {
+            app.update();
+        }
+        assert_eq!(app.world().resource::<GameplayOverlay>().active, None);
+        assert_eq!(nodes.iter(app.world()).count(), 0);
+    }
 
     #[test]
     fn curved_eyelids_follow_blinks_and_clear_the_startup_cover() {
@@ -556,10 +787,10 @@ mod tests {
         assert_eq!(lid_height(6.1), 51.0);
         assert_eq!(lid_height(9.0), 0.0);
         for t in [14.0, 20.0, 28.0, 35.0] {
-            assert!(!subtitle(t).is_empty());
+            assert!(!subtitle(t, Language::English).is_empty());
         }
         for t in [0.0, 19.0, 25.0, 34.0, 38.0, DURATION] {
-            assert!(subtitle(t).is_empty());
+            assert!(subtitle(t, Language::English).is_empty());
         }
         for frame in 0..=450 {
             assert!((0.0..=51.0).contains(&lid_height(frame as f32 / 10.0)));

@@ -246,10 +246,21 @@ impl Plugin for GraphicsPlugin {
     }
 }
 
-fn unfilter_text(mut fonts: Query<&mut TextFont, Changed<TextFont>>) {
-    for mut font in &mut fonts {
-        if font.font_smoothing != FontSmoothing::None {
-            font.font_smoothing = FontSmoothing::None;
+fn unfilter_text(
+    mut fonts: Query<(&mut TextFont, Option<&Text>), Or<(Changed<TextFont>, Changed<Text>)>>,
+) {
+    for (mut font, text) in &mut fonts {
+        let smoothing = if text.is_some_and(|text| {
+            text.0.chars().any(|ch| {
+                (!ch.is_ascii() && ch.is_alphabetic()) || matches!(ch, '\u{0300}'..='\u{036f}')
+            })
+        }) {
+            FontSmoothing::AntiAliased
+        } else {
+            FontSmoothing::None
+        };
+        if font.font_smoothing != smoothing {
+            font.font_smoothing = smoothing;
         }
     }
 }
@@ -442,6 +453,19 @@ mod tests {
             app.world().get::<TextFont>(text).unwrap().font_smoothing,
             FontSmoothing::None
         );
+    }
+
+    #[test]
+    fn accented_ui_text_keeps_antialiasing_after_text_changes() {
+        let mut app = App::new();
+        app.add_systems(Update, unfilter_text);
+        let text = app.world_mut().spawn(Text::new("Settings")).id();
+        app.update();
+        assert_eq!(app.world().get::<TextFont>(text).unwrap().font_smoothing, FontSmoothing::None);
+
+        app.world_mut().get_mut::<Text>(text).unwrap().0 = "Ação · açúcar · cafe\u{0301}".into();
+        app.update();
+        assert_eq!(app.world().get::<TextFont>(text).unwrap().font_smoothing, FontSmoothing::AntiAliased);
     }
 
     #[test]

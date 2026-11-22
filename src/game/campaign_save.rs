@@ -2,7 +2,7 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use super::campaign::{Action, Campaign};
+use super::campaign::{Action, Campaign, CommitmentStatus, Contact};
 
 pub const STORAGE_KEY: &str = "casino-game.campaign.v1";
 const SAVE_VERSION: u32 = 1;
@@ -42,7 +42,7 @@ pub fn decode_campaign(json: &str) -> Result<Campaign, String> {
     if json.len() > MAX_SAVE_BYTES {
         return Err("Campaign snapshot is too large to load.".into());
     }
-    let snapshot: Snapshot = serde_json::from_str(json)
+    let mut snapshot: Snapshot = serde_json::from_str(json)
         .map_err(|error| format!("Invalid campaign snapshot: {error}"))?;
     if snapshot.version != SAVE_VERSION {
         return Err(format!(
@@ -55,6 +55,7 @@ pub fn decode_campaign(json: &str) -> Result<Campaign, String> {
         return Err("Campaign snapshot failed its corruption check.".into());
     }
     snapshot.campaign.validate()?;
+    snapshot.campaign.update_unpaid_rent();
     Ok(snapshot.campaign)
 }
 
@@ -77,6 +78,14 @@ pub struct CampaignStore {
     campaign: Option<Campaign>,
     snapshot_state: SnapshotState,
     pub notice: String,
+    pub(super) feedback: ActionFeedback,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(super) struct ActionFeedback {
+    pub attributes: [i16; 5],
+    pub money: i64,
+    pub missed_call: Option<Contact>,
 }
 
 impl Default for CampaignStore {
@@ -85,6 +94,7 @@ impl Default for CampaignStore {
             campaign: None,
             snapshot_state: SnapshotState::Missing,
             notice: String::new(),
+            feedback: ActionFeedback::default(),
         };
         let _ = store.load();
         store
@@ -98,6 +108,7 @@ impl CampaignStore {
             campaign,
             snapshot_state,
             notice: String::new(),
+            feedback: ActionFeedback::default(),
         }
     }
 
@@ -125,6 +136,7 @@ impl CampaignStore {
                 self.campaign = Some(campaign);
                 self.snapshot_state = SnapshotState::Available;
                 self.notice.clear();
+                self.feedback = ActionFeedback::default();
                 Ok(true)
             }
             Ok(None) => {
@@ -155,6 +167,7 @@ impl CampaignStore {
         let seed = new_seed()?;
         self.campaign = Some(Campaign::new(seed));
         self.snapshot_state = SnapshotState::Missing;
+        self.feedback = ActionFeedback::default();
         Ok(self.autosave_with(write_snapshot))
     }
 
@@ -168,15 +181,42 @@ impl CampaignStore {
         action: Action,
         writer: impl FnOnce(&str) -> Result<(), String>,
     ) -> Result<SaveStatus, String> {
-        self.campaign
+        let campaign = self
+            .campaign
             .as_mut()
-            .ok_or("Start a New Game or Continue a saved campaign first.")?
-            .apply(action)?;
+            .ok_or("Start a New Game or Continue a saved campaign first.")?;
+        let before = campaign.attributes.values();
+        let balance = campaign.balance_cents;
+        let scheduled_call = campaign.commitments.iter().position(|plan| {
+            plan.day == campaign.clock.day
+                && plan.status == CommitmentStatus::Scheduled
+                && campaign.uses_phone_for(plan.contact)
+        });
+        campaign.apply(action)?;
+        let after = campaign.attributes.values();
+        for (index, delta) in self.feedback.attributes.iter_mut().enumerate() {
+            *delta += i16::from(after[index]) - i16::from(before[index]);
+        }
+        self.feedback.money += campaign.balance_cents - balance;
+        if let Some(plan) = scheduled_call.map(|index| &campaign.commitments[index])
+            && plan.status == CommitmentStatus::Missed
+        {
+            self.feedback.missed_call = Some(plan.contact);
+        }
         Ok(self.autosave_with(writer))
     }
 
     pub fn save(&mut self) -> Result<(), String> {
         self.save_with(write_snapshot)
+    }
+
+    pub(super) fn finish_landlord_intro(&mut self) {
+        if let Some(campaign) = &mut self.campaign
+            && campaign.landlord_intro_due()
+        {
+            campaign.landlord_intro_seen = Some(true);
+            let _ = self.save();
+        }
     }
 
     fn autosave_with(&mut self, writer: impl FnOnce(&str) -> Result<(), String>) -> SaveStatus {
@@ -339,14 +379,10 @@ fn write_file(path: &std::path::Path, json: &str) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::game::campaign::{CampaignStage, Ending};
+    use crate::game::campaign::{BillKind, CampaignStage, Ending, INITIAL_BALANCE_CENTS};
 
     fn empty_store() -> CampaignStore {
-        CampaignStore {
-            campaign: None,
-            snapshot_state: SnapshotState::Missing,
-            notice: String::new(),
-        }
+        CampaignStore::for_test(None, SnapshotState::Missing)
     }
 
     #[test]
@@ -362,7 +398,7 @@ mod tests {
                 original.rng.sample_below(100).unwrap()
             );
         }
-        original.stage = CampaignStage::Ended(Ending::DayTen);
+        original.stage = CampaignStage::Ended(Ending::FinalDay);
         assert_eq!(
             decode_campaign(&encode_campaign(&original).unwrap())
                 .unwrap()
@@ -372,12 +408,67 @@ mod tests {
     }
 
     #[test]
+    fn legacy_snapshot_keeps_its_checksum_calendar_and_opening_balance() {
+        let json = encode_campaign(&Campaign::legacy(42)).unwrap();
+        // Original v1 checksum for a new campaign with seed 42.
+        assert!(json.starts_with(r#"{"version":1,"checksum":11347336620758525511,"campaign":"#));
+        let restored = decode_campaign(&json).unwrap();
+        assert_eq!((restored.last_day(), restored.balance_cents), (10, 12_000));
+        assert_eq!(restored.bills[1].due_day, 7);
+
+        let json = encode_campaign(&Campaign::previous_economy(42)).unwrap();
+        assert!(json.starts_with(r#"{"version":1,"checksum":10692789218434743493,"campaign":"#));
+        let mut restored = decode_campaign(&json).unwrap();
+        assert_eq!((restored.last_day(), restored.balance_cents), (4, 36_000));
+        restored.apply(Action::Work).unwrap();
+        assert_eq!(restored.balance_cents, 44_000);
+    }
+
+    #[test]
+    fn saved_unpaid_rent_gets_the_new_price_and_paid_rent_keeps_its_ledger() {
+        let mut old = Campaign::new(42);
+        old.bills.iter_mut().find(|bill| bill.kind == BillKind::Rent).unwrap().amount_cents =
+            13_000;
+        for action in [Action::Work, Action::Sleep, Action::AcknowledgeReport, Action::Work] {
+            old.apply(action).unwrap();
+        }
+
+        let mut restored = decode_campaign(&encode_campaign(&old).unwrap()).unwrap();
+        restored.apply(Action::PayBill(BillKind::Rent)).unwrap();
+        assert_eq!(restored.balance_cents, old.balance_cents - 11_000);
+
+        old.apply(Action::PayBill(BillKind::Rent)).unwrap();
+        assert_eq!(decode_campaign(&encode_campaign(&old).unwrap()).unwrap(), old);
+    }
+
+    #[test]
+    fn delivery_pay_cap_preserves_existing_payments_above_eighty() {
+        let mut old = Campaign::new(42);
+        old.apply(Action::Work).unwrap();
+        old.balance_cents = INITIAL_BALANCE_CENTS + 9_000;
+        let payment = old.ledger.last_mut().unwrap();
+        payment.amount_cents = 9_000;
+        payment.balance_after_cents = old.balance_cents;
+
+        let mut restored = decode_campaign(&encode_campaign(&old).unwrap()).unwrap();
+        assert_eq!(restored, old);
+        restored.apply(Action::Sleep).unwrap();
+        restored.apply(Action::AcknowledgeReport).unwrap();
+        restored.apply(Action::Work).unwrap();
+        assert_eq!(restored.reports[0].finances.work_cents, 9_000);
+        assert!((4_000..=8_000).contains(&restored.ledger.last().unwrap().amount_cents));
+    }
+
+    #[test]
     fn routine_report_and_next_day_are_each_autosaved() {
         let mut store = CampaignStore::for_test(Some(Campaign::new(5)), SnapshotState::Missing);
+        let mut pay = 0;
         store
             .apply_with(Action::Work, |json| {
                 let saved = decode_campaign(json).unwrap();
-                assert_eq!(saved.balance_cents, 20_000);
+                pay = saved.ledger[0].amount_cents;
+                assert!((4_000..=8_000).contains(&pay));
+                assert_eq!(saved.balance_cents, INITIAL_BALANCE_CENTS + pay);
                 assert_eq!(saved.worked_days, [1]);
                 Ok(())
             })
@@ -388,7 +479,10 @@ mod tests {
                 assert_eq!(saved.stage, CampaignStage::DailyReport);
                 assert_eq!(saved.clock.day, 1);
                 assert_eq!(saved.reports[0].pa_used, 2);
-                assert_eq!(saved.reports[0].finances.closing_cents, 20_000);
+                assert_eq!(
+                    saved.reports[0].finances.closing_cents,
+                    INITIAL_BALANCE_CENTS + pay
+                );
                 Ok(())
             })
             .unwrap();
@@ -409,7 +503,7 @@ mod tests {
         let campaign = Campaign::new(42);
         let json = encode_campaign(&campaign).unwrap();
         assert!(decode_campaign(&json.replace("\"version\":1", "\"version\":2")).is_err());
-        assert!(decode_campaign(&json.replace("\"stress\":25", "\"stress\":26")).is_err());
+        assert!(decode_campaign(&json.replace("\"stress\":30", "\"stress\":31")).is_err());
         assert!(
             decode_campaign(
                 &json.replace("\"stage\":\"Playing\"", "\"extra\":0,\"stage\":\"Playing\"")
@@ -579,7 +673,7 @@ mod tests {
     #[test]
     fn bill_extension_calls_and_visits_autosave_without_duplicate_payments() {
         use super::super::campaign::{BillKind, CommitmentStatus, Contact, LedgerKind};
-        let mut c = Campaign::new(5);
+        let mut c = Campaign::legacy(5);
         for _ in 1..4 {
             c.apply(Action::Work).unwrap();
             c.apply(Action::Sleep).unwrap();

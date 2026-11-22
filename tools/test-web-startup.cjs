@@ -2,16 +2,18 @@
 const assert = require('node:assert/strict');
 const { readFileSync } = require('node:fs');
 const vm = require('node:vm');
-const source = readFileSync(`${__dirname}/../web/index.html`, 'utf8')
-  .match(/<script type="module">([\s\S]*?)<\/script>/)[1];
+const html = readFileSync(`${__dirname}/../web/index.html`, 'utf8');
+const language = html.match(/<html lang="([^"]+)"/)[1];
+const source = html.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
 
 async function start(gpu, init = () => {}, importError, browser = {}) {
   const status = { hidden: false, textContent: 'Loading' };
   const listeners = {};
   let imported = false;
   let importedPath;
+  const document = browser.document ?? { documentElement: { lang: language } };
   const context = vm.createContext({
-    document: Object.assign(browser.document ?? {}, { querySelector: () => status }),
+    document: Object.assign(document, { querySelector: () => status }),
     navigator: { gpu, ...browser.navigator },
     window: { addEventListener: (name, listener) => { listeners[name] = listener; } },
     console: { error() {}, warn() {} },
@@ -32,15 +34,16 @@ async function start(gpu, init = () => {}, importError, browser = {}) {
   });
   await module.link(() => {});
   await module.evaluate();
-  return { status, listeners, imported, importedPath };
+  return { status, listeners, imported, importedPath, document };
 }
 
 (async () => {
+  assert.equal(language, 'pt-BR');
   const missing = await start(undefined);
-  assert.match(missing.status.textContent, /WebGPU is unavailable/);
+  assert.match(missing.status.textContent, /WebGPU indisponível/);
   assert.equal(missing.imported, false);
   const unavailable = await start({ requestAdapter: async () => null });
-  assert.match(unavailable.status.textContent, /No WebGPU graphics device/);
+  assert.match(unavailable.status.textContent, /Nenhum dispositivo gráfico WebGPU disponível/);
   assert.equal(unavailable.imported, false);
   const gpu = { requestAdapter: async () => ({}) };
   for (const failed of [
@@ -49,13 +52,14 @@ async function start(gpu, init = () => {}, importError, browser = {}) {
     await start(gpu, () => {}, new Error('module failed')),
   ]) {
     assert.equal(failed.status.hidden, false);
-    assert.match(failed.status.textContent, /Could not start the game: .*failed/);
+    assert.match(failed.status.textContent, /O jogo encontrou um erro/);
   }
   let wasmPath;
   const running = await start(gpu, options => { wasmPath = options.module_or_path; });
   assert.equal(running.importedPath, './CasinoGame.js?v=__GAME_BUILD__');
   assert.equal(wasmPath, './CasinoGame_bg.wasm?v=__GAME_BUILD__');
   assert.equal(running.status.hidden, true);
+  running.document.documentElement.lang = 'en';
   running.listeners.error({ error: new Error('renderer stopped') });
   assert.equal(running.status.hidden, false);
   assert.match(running.status.textContent, /renderer stopped/);

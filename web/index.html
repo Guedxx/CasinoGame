@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Saldo Zero</title>
@@ -10,7 +10,7 @@
   #status { position: absolute; z-index: 1; top: 16px; left: 16px; font: 16px system-ui; color: #e8e3d4; }
 </style>
 <body>
-<div id="status" role="status">Loading Saldo Zero</div>
+<div id="status" role="status">Carregando Saldo Zero…</div>
 <script data-audio-unlock>
   // Bevy owns the audio contexts; browsers require resume inside a user gesture.
   if (window.AudioContext) {
@@ -35,9 +35,11 @@
 </script>
 <script type="module">
   const status = document.querySelector('#status');
-  function failed(error) {
+  function failed(error, message = 'O jogo encontrou um erro. Recarregue a página para tentar novamente.') {
     status.hidden = false;
-    status.textContent = `Could not start the game: ${error?.message ?? error}`;
+    status.textContent = document.documentElement.lang === 'pt-BR'
+      ? message
+      : `Could not start the game: ${error?.message ?? error}`;
     console.error(error);
   }
   window.addEventListener('error', event => failed(event.error ?? event.message));
@@ -80,14 +82,18 @@
     });
   }
   try {
-    if (!navigator.gpu) throw new Error('WebGPU is unavailable. Use a WebGPU-enabled browser over HTTPS or localhost.');
-    if (!await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' })) {
-      throw new Error('No WebGPU graphics device is available. Enable hardware acceleration and WebGPU in your browser, then reload, or use another WebGPU-enabled browser.');
+    if (!navigator.gpu) {
+      failed(new Error('WebGPU is unavailable. Use a WebGPU-enabled browser over HTTPS or localhost.'),
+        'WebGPU indisponível. Use um navegador com suporte a WebGPU via HTTPS ou localhost.');
+    } else if (!await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' })) {
+      failed(new Error('No WebGPU graphics device is available. Enable hardware acceleration and WebGPU in your browser, then reload, or use another WebGPU-enabled browser.'),
+        'Nenhum dispositivo gráfico WebGPU disponível. Ative a aceleração de hardware e o WebGPU e recarregue a página.');
+    } else {
+      const build = '__GAME_BUILD__';
+      const { default: init } = await import(`./CasinoGame.js?v=${build}`);
+      await init({ module_or_path: `./CasinoGame_bg.wasm?v=${build}` });
+      status.hidden = true;
     }
-    const build = '__GAME_BUILD__';
-    const { default: init } = await import(`./CasinoGame.js?v=${build}`);
-    await init({ module_or_path: `./CasinoGame_bg.wasm?v=${build}` });
-    status.hidden = true;
   } catch (error) {
     failed(error);
   }

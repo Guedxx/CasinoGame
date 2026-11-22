@@ -11,8 +11,8 @@ cargo run
 ```
 
 The game opens on the apartment couch with a sleeping man, a subtle chest-breathing animation,
-and **Continue / New Game / Settings** on the right. New Game starts Alex's ten-day campaign;
-replacing existing progress requires confirmation. A 45-second first-person opening follows:
+and **Continue / New Game / Settings** on the right. New Game starts Alex's four-day campaign.
+Replacing existing progress requires confirmation. A 45-second first-person opening follows:
 Alex wakes on the couch, blinks into focus, watches football on TV, reflects on his hands,
 and stands up. Dialogue appears as subtitles. **Hold Enter for one second** to skip after
 releasing the key used to start the game. Losing focus freezes the opening until you return.
@@ -23,7 +23,8 @@ Use **WASD** to walk, **Shift** to sprint, **Space** to jump, and the **mouse** 
 reports, pause menu and settings; closing them resumes control immediately.
 **Escape** closes an overlay first. From gameplay it opens the pause menu with the mouse
 captured; press Escape again in that menu to release the mouse and stay paused.
-Select Resume to continue. In supported browsers (Chromium), clicking to capture also enters
+Select **Resume** to continue playing or **Main Menu** to return to the title screen.
+In supported browsers (Chromium), clicking to capture also enters
 fullscreen and captures Escape through Keyboard Lock. Holding Escape still exits fullscreen.
 Firefox and browsers that deny fullscreen/keyboard capture keep their normal Escape behavior:
 Escape releases the mouse and pauses with the current phone page preserved. Use **P** to pause
@@ -33,32 +34,49 @@ Losing window focus or browser pointer lock also opens the menu. The closed door
 furniture, walls, floor, and ceiling are solid.
 
 Use **E** near an object for household actions and **Tab** to raise or lower the phone.
-A shallow wall calendar left of the TV marks today and the electricity/rent deadlines
-across the ten-day campaign, including paid bills, overdue bills and rent extensions.
-The phone keeps a modern blue/teal home screen, colorful app icons, rounded widgets and
-a favorites dock, with low-resolution, palette-limited bitmaps for a PSX look. It contains
-fictional betting games, banking, financial/betting history and saved daily
-reports, household sales, contacts, support, and food options. **1–9** select visible phone choices,
-**H** returns home, **Backspace** goes back, and the wheel or **PageUp / PageDown** scrolls.
-Apps have their own compact interfaces: VIRA casino, Violeta banking, Conversa chats,
-MeFood ordering, household listings and Respiro support. Roulette and football use
-selection tiles followed by an explicit Bet button; Slots uses Spin. Rules and My bets
-stay within the shared betting session. Contact rows open a thread before a call.
+A shallow wall calendar left of the TV marks today's date and the bill deadlines.
+Aim at a paper on the living-room table and click or press **E** to pay it. The paper
+disappears after payment. Alex starts with R$60. Water costs R$60 and is due on day 2,
+electricity costs R$90 and is due on day 3, and rent costs R$110 and is due on day 4.
+Unpaid rent leads to housing loss after the final daily report.
+The phone home screen shows History, Betting, Support and Chats in one row of
+low-resolution, palette-limited icons. History shows daily income and spending by category.
+Support includes care tools and household sales when relevant. Use the kitchen to get food.
+**1–9** select visible phone choices, **H** returns home, **Backspace** goes back,
+and the wheel or **PageUp / PageDown** scrolls.
+Roulette and football use selection tiles followed by an explicit Bet button. Slots uses Spin.
+Rules and My bets stay within the shared betting session. Contact rows open a thread before a call.
+Marina calls on day 2 in the afternoon and Rafa calls on day 4 at night.
 Sales opens a history of sold items with SOLD stamps; Sell an item appears when offers are available.
 Walking and looking stop while an overlay is open. Use **Tab** or its Lower button to lower the
 phone without releasing capture. Actual window focus or browser pointer-lock loss still pauses safely.
 
 Each day has six shared action points (PA). Work, meals and other activities spend PA;
-exploration, reading, bill payments and support information are free. Sleep at the bed opens
-the daily report; unused PA still elapse for needs and scheduled commitments. Only the current
-report's explicit Continue advances the campaign. Betting is voluntary. Endings stop gameplay
-and keep history/reports readable, with Return to Title available.
+exploration, reading, bill payments and support information are free. Sleeping at the bed fades
+to black before showing that day's income and spending. The all-days log keeps the same
+breakdown for earlier days.
+Unused PA still elapse for needs and scheduled commitments. A delivery shift is available on the last day.
+Only the current report's explicit Continue advances the campaign. Betting is voluntary.
+Endings stop gameplay and keep history/reports readable, with Return to Title available.
+The city outside the windows gradually darkens as actions advance the day. Work shifts can
+only start in the morning or afternoon.
+Clean the apartment at the bathroom trash can. Each level of mess adds one point whenever
+stress increases. Hunger at 80 or higher blocks watching TV and cleaning until Alex eats.
+Stress at 80 blocks work and other activities that spend PA without relieving stress. Sleeping,
+paying bills, betting, and adjusting betting controls are available under their usual rules.
+After the first action that spends PA on day one, the landlady knocks and introduces each
+status in turn. Press **Enter** or click to advance her dialogue. Stress and urge start at 30.
+Stress turns yellow at 60 and red at 80. Urge turns yellow at 50 and red at 70.
+After continuing from the daily report, Alex wakes in bed.
+Press **Enter** again to skip the wake-up scene.
 
 Meaningful actions autosave one local campaign separately from graphics settings, using
 `casino-game.campaign.v1` in browser localStorage or the native user configuration directory.
 A storage failure keeps session progress and shows a retry notice; retry saving before closing.
 Unreadable saves are preserved until an explicitly confirmed New Game replaces them.
-The approved gameplay contract and focused verification record are in [IMPLEMENTATION.md](IMPLEMENTATION.md).
+Existing saves keep their original deadlines and budget. Change `DAYS` in `src/game/campaign.rs`
+to set the duration of future new campaigns.
+The original gameplay contract and focused verification record are in [IMPLEMENTATION.md](IMPLEMENTATION.md).
 The first build compiles the engine and can take several minutes.
 Install the native dependencies for your platform from the
 [Bevy setup guide](https://bevy.org/learn/quick-start/getting-started/setup/).
@@ -124,7 +142,8 @@ High is the default. Presets select shadow quality and enable both PSX effects; 
 
 All lights, fog, scene geometry and original texture dimensions stay present at every setting.
 Rendering always uses the full window resolution; there is no scaling camera or texture-resizing queue.
-Antialiasing is permanently disabled for the scene, phone, UI edges, and text.
+Antialiasing is disabled for the scene, phone, and UI edges.
+Text with accented letters keeps glyph smoothing for legibility.
 Game textures use nearest-neighbor sampling, without linear, mipmap blending, or anisotropic filtering.
 Shadows retain Bevy's linear comparison samplers for hardware 2×2 filtering to avoid blocky shadow-map edges.
 Tone mapping and debanding are disabled.
@@ -214,7 +233,7 @@ src/
     intro.rs          New-game waking animation, subtitles, skip, and control handoff
     tv.rs             Compact football broadcast loop on the apartment TV
     player.rs         First-person controls, static collision, and physics checks
-    campaign.rs       Authoritative ten-day state, actions, clock, ledger, and reports
+    campaign.rs       Authoritative campaign duration, actions, clock, ledger, and reports
     campaign_save.rs  Validated versioned autosave and retained session
     routine.rs        World interactions, reports, endings, and read-only records
     phone.rs          Physical phone, app routing, amount entry and input guards

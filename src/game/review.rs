@@ -18,10 +18,17 @@ struct ReviewView(Option<usize>);
 
 fn review(
     keys: Res<ButtonInput<KeyCode>>,
+    overlay: Res<super::routine::GameplayOverlay>,
     mut view: ResMut<ReviewView>,
     mut cameras: Query<&mut Transform, With<super::camera::MainCamera>>,
     mut text: Query<&mut Visibility, (With<Text>, Without<super::calendar::CalendarText>)>,
 ) {
+    if matches!(
+        overlay.active,
+        Some(super::routine::OverlayKind::Wake { .. })
+    ) {
+        return;
+    }
     let views = [
         (Vec3::new(1.45, 1.65, 3.8), Vec3::new(-0.03, 1.4, 2.7)),
         (Vec3::new(-1.1, 1.65, 6.5), Vec3::new(-1.1, 1.3, -4.8)),

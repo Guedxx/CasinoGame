@@ -18,6 +18,7 @@ pub(crate) enum Sound {
     Win,
     Loss,
     Door,
+    Knock,
     Bell,
     Bag,
     Cook,
@@ -33,7 +34,7 @@ pub(crate) enum Sound {
 
 const CLIPS: &[&str] = &[
     "click", "back", "open", "confirm", "error", "notify", "tick", "chip", "door", "bell", "bag",
-    "cook", "cloth", "clean", "dog", "vibrate", "tv", "roulette", "whistle", "step1",
+    "cook", "cloth", "clean", "dog", "vibrate", "tv", "roulette", "whistle", "step1", "knock",
 ];
 
 impl Sound {
@@ -50,6 +51,7 @@ impl Sound {
             Self::Win => ("confirm", 0.65, 1.15),
             Self::Loss => ("back", 0.5, 0.65),
             Self::Door => ("door", 0.6, 1.0),
+            Self::Knock => ("knock", 0.65, 1.0),
             Self::Bell => ("bell", 0.45, 1.0),
             Self::Bag => ("bag", 0.5, 1.0),
             Self::Cook => ("cook", 0.5, 1.0),
@@ -68,6 +70,7 @@ impl Sound {
         Some(match action {
             Action::Bet { .. } => Self::Chip,
             Action::EndBetSession => return None,
+            #[cfg(test)]
             Action::Wait => Self::Back,
             Action::Work => Self::Door,
             Action::Groceries | Action::OrderFood => Self::Bag,
@@ -75,7 +78,7 @@ impl Sound {
             Action::WatchTv => Self::Tv,
             Action::TimeWithPipoca => Self::Dog,
             Action::Clean => Self::Clean,
-            Action::Call(_) | Action::CareConversation => Self::Vibrate,
+            Action::Call(_) | Action::CareConversation | Action::TherapySession => Self::Vibrate,
             Action::FinancialPlanning => Self::Notify,
             Action::ReceiveVisit(_) => Self::Door,
             Action::Sleep => Self::Cloth,
@@ -233,10 +236,10 @@ mod tests {
         c.clock.day = 6;
         assert_eq!(ambience_levels(Some(&c), GameState::Playing, true).1, 0.0);
         c.clock.day = 1;
-        c.attributes.stress = 80;
+        c.attributes.stress = 70;
         c.apply(Action::Sell(HouseholdItem::Fridge)).unwrap();
         assert_eq!(ambience_levels(Some(&c), GameState::Playing, true).1, 0.0);
-        c.stage = CampaignStage::Ended(Ending::DayTen);
+        c.stage = CampaignStage::Ended(Ending::FinalDay);
         assert_eq!(
             ambience_levels(Some(&c), GameState::Playing, true),
             (0.025, 0.0)

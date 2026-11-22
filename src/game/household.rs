@@ -5,7 +5,7 @@ use bevy_rapier3d::prelude::{Collider, ColliderDisabled};
 use super::{
     campaign::*, campaign_save::CampaignStore, player::Apartment, routine::GameplayOverlay,
 };
-use crate::state::GameState;
+use crate::{localization::Localization, state::GameState};
 
 pub const HOUSEHOLD_ITEMS: [HouseholdItem; 6] = [
     HouseholdItem::Tv,
@@ -65,6 +65,7 @@ impl Campaign {
                 item.label()
             ));
         }
+        self.require_low_stress()?;
         if item == HouseholdItem::Pipoca {
             if HOUSEHOLD_ITEMS.into_iter().any(|i| self.household.owns(i)) {
                 return Err(
@@ -72,7 +73,7 @@ impl Campaign {
                         .into(),
                 );
             }
-        } else if self.attributes.stress < 70 && self.attributes.urge < 70 {
+        } else if self.attributes.stress < SALE_PRESSURE && self.attributes.urge < SALE_PRESSURE {
             return Err("Household sales are offered at stress or urge 70 or above. Other actions remain available.".into());
         }
         Ok(())
@@ -150,7 +151,10 @@ impl Plugin for HouseholdPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Presentation>()
             .add_systems(Startup, setup)
-            .add_systems(Update, (scan_furniture, sync_visuals, environment).chain());
+            .add_systems(
+                Update,
+                (scan_furniture, sync_visuals, environment.after(super::routine::RoutineView)).chain(),
+            );
     }
 }
 
@@ -284,7 +288,7 @@ fn setup(
     commands.spawn((
         Thought,
         Text::new(""),
-        TextFont::from_font_size(18.0),
+        TextFont::from_font_size(18.0).with_font(assets.load("fonts/LiberationSans-Regular.ttf")),
         TextColor(Color::srgb(0.92, 0.91, 0.86)),
         Node {
             position_type: PositionType::Absolute,
@@ -374,17 +378,18 @@ fn bulb_brightness(seconds: f32) -> f32 {
         - 0.035 * (seconds * 1.9).sin().max(0.0).powi(12)
 }
 
-fn thought(c: &Campaign) -> &'static str {
+fn thought(c: &Campaign, localization: &Localization) -> &'static str {
     if c.betting.history.is_empty() || c.attributes.urge < 60 {
         ""
     } else if c.attributes.urge < 80 {
-        "The betting app keeps coming to mind."
+        localization.choose("The betting app keeps coming to mind.", "O aplicativo de apostas não sai da minha cabeça.")
     } else {
-        "I keep thinking about another bet. I can step away."
+        localization.choose("I keep thinking about another bet. I can step away.", "Não paro de pensar em fazer mais uma aposta. Posso me afastar um pouco.")
     }
 }
 
 fn environment(
+    localization: Res<Localization>,
     store: Res<CampaignStore>,
     state: Res<State<GameState>>,
     time: Res<Time<Real>>,
@@ -424,7 +429,7 @@ fn environment(
     }
     for (mut text, mut visibility) in &mut thoughts {
         let value = if playing && !overlay.blocks_world() {
-            campaign.map_or("", thought)
+            campaign.map_or("", |campaign| thought(campaign, &localization))
         } else {
             ""
         };
@@ -497,7 +502,7 @@ mod tests {
                 assert!(c.apply(Action::Sell(item)).is_err());
                 assert_eq!(c, sold);
             }
-            assert_eq!(c.balance_cents, 52_000);
+            assert_eq!(c.balance_cents, INITIAL_BALANCE_CENTS + 40_000);
             assert_eq!(c.daily_finances(1).unwrap().sales_cents, 40_000);
             assert_eq!(c.rng, rng);
             let before = c.clone();
@@ -513,7 +518,7 @@ mod tests {
     }
 
     #[test]
-    fn dog_sale_ignores_current_stats_after_six_sales_and_ends_without_elapsed_unused_pa() {
+    fn dog_sale_needs_no_sale_pressure_after_six_sales_and_ends_without_elapsed_unused_pa() {
         let mut c = offered();
         for item in HOUSEHOLD_ITEMS {
             c.apply(Action::Sell(item)).unwrap();
@@ -554,7 +559,7 @@ mod tests {
         c.apply(Action::TimeWithPipoca).unwrap();
         assert_eq!(
             (c.clock.pa_spent, c.attributes.stress, c.attributes.boredom),
-            (1, 17, 28)
+            (1, 22, 28)
         );
         c.attributes.stress = 2;
         c.attributes.boredom = 0;
@@ -784,7 +789,7 @@ mod tests {
             assert!(pressure(value) >= 0.0 && pressure(value) <= 1.0);
             c.attributes.stress = value;
             c.attributes.urge = 100;
-            assert_eq!(thought(&c), "");
+            assert_eq!(thought(&c, &Localization::default()), "");
         }
         c.apply(Action::Bet {
             choice: BetChoice::Slots,
@@ -792,9 +797,9 @@ mod tests {
         })
         .unwrap();
         c.attributes.urge = 59;
-        assert_eq!(thought(&c), "");
+        assert_eq!(thought(&c, &Localization::default()), "");
         c.attributes.urge = 60;
-        assert!(!thought(&c).is_empty());
+        assert!(!thought(&c, &Localization::default()).is_empty());
         let mut app = App::new();
         app.add_plugins(MinimalPlugins)
             .insert_resource(State::new(GameState::Playing))
@@ -804,6 +809,7 @@ mod tests {
             ))
             .init_resource::<Presentation>()
             .init_resource::<GameplayOverlay>()
+            .init_resource::<Localization>()
             .add_systems(Update, environment);
         let interior = app
             .world_mut()
@@ -839,7 +845,7 @@ mod tests {
             app.world().resource::<CampaignStore>().campaign().unwrap(),
             &c
         );
-        c.clock.day = 6;
+        c.clock.day = 4;
         c.attributes.stress = 0;
         app.insert_resource(CampaignStore::for_test(Some(c), SnapshotState::Protected));
         app.update();

@@ -16,7 +16,7 @@ use super::{
     camera::MainCamera,
     phone::{PhoneCamera, PhoneInput, PhoneView},
     player::{Player, PlayerInput},
-    routine::{GameplayOverlay, OverlayInput},
+    routine::{GameplayOverlay, OverlayInput, OverlayKind},
 };
 use crate::state::GameState;
 
@@ -341,11 +341,15 @@ fn setup(mut commands: Commands) {
 fn draw(
     mut commands: Commands,
     mouse: Res<GameCursor>,
+    state: Res<State<GameState>>,
+    overlay: Res<GameplayOverlay>,
     cameras: Query<(Entity, &Camera, Has<PhoneCamera>), Or<(With<MainCamera>, With<PhoneCamera>)>>,
     mut cursors: Query<(Entity, &mut Node), With<DigitalCursor>>,
 ) {
+    let waking = *state.get() == GameState::Playing
+        && matches!(overlay.active, Some(OverlayKind::Wake { .. }));
     for (entity, mut node) in &mut cursors {
-        node.display = if mouse.captured && mouse.ui {
+        node.display = if mouse.captured && mouse.ui && !waking {
             Display::Flex
         } else {
             Display::None
@@ -366,7 +370,6 @@ fn draw(
 
 #[cfg(test)]
 mod tests {
-    use super::super::routine::OverlayKind;
     use super::*;
 
     fn app() -> (App, Entity) {
