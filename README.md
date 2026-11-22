@@ -36,8 +36,8 @@ furniture, walls, floor, and ceiling are solid.
 Use **E** near an object for household actions and **Tab** to raise or lower the phone.
 A shallow wall calendar left of the TV marks today's date and the bill deadlines.
 Aim at a paper on the living-room table and click or press **E** to pay it. The paper
-disappears after payment. Alex starts with R$60. Water costs R$60 and is due on day 2,
-electricity costs R$90 and is due on day 3, and rent costs R$110 and is due on day 4.
+disappears after payment. Alex starts with R$60. Water costs R$100 and is due on day 2,
+electricity costs R$100 and is due on day 3, and rent costs R$120 and is due on day 4.
 Unpaid rent leads to housing loss after the final daily report.
 The phone home screen shows History, Betting, Support and Chats in one row of
 low-resolution, palette-limited icons. History shows daily income and spending by category.
@@ -74,7 +74,8 @@ Meaningful actions autosave one local campaign separately from graphics settings
 `casino-game.campaign.v1` in browser localStorage or the native user configuration directory.
 A storage failure keeps session progress and shows a retry notice; retry saving before closing.
 Unreadable saves are preserved until an explicitly confirmed New Game replaces them.
-Existing saves keep their original deadlines and budget. Change `DAYS` in `src/game/campaign.rs`
+On load, the current prices apply to unpaid bills in campaigns with water, electricity and rent.
+Recorded payments and deadlines are preserved. Change `DAYS` in `src/game/campaign.rs`
 to set the duration of future new campaigns.
 The original gameplay contract and focused verification record are in [IMPLEMENTATION.md](IMPLEMENTATION.md).
 The first build compiles the engine and can take several minutes.

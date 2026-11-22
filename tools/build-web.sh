@@ -28,7 +28,10 @@ cp assets/models/menu_sleeper.glb dist/assets/models/
 cp assets/models/opening_body.glb dist/assets/models/
 cp assets/models/tv-football-{1,2,3}.png dist/assets/models/
 cp assets/models/phone_hand.glb dist/assets/models/
-cp assets/models/{pipoca,food_portion,waste_paper,waste_meal,waste_bag}.glb dist/assets/models/
+for model in {pipoca,food_portion,waste_paper,waste_meal,waste_bag,PSXBroom}.glb "Paper by Quaternius - 4qDtAbPYnT.glb"; do
+    cp "assets/models/$model" dist/assets/models/
+    test -s "dist/assets/models/$model"
+done
 cp -R assets/audio dist/assets/
 cp -R assets/ui assets/fonts dist/assets/
 if [ -d art/review ]; then
@@ -42,9 +45,6 @@ for frame in 1 2 3; do
     test -s "dist/assets/models/tv-football-$frame.png"
 done
 test -s dist/assets/models/phone_hand.glb
-for model in pipoca food_portion waste_paper waste_meal waste_bag; do
-    test -s "dist/assets/models/$model.glb"
-done
 test -s dist/assets/audio/pressure.wav
 test -s dist/assets/ui/hud-medallions.png
 test -s dist/assets/ui/phone-icons.png

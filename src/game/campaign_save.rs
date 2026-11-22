@@ -55,7 +55,7 @@ pub fn decode_campaign(json: &str) -> Result<Campaign, String> {
         return Err("Campaign snapshot failed its corruption check.".into());
     }
     snapshot.campaign.validate()?;
-    snapshot.campaign.update_unpaid_rent();
+    snapshot.campaign.update_unpaid_bills();
     Ok(snapshot.campaign)
 }
 
@@ -425,20 +425,27 @@ mod tests {
     }
 
     #[test]
-    fn saved_unpaid_rent_gets_the_new_price_and_paid_rent_keeps_its_ledger() {
-        let mut old = Campaign::new(42);
-        old.bills.iter_mut().find(|bill| bill.kind == BillKind::Rent).unwrap().amount_cents =
-            13_000;
+    fn saved_unpaid_bills_get_new_prices_and_paid_bills_keep_their_ledger() {
+        let mut campaign = Campaign::new(42);
         for action in [Action::Work, Action::Sleep, Action::AcknowledgeReport, Action::Work] {
-            old.apply(action).unwrap();
+            campaign.apply(action).unwrap();
         }
+        for (kind, old_price, new_price) in [
+            (BillKind::Water, 6_000, 10_000),
+            (BillKind::Electricity, 9_000, 10_000),
+            (BillKind::Rent, 11_000, 12_000),
+            (BillKind::Rent, 13_000, 12_000),
+        ] {
+            let mut old = campaign.clone();
+            old.bills.iter_mut().find(|bill| bill.kind == kind).unwrap().amount_cents = old_price;
+            let mut restored = decode_campaign(&encode_campaign(&old).unwrap()).unwrap();
+            assert_eq!(restored, campaign);
+            restored.apply(Action::PayBill(kind)).unwrap();
+            assert_eq!(restored.balance_cents, campaign.balance_cents - new_price);
 
-        let mut restored = decode_campaign(&encode_campaign(&old).unwrap()).unwrap();
-        restored.apply(Action::PayBill(BillKind::Rent)).unwrap();
-        assert_eq!(restored.balance_cents, old.balance_cents - 11_000);
-
-        old.apply(Action::PayBill(BillKind::Rent)).unwrap();
-        assert_eq!(decode_campaign(&encode_campaign(&old).unwrap()).unwrap(), old);
+            old.apply(Action::PayBill(kind)).unwrap();
+            assert_eq!(decode_campaign(&encode_campaign(&old).unwrap()).unwrap(), old);
+        }
     }
 
     #[test]
@@ -456,7 +463,7 @@ mod tests {
         restored.apply(Action::AcknowledgeReport).unwrap();
         restored.apply(Action::Work).unwrap();
         assert_eq!(restored.reports[0].finances.work_cents, 9_000);
-        assert!((4_000..=8_000).contains(&restored.ledger.last().unwrap().amount_cents));
+        assert!((4_000..=7_000).contains(&restored.ledger.last().unwrap().amount_cents));
     }
 
     #[test]
@@ -467,7 +474,7 @@ mod tests {
             .apply_with(Action::Work, |json| {
                 let saved = decode_campaign(json).unwrap();
                 pay = saved.ledger[0].amount_cents;
-                assert!((4_000..=8_000).contains(&pay));
+                assert!((4_000..=7_000).contains(&pay));
                 assert_eq!(saved.balance_cents, INITIAL_BALANCE_CENTS + pay);
                 assert_eq!(saved.worked_days, [1]);
                 Ok(())

@@ -18,12 +18,10 @@ const BILLS: [(BillKind, i64, i64, u8); 2] = [
     (BillKind::Electricity, 12_000, 10_000, 4),
     (BillKind::Rent, 15_000, 42_000, 7),
 ];
-const STAGGERED_RENT_CENTS: i64 = 11_000;
-const PREVIOUS_STAGGERED_RENT_CENTS: i64 = 13_000;
 const STAGGERED_BILLS: [(BillKind, i64, u8); 3] = [
-    (BillKind::Electricity, 9_000, 3),
-    (BillKind::Rent, STAGGERED_RENT_CENTS, 4),
-    (BillKind::Water, 6_000, 2),
+    (BillKind::Electricity, 10_000, 3),
+    (BillKind::Rent, 12_000, 4),
+    (BillKind::Water, 10_000, 2),
 ];
 const COMMITMENTS: [(Contact, u8); 4] = [
     (Contact::Marina, 2),
@@ -449,7 +447,7 @@ impl Campaign {
 
     fn delivery_pay_range(&self) -> (i64, i64) {
         if self.revised_rules {
-            (40, 80)
+            (40, 70)
         } else if self.delivery_rng.is_some() {
             (20, 60)
         } else {
@@ -521,14 +519,17 @@ impl Campaign {
             .collect()
     }
 
-    pub(super) fn update_unpaid_rent(&mut self) {
-        if self.staggered_bills
-            && let Some(rent) = self
-                .bills
-                .iter_mut()
-                .find(|bill| bill.kind == BillKind::Rent && bill.paid_day.is_none())
-        {
-            rent.amount_cents = STAGGERED_RENT_CENTS;
+    pub(super) fn update_unpaid_bills(&mut self) {
+        if self.staggered_bills {
+            for (kind, amount, _) in STAGGERED_BILLS {
+                if let Some(bill) = self
+                    .bills
+                    .iter_mut()
+                    .find(|bill| bill.kind == kind && bill.paid_day.is_none())
+                {
+                    bill.amount_cents = amount;
+                }
+            }
         }
     }
 
@@ -1148,8 +1149,11 @@ impl Campaign {
                     bill.kind == kind
                         && (bill.amount_cents == amount
                             || self.staggered_bills
-                                && kind == BillKind::Rent
-                                && bill.amount_cents == PREVIOUS_STAGGERED_RENT_CENTS)
+                                && match kind {
+                                    BillKind::Electricity => bill.amount_cents == 9_000,
+                                    BillKind::Rent => matches!(bill.amount_cents, 11_000 | 13_000),
+                                    BillKind::Water => bill.amount_cents == 6_000,
+                                })
                         && bill.due_day == due
                         && bill
                             .paid_day
@@ -1357,12 +1361,12 @@ mod tests {
             pa_consumed: 1,
         });
         for (kind, amount) in [
-            (LedgerKind::Work, 8_000),
+            (LedgerKind::Work, 7_000),
             (LedgerKind::Food, -4_000),
             (LedgerKind::BetStake, -100),
             (LedgerKind::BetPayout, 180),
             (LedgerKind::Sale(HouseholdItem::Books), 2_000),
-            (LedgerKind::BillPayment(BillKind::Electricity), -9_000),
+            (LedgerKind::BillPayment(BillKind::Electricity), -10_000),
         ] {
             campaign.record_money(kind, amount).unwrap();
         }
@@ -1373,13 +1377,13 @@ mod tests {
             campaign.daily_finances(1).unwrap(),
             DailyFinances {
                 opening_cents: INITIAL_BALANCE_CENTS,
-                work_cents: 8_000,
+                work_cents: 7_000,
                 food_cents: 4_000,
                 gross_bets_cents: 100,
                 payouts_cents: 180,
-                bills_cents: 9_000,
+                bills_cents: 10_000,
                 sales_cents: 2_000,
-                closing_cents: INITIAL_BALANCE_CENTS - 2_920
+                closing_cents: INITIAL_BALANCE_CENTS - 4_920
             }
         );
         campaign.clock.day = 2;
@@ -1458,7 +1462,7 @@ mod tests {
             assert_eq!(campaign, restored);
             assert_eq!(campaign.rng, betting_rng);
             let pay = campaign.ledger.last().unwrap().amount_cents;
-            assert!((4_000..=8_000).contains(&pay));
+            assert!((4_000..=7_000).contains(&pay));
             assert_eq!(pay % 100, 0);
             payments.push(pay);
             assert!(campaign.apply(Action::Work).is_err());
@@ -1531,7 +1535,7 @@ mod tests {
         assert_eq!(campaign.attributes.boredom, 28);
         assert_eq!(campaign.attributes.stress, 29);
         let finances = campaign.daily_finances(1).unwrap();
-        assert!((4_000..=8_000).contains(&finances.work_cents));
+        assert!((4_000..=7_000).contains(&finances.work_cents));
         assert_eq!(finances.food_cents, 4_000);
         assert_eq!(
             finances.closing_cents,
@@ -1595,7 +1599,7 @@ mod tests {
             campaign.apply(Action::Work).unwrap();
             assert_eq!(campaign.worked_days, [day]);
             assert_eq!(campaign.clock.pa_spent, 2);
-            assert!((4_000..=8_000).contains(&(campaign.balance_cents - INITIAL_BALANCE_CENTS)));
+            assert!((4_000..=7_000).contains(&(campaign.balance_cents - INITIAL_BALANCE_CENTS)));
             let restored = decode_campaign(&encode_campaign(&campaign).unwrap()).unwrap();
             assert_eq!(restored, campaign);
             assert!(campaign.apply(Action::Work).unwrap_err().contains("already complete"));
@@ -1740,6 +1744,7 @@ mod tests {
     #[test]
     fn critical_stress_blocks_work_and_non_relief_activities() {
         let mut campaign = Campaign::new(5);
+        campaign.record_money(LedgerKind::Work, 4_000).unwrap();
         campaign.attributes.stress = STRESS_RESTRICTION - 1;
         campaign.clone().apply(Action::Work).unwrap();
         campaign.attributes.stress = STRESS_RESTRICTION;

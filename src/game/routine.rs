@@ -1206,7 +1206,7 @@ mod tests {
 
         let context = Context { opened: Some(TargetKind::Bill(BillKind::Rent)), ..default() };
         assert_eq!(options(&campaign, &overlay, &context, "", &localization)[0].0,
-            "[1] Pagar Aluguel · R$110,00");
+            "[1] Pagar Aluguel · R$120,00");
         let error = campaign.apply(Action::PayBill(BillKind::Rent)).unwrap_err();
         assert_eq!(localization.action_error(&error), "Saldo insuficiente ou valor acima do permitido.");
 
@@ -1804,7 +1804,7 @@ mod tests {
         let mut afternoon = campaign.clone();
         afternoon.apply(Action::Work).unwrap();
         assert_eq!(afternoon.clock.period(), Period::Night);
-        assert!((4_000..=8_000).contains(&(afternoon.balance_cents - campaign.balance_cents)));
+        assert!((4_000..=7_000).contains(&(afternoon.balance_cents - campaign.balance_cents)));
         campaign.apply(Action::Wait).unwrap();
 
         let mut app = App::new();
@@ -1996,7 +1996,8 @@ mod tests {
     fn table_bill_is_free_and_first_paid_action_starts_the_gradual_landlord_visit() {
         use std::time::Duration;
 
-        let campaign = Campaign::new(5);
+        let mut campaign = Campaign::new(5);
+        campaign.record_money(LedgerKind::Work, 4_000).unwrap();
         let pt = crate::localization::Localization {
             language: crate::localization::Language::Portuguese,
         };
@@ -2050,7 +2051,7 @@ mod tests {
         assert!(app.world().get::<ColliderDisabled>(water).is_some());
         assert_eq!(app.world().get::<Visibility>(rent), Some(&Visibility::Inherited));
         let mut lines = app.world_mut().query::<&Text>();
-        assert!(lines.iter(app.world()).any(|text| text.0 == "-R$60.00"));
+        assert!(lines.iter(app.world()).any(|text| text.0 == "-R$100.00"));
 
         app.world_mut().resource_mut::<Context>().opened = Some(TargetKind::Tv);
         app.world_mut().resource_mut::<GameplayOverlay>().active = Some(OverlayKind::Context);
@@ -2065,9 +2066,9 @@ mod tests {
         assert!(lines.iter(app.world()).any(|text| {
             text.0.starts_with("Landlady: Alex?")
                 && text.0.contains("living-room table")
-                && text.0.contains("Water · R$60.00 · Day 2")
-                && text.0.contains("Electricity · R$90.00 · Day 3")
-                && text.0.contains("Rent · R$110.00 · Day 4")
+                && text.0.contains("Water · R$100.00 · Day 2")
+                && text.0.contains("Electricity · R$100.00 · Day 3")
+                && text.0.contains("Rent · R$120.00 · Day 4")
         }));
         for count in 0..=5 {
             assert_eq!(

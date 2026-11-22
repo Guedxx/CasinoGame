@@ -165,11 +165,11 @@ mod tests {
         let attributes = c.attributes.clone();
         let clock = c.clock;
         c.apply(Action::PayBill(BillKind::Electricity)).unwrap();
-        assert_eq!(c.balance_cents, 3_000);
+        assert_eq!(c.balance_cents, 2_000);
         assert_eq!(c.clock, clock);
         assert_eq!(c.attributes, attributes);
         assert_eq!(c.ledger.len(), 2);
-        assert_eq!(c.ledger[1].amount_cents, -9_000);
+        assert_eq!(c.ledger[1].amount_cents, -10_000);
         assert_eq!(c.bills[0].paid_day, Some(1));
         let mut c = decode_campaign(&encode_campaign(&c).unwrap()).unwrap();
         reject(&mut c, Action::PayBill(BillKind::Electricity));
@@ -178,12 +178,12 @@ mod tests {
     }
 
     #[test]
-    fn water_light_and_rent_have_distinct_costs_and_end_of_day_deadlines() {
+    fn water_light_and_rent_have_expected_costs_and_end_of_day_deadlines() {
         let mut c = Campaign::new(5);
         let terms = [
-            (BillKind::Water, 6_000, 2),
-            (BillKind::Electricity, 9_000, 3),
-            (BillKind::Rent, 11_000, 4),
+            (BillKind::Water, 10_000, 2),
+            (BillKind::Electricity, 10_000, 3),
+            (BillKind::Rent, 12_000, 4),
         ];
         for (kind, amount, due_day) in terms {
             let bill = c.bills.iter().find(|bill| bill.kind == kind).unwrap();
