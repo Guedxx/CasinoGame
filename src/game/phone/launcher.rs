@@ -1,14 +1,11 @@
 //! Modern phone launcher with PSX bitmap sampling; app contents stay in `phone.rs`.
 use super::*;
 
-pub(super) const APPS: [(PhonePage, &str); 7] = [
-    (PhonePage::Betting, "Betting"),
-    (PhonePage::Bank, "Bank"),
-    (PhonePage::History, "History"),
-    (PhonePage::Household, "Sales"),
-    (PhonePage::Contacts, "Contacts"),
-    (PhonePage::Support, "Support"),
-    (PhonePage::Food, "Food"),
+pub(super) const APPS: [(PhonePage, &str, &str, usize); 4] = [
+    (PhonePage::History, "History", "Histórico", 2),
+    (PhonePage::Betting, "Betting", "Apostas", 0),
+    (PhonePage::Support, "Support", "Apoio", 5),
+    (PhonePage::Contacts, "Chats", "Conversas", 4),
 ];
 
 #[derive(Resource)]
@@ -94,8 +91,13 @@ pub(super) fn status_bar(parent: &mut ChildSpawnerCommands, skin: &Skin, c: &Cam
         });
 }
 
-fn shortcut(parent: &mut ChildSpawnerCommands, skin: &Skin, index: usize) {
-    let (page, label) = APPS[index];
+fn shortcut(
+    parent: &mut ChildSpawnerCommands,
+    skin: &Skin,
+    page: PhonePage,
+    label: &str,
+    icon: usize,
+) {
     parent
         .spawn((
             Name::new(format!("Open {label}")),
@@ -103,7 +105,7 @@ fn shortcut(parent: &mut ChildSpawnerCommands, skin: &Skin, index: usize) {
             PhoneButton(PhonePage::Home, PhoneCommand::Page(page)),
             BackgroundColor(Color::NONE),
             Node {
-                width: px(82),
+                width: px(96),
                 min_height: px(100),
                 flex_direction: FlexDirection::Column,
                 align_items: AlignItems::Center,
@@ -119,7 +121,7 @@ fn shortcut(parent: &mut ChildSpawnerCommands, skin: &Skin, index: usize) {
         .observe(unhighlight)
         .with_children(|app| {
             app.spawn((
-                skin.icon(index),
+                skin.icon(icon),
                 Node {
                     width: px(72),
                     height: px(72),
@@ -143,7 +145,7 @@ fn unhighlight(out: On<Pointer<Out>>, mut colors: Query<&mut BackgroundColor, Wi
     }
 }
 
-pub(super) fn home(parent: &mut ChildSpawnerCommands, skin: &Skin, c: &Campaign) {
+pub(super) fn home(parent: &mut ChildSpawnerCommands, skin: &Skin, c: &Campaign, localization: &Localization) {
     parent
         .spawn((
             Name::new("Phone home screen"),
@@ -179,9 +181,9 @@ pub(super) fn home(parent: &mut ChildSpawnerCommands, skin: &Skin, c: &Campaign)
                 Pickable::IGNORE,
             ))
             .with_children(|clock| {
-                text(clock, &skin.font, c.clock.period().label(), 18.0, MUTED);
+                text(clock, &skin.font, localization.period(c.clock.period().label()), 18.0, MUTED);
                 text(clock, &skin.font, time(c), 51.0, INK);
-                text(clock, &skin.font, format!("Day {}", c.clock.day), 20.0, INK);
+                text(clock, &skin.font, format!("{} {}", localization.text("day"), c.clock.day), 20.0, INK);
             });
             home.spawn((
                 Node {
@@ -198,8 +200,8 @@ pub(super) fn home(parent: &mut ChildSpawnerCommands, skin: &Skin, c: &Campaign)
                 Pickable::IGNORE,
             ))
             .with_children(|reminder| {
-                text(reminder, &skin.font, "Reminder", 14.0, ACCENT);
-                text(reminder, &skin.font, home_reminder(c), 19.0, INK);
+                text(reminder, &skin.font, localization.choose("Reminder", "Lembretes"), 14.0, ACCENT);
+                text(reminder, &skin.font, home_reminder(c, localization), 19.0, INK);
             });
             home.spawn(Node {
                 flex_grow: 1.0,
@@ -208,37 +210,21 @@ pub(super) fn home(parent: &mut ChildSpawnerCommands, skin: &Skin, c: &Campaign)
             });
             home.spawn(Node {
                 width: percent(100),
-                justify_content: JustifyContent::SpaceBetween,
+                margin: UiRect::bottom(px(18)),
+                justify_content: JustifyContent::SpaceEvenly,
                 flex_shrink: 0.0,
                 ..default()
             })
             .with_children(|apps| {
-                for index in 0..4 {
-                    shortcut(apps, skin, index);
-                }
-            });
-            home.spawn((
-                Name::new("Phone favorites dock"),
-                Node {
-                    width: percent(100),
-                    padding: UiRect::top(px(18)),
-                    margin: UiRect::top(px(14)),
-                    border: UiRect::top(px(1)),
-                    justify_content: JustifyContent::SpaceEvenly,
-                    flex_shrink: 0.0,
-                    ..default()
-                },
-                BorderColor::all(Color::srgba(0.82, 0.95, 0.98, 0.22)),
-            ))
-            .with_children(|dock| {
-                for index in 4..APPS.len() {
-                    shortcut(dock, skin, index);
+                for (page, english, portuguese, icon) in APPS {
+                    let label = localization.choose(english, portuguese);
+                    shortcut(apps, skin, page, label, icon);
                 }
             });
         });
 }
 
-pub(super) fn navigation(parent: &mut ChildSpawnerCommands, skin: &Skin, page: PhonePage) {
+pub(super) fn navigation(parent: &mut ChildSpawnerCommands, skin: &Skin, page: PhonePage, localization: &Localization) {
     parent
         .spawn((
             Name::new("Phone navigation"),
@@ -254,9 +240,9 @@ pub(super) fn navigation(parent: &mut ChildSpawnerCommands, skin: &Skin, page: P
         ))
         .with_children(|nav| {
             for (index, label, command) in [
-                (7, "Back", PhoneCommand::Page(page.back())),
-                (8, "Home", PhoneCommand::Page(PhonePage::Home)),
-                (9, "Lower", PhoneCommand::Close),
+                (7, localization.choose("Back", "Voltar"), PhoneCommand::Page(page.back())),
+                (8, localization.choose("Home", "Início"), PhoneCommand::Page(PhonePage::Home)),
+                (9, localization.choose("Lower", "Guardar"), PhoneCommand::Close),
             ] {
                 nav.spawn((
                     Name::new(label),

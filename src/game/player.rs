@@ -12,11 +12,12 @@ use super::{
     cursor::GameCursor,
     routine::{GameplayOverlay, OverlayInput},
 };
-use crate::state::GameState;
+use crate::{localization::{Language, Localization}, state::GameState};
 
 const SPAWN: Vec3 = Vec3::new(1.6, 0.92, 1.3);
 const DT: f32 = 1.0 / 60.0;
 const EYE_OFFSET: f32 = 0.75;
+const BEDSIDE: Vec3 = Vec3::new(1.95, 0.94, 7.16);
 // Internal-edge correction assumes outward winding, but the apartment has two-sided surfaces.
 const COLLIDER_FLAGS: TriMeshFlags = TriMeshFlags::MERGE_DUPLICATE_VERTICES;
 
@@ -38,6 +39,7 @@ impl Plugin for PlayerPlugin {
             })
             .add_observer(reset_new_campaign)
             .add_observer(finish_opening)
+            .add_observer(start_wake)
             .init_resource::<Controls>()
             .init_resource::<GameplayOverlay>()
             .add_systems(OnEnter(GameState::Playing), loading)
@@ -85,7 +87,9 @@ struct CollisionFailed;
 #[derive(Component)]
 struct Loading;
 #[derive(Component)]
-pub(crate) struct StatusText;
+pub(crate) struct StatusText {
+    pub(crate) failed: bool,
+}
 #[derive(Component, Default)]
 pub(crate) struct Player {
     vertical_speed: f32,
@@ -132,6 +136,8 @@ fn reset_new_campaign(
 }
 
 fn loading(
+    localization: Res<Localization>,
+    assets: Res<AssetServer>,
     mut commands: Commands,
     mut controls: ResMut<Controls>,
     existing: Query<(), With<Loading>>,
@@ -150,14 +156,15 @@ fn loading(
             ..default()
         },
         children![(
-            StatusText,
-            Text::new("Loading apartment..."),
-            TextFont::from_font_size(24.0)
+            StatusText { failed: false },
+            Text::new(localization.choose("Loading apartment...", "Carregando o apartamento…")),
+            TextFont::from_font_size(24.0).with_font(assets.load("fonts/LiberationSans-Regular.ttf"))
         )],
     ));
 }
 
 fn prepare_opening_spawn(
+    localization: Res<Localization>,
     mut opening: ResMut<super::intro::Opening>,
     context: ReadRapierContext,
     players: Query<Entity, With<Player>>,
@@ -168,22 +175,61 @@ fn prepare_opening_spawn(
     }
     let (Ok(player), Ok(context)) = (players.single(), context.single()) else { return };
     let position = super::intro::END_POSITION;
-    let capsule = Collider::capsule_y(0.6, 0.3);
-    let filter = QueryFilter::default().exclude_collider(player);
-    let mut overlaps = false;
-    context.intersect_shape(position, Quat::IDENTITY, capsule.raw.as_ref(), filter, |_| {
-        overlaps = true;
-        false
-    });
-    let supported = context
-        .cast_ray_and_get_normal(position, Vec3::NEG_Y, 1.0, true, filter)
-        .is_some_and(|(_, hit)| hit.normal.y > 0.7 && hit.time_of_impact > 0.9);
+    let (overlaps, supported) = standing_space(&context, player, position);
     if overlaps || !supported {
-        opening.error = "Cannot safely stand up in the apartment. Press Escape for title.".into();
+        opening.error = localization.choose("Cannot safely stand up in the apartment. Press Escape for title.", "Não foi possível levantar com segurança no apartamento. Pressione Esc para voltar ao menu principal.").into();
         error!("Opening exit blocked or unsupported: overlap={overlaps}, supported={supported}");
     } else {
         opening.spawn_ready = true;
     }
+}
+
+fn standing_space(context: &RapierContext, player: Entity, position: Vec3) -> (bool, bool) {
+    let capsule = Collider::capsule_y(0.6, 0.3);
+    let filter = QueryFilter::default().exclude_collider(player);
+    let mut overlaps = false;
+    context.intersect_shape(
+        position,
+        Quat::IDENTITY,
+        capsule.raw.as_ref(),
+        filter,
+        |_| {
+            overlaps = true;
+            false
+        },
+    );
+    let supported = context
+        .cast_ray_and_get_normal(position, Vec3::NEG_Y, 1.0, true, filter)
+        .is_some_and(|(_, hit)| hit.normal.y > 0.7 && hit.time_of_impact > 0.9);
+    (overlaps, supported)
+}
+
+fn start_wake(
+    _: On<super::intro::WakeRequested>,
+    mut overlay: ResMut<GameplayOverlay>,
+    mut controls: ResMut<Controls>,
+    mut players: Query<(
+        Entity,
+        &mut Transform,
+        &mut Player,
+        &mut KinematicCharacterController,
+    )>,
+    physics: ReadRapierContext,
+) {
+    let mut bedside = false;
+    if let (Ok(physics), Ok((entity, mut transform, mut player, mut controller))) =
+        (physics.single(), players.single_mut())
+        && standing_space(&physics, entity, BEDSIDE) == (false, true)
+    {
+        transform.translation = BEDSIDE;
+        player.previous = BEDSIDE;
+        player.vertical_speed = 0.0;
+        controller.translation = Some(Vec3::ZERO);
+        controls.yaw = 0.1;
+        controls.pitch = -0.18;
+        bedside = true;
+    }
+    overlay.active = Some(super::routine::OverlayKind::Wake { bedside });
 }
 
 fn finish_opening(
@@ -215,6 +261,7 @@ fn finish_opening(
 }
 
 fn prepare_apartment(
+    localization: Res<Localization>,
     mut commands: Commands,
     apartment: Query<
         (
@@ -234,7 +281,7 @@ fn prepare_apartment(
     colliders: Query<(), (With<Collider>, Without<RapierColliderHandle>)>,
     context: ReadRapierContext,
     player: Query<(), With<Player>>,
-    mut text: Query<&mut Text, With<StatusText>>,
+    mut text: Query<(&mut Text, &mut StatusText)>,
 ) {
     let Ok((root, scene, instance, built, failed)) = apartment.single() else {
         return;
@@ -244,13 +291,15 @@ fn prepare_apartment(
     }
     let failure = match assets.get_load_states(scene.0.id()) {
         Some((LoadState::Failed(error), _, _))
-        | Some((_, _, RecursiveDependencyLoadState::Failed(error))) => Some(format!(
-            "Could not load apartment: {error}\nPress Escape for menu"
-        )),
+        | Some((_, _, RecursiveDependencyLoadState::Failed(error))) => Some(match localization.language {
+            Language::English => format!("Could not load apartment: {error}\nPress Escape for menu"),
+            Language::Portuguese => "Não foi possível carregar o apartamento. Pressione Esc para voltar ao menu principal.".into(),
+        }),
         _ => None,
     };
     if let Some(message) = failure {
-        for mut text in &mut text {
+        for (mut text, mut status) in &mut text {
+                status.failed = true;
             **text = message.clone();
         }
         return;
@@ -281,8 +330,9 @@ fn prepare_apartment(
         }
         if failed {
             commands.entity(root).insert(CollisionFailed);
-            for mut text in &mut text {
-                **text = "Could not build apartment collision. Press Escape for menu".into();
+            for (mut text, mut status) in &mut text {
+                status.failed = true;
+                **text = localization.choose("Could not build apartment collision. Press Escape for menu", "Não foi possível preparar o apartamento. Pressione Esc para voltar ao menu principal.").into();
             }
             return;
         }
@@ -313,8 +363,9 @@ fn prepare_apartment(
     if overlaps || !supported {
         commands.entity(root).insert(CollisionFailed);
         error!("Player spawn blocked or unsupported: overlap={overlaps}, supported={supported}");
-        for mut text in &mut text {
-            **text = "Cannot safely spawn inside apartment. Press Escape for menu".into();
+        for (mut text, mut status) in &mut text {
+                status.failed = true;
+            **text = localization.choose("Cannot safely spawn inside apartment. Press Escape for menu", "Não foi possível posicionar o personagem no apartamento. Pressione Esc para voltar ao menu principal.").into();
         }
         return;
     }
@@ -329,7 +380,8 @@ fn prepare_apartment(
         character_controller(),
     ));
     info!("First-person player ready at {SPAWN:?}; static colliders registered");
-    for mut text in &mut text {
+    for (mut text, mut status) in &mut text {
+                status.failed = true;
         text.clear();
     }
 }
@@ -589,8 +641,10 @@ mod tests {
         app.add_plugins((
             MinimalPlugins,
             TransformPlugin,
+            bevy::asset::AssetPlugin::default(),
             RapierPhysicsPlugin::<NoUserData>::default().in_fixed_schedule(),
         ))
+        .init_asset::<Font>()
         .insert_resource(TimestepMode::Fixed {
             dt: DT,
             substeps: 1,
@@ -730,6 +784,46 @@ mod tests {
     }
 
     #[test]
+    fn wake_camera_path_and_standing_position_fit_the_actual_bedroom() {
+        let (mut app, player) = apartment_room();
+        app.add_observer(start_wake);
+        app.world_mut().trigger(super::super::intro::WakeRequested);
+        assert_eq!(position(&app, player), BEDSIDE);
+        assert_eq!(
+            app.world().resource::<GameplayOverlay>().active,
+            Some(super::super::routine::OverlayKind::Wake { bedside: true })
+        );
+        let controls = app.world().resource::<Controls>();
+        let standing = Transform::from_translation(BEDSIDE + Vec3::Y * EYE_OFFSET).with_rotation(
+            Quat::from_euler(EulerRot::YXZ, controls.yaw, controls.pitch, 0.0),
+        );
+        app.add_systems(Update, move |physics: ReadRapierContext| {
+            let physics = physics.single().unwrap();
+            let eye = Collider::ball(0.075);
+            for frame in 0..=68 {
+                let pose = super::super::intro::wake_pose(frame as f32 * 0.05, standing);
+                let mut blocked = false;
+                physics.intersect_shape(
+                    pose.translation,
+                    pose.rotation,
+                    eye.raw.as_ref(),
+                    QueryFilter::default().exclude_collider(player),
+                    |_| {
+                        blocked = true;
+                        false
+                    },
+                );
+                assert!(
+                    !blocked,
+                    "Wake camera intersects the bedroom at {:?}",
+                    pose.translation
+                );
+            }
+        });
+        app.update();
+    }
+
+    #[test]
     fn opening_exit_is_safe_in_the_actual_apartment_and_handoff_survives_loading() {
         use super::super::intro::{END_PITCH, END_POSITION, END_YAW, Opening, OpeningFinished};
         let (mut app, player) = apartment_room();
@@ -739,6 +833,7 @@ mod tests {
             .init_resource::<ButtonInput<MouseButton>>()
             .init_resource::<AccumulatedMouseMotion>()
             .add_observer(finish_opening)
+            .init_resource::<Localization>()
             .add_systems(Update, (loading, prepare_opening_spawn).chain());
         let camera = app.world_mut().spawn((MainCamera, Transform::default())).id();
         app.update();

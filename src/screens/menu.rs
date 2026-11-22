@@ -62,6 +62,7 @@ enum Action {
     CancelNewGame,
     RetryCampaignSave,
     Resume,
+    ReturnTitle,
     Settings,
     Save,
     Cancel,
@@ -82,12 +83,12 @@ impl Action {
             _ => false,
         }
     }
-    fn setting_name(self) -> Option<&'static str> {
+    fn setting_name(self, localization: &Localization) -> Option<&'static str> {
         match self {
-            Self::Preset(_) => Some("Quality preset"),
-            Self::Lighting(_) => Some("Lighting quality"),
-            Self::TextureWarping(_) => Some("Texture warping"),
-            Self::VertexJitter(_) => Some("Model jitter"),
+            Self::Preset(_) => Some(localization.choose("Quality preset", "Predefinição de qualidade")),
+            Self::Lighting(_) => Some(localization.choose("Lighting quality", "Qualidade da iluminação")),
+            Self::TextureWarping(_) => Some(localization.choose("Texture warping", "Distorção de texturas")),
+            Self::VertexJitter(_) => Some(localization.choose("Model jitter", "Tremulação dos modelos")),
             _ => None,
         }
     }
@@ -201,6 +202,7 @@ fn breathe(
 }
 
 fn title_loading(
+    localization: Res<Localization>,
     assets: Res<AssetServer>,
     spawner: Res<WorldInstanceSpawner>,
     scenes: Query<
@@ -219,7 +221,7 @@ fn title_loading(
         return;
     }
     let mut message = if scenes.iter().count() < 2 {
-        "Loading apartment…"
+        localization.choose("Loading apartment…", "Carregando apartamento…")
     } else {
         ""
     };
@@ -227,13 +229,13 @@ fn title_loading(
         match assets.get_load_states(root.0.id()) {
             Some((LoadState::Failed(_), _, _))
             | Some((_, _, RecursiveDependencyLoadState::Failed(_))) => {
-                message = "Could not load the title scene. Restart the game to retry.";
+                message = localization.choose("Could not load the title scene. Restart the game to retry.", "Não foi possível carregar a tela inicial. Reinicie o jogo para tentar novamente.");
                 break;
             }
             _ if !assets.is_loaded_with_dependencies(root.0.id())
                 || instance.is_none_or(|id| !spawner.instance_is_ready(**id)) =>
             {
-                message = "Loading apartment…";
+                message = localization.choose("Loading apartment…", "Carregando apartamento…");
             }
             _ => {}
         }
@@ -258,7 +260,7 @@ fn title_loading(
             .collect();
     }
     if message.is_empty() && !render.is_ready() {
-        message = "Preparing apartment…";
+        message = localization.choose("Preparing apartment…", "Preparando apartamento…");
     }
     for mut cover in &mut covers {
         cover.display = if render.is_ready() && message.is_empty() {
@@ -271,7 +273,7 @@ fn title_loading(
         **text = if campaign.notice.is_empty() {
             message.into()
         } else {
-            campaign.notice.clone()
+            localization.campaign_notice(&campaign.notice).into()
         };
     }
     if message.is_empty() && !*announced {
@@ -419,7 +421,7 @@ fn choices(
         });
 }
 // The apartment is the title art: sleeper left, warm ivory type and familiar controls right.
-fn setup_title(mut commands: Commands, skin: Res<MenuSkin>, mut focus: ResMut<InputFocus>) {
+fn setup_title(mut commands: Commands, skin: Res<MenuSkin>, mut focus: ResMut<InputFocus>, localization: Res<Localization>) {
     commands.spawn((
         DespawnOnExit(GameState::Title),
         TitleLoadingCover,
@@ -435,7 +437,7 @@ fn setup_title(mut commands: Commands, skin: Res<MenuSkin>, mut focus: ResMut<In
         },
         children![(
             TitleStatus,
-            Text::new("Loading apartment…"),
+            Text::new(localization.choose("Loading apartment…", "Carregando apartamento…")),
             skin.font(18.0),
             TextColor(INK)
         )],
@@ -496,16 +498,16 @@ fn setup_title(mut commands: Commands, skin: Res<MenuSkin>, mut focus: ResMut<In
                             first = Some(button(
                                 buttons,
                                 &skin,
-                                "Continue",
+                                localization.text("continue"),
                                 Action::Start,
                                 &mut index,
                             ));
-                            button(buttons, &skin, "New Game", Action::NewGame, &mut index);
-                            button(buttons, &skin, "Settings", Action::Settings, &mut index);
+                            button(buttons, &skin, localization.text("new_game"), Action::NewGame, &mut index);
+                            button(buttons, &skin, localization.text("settings"), Action::Settings, &mut index);
                         });
                     panel.spawn((
                         TitleStatus,
-                        Text::new("Loading apartment…"),
+                        Text::new(localization.choose("Loading apartment…", "Carregando apartamento…")),
                         skin.font(18.0),
                         TextColor(INK),
                     ));
@@ -547,9 +549,9 @@ fn title_controls(
         let mut index = 0;
         commands.entity(entity).with_children(|buttons| {
             if confirmation.0 {
-                label(buttons, &skin, "Replace the existing campaign? This permanently replaces saved and unsaved progress, including an unreadable save.", 21.0, INK);
-                first = Some(button(buttons, &skin, "Keep existing campaign", Action::CancelNewGame, &mut index));
-                button(buttons, &skin, "Replace / New Game", Action::ConfirmNewGame, &mut index);
+                label(buttons, &skin, localization.choose("Replace the existing campaign? This permanently replaces saved and unsaved progress, including an unreadable save.", "Substituir a campanha atual? Isso apaga o progresso salvo e o desta sessão, inclusive arquivos que o jogo não conseguiu ler."), 21.0, INK);
+                first = Some(button(buttons, &skin, localization.text("keep"), Action::CancelNewGame, &mut index));
+                button(buttons, &skin, localization.text("replace"), Action::ConfirmNewGame, &mut index);
             } else {
                 if store.campaign().is_some() {
                     first = Some(button(buttons, &skin, localization.text("continue"), Action::Start, &mut index));
@@ -646,7 +648,7 @@ fn setup(
                                     label(
                                         heading,
                                         &skin,
-                                        if settings { "GRAPHICS" } else { localization.text("paused") },
+                                        if settings { localization.choose("GRAPHICS", "GRÁFICOS") } else { localization.text("paused") },
                                         48.0,
                                         INK,
                                     );
@@ -674,7 +676,7 @@ fn setup(
                                         })
                                         .with_children(
                                             |presets| {
-                                                label(presets, &skin, "Quality preset", 24.0, INK);
+                                                label(presets, &skin, localization.choose("Quality preset", "Predefinição de qualidade"), 24.0, INK);
                                                 presets
                                                     .spawn(Node {
                                                         width: percent(100),
@@ -686,7 +688,7 @@ fn setup(
                                                             let entity = button(
                                                                 row,
                                                                 &skin,
-                                                                quality.label(),
+                                                                localization.quality_label(quality.label()),
                                                                 Action::Preset(quality),
                                                                 &mut index,
                                                             );
@@ -698,38 +700,38 @@ fn setup(
                                         choices(
                                             body,
                                             &skin,
-                                            "Lighting",
+                                            localization.choose("Lighting", "Iluminação"),
                                             &[
-                                                ("Low", Action::Lighting(Quality::Low)),
-                                                ("Medium", Action::Lighting(Quality::Medium)),
-                                                ("High", Action::Lighting(Quality::High)),
+                                                (localization.quality_label("Low"), Action::Lighting(Quality::Low)),
+                                                (localization.quality_label("Medium"), Action::Lighting(Quality::Medium)),
+                                                (localization.quality_label("High"), Action::Lighting(Quality::High)),
                                             ],
                                             &mut index,
                                         );
                                         choices(
                                             body,
                                             &skin,
-                                            "Texture warping",
+                                            localization.choose("Texture warping", "Distorção de texturas"),
                                             &[
-                                                ("Off", Action::TextureWarping(false)),
-                                                ("On", Action::TextureWarping(true)),
+                                                (localization.choose("Off", "Desligada"), Action::TextureWarping(false)),
+                                                (localization.choose("On", "Ligada"), Action::TextureWarping(true)),
                                             ],
                                             &mut index,
                                         );
                                         choices(
                                             body,
                                             &skin,
-                                            "Model jitter",
+                                            localization.choose("Model jitter", "Tremulação dos modelos"),
                                             &[
-                                                ("Off", Action::VertexJitter(false)),
-                                                ("On", Action::VertexJitter(true)),
+                                                (localization.choose("Off", "Desligada"), Action::VertexJitter(false)),
+                                                (localization.choose("On", "Ligada"), Action::VertexJitter(true)),
                                             ],
                                             &mut index,
                                         );
                                         button(
                                             body,
                                             &skin,
-                                            "Restore High defaults",
+                                            localization.choose("Restore High defaults", "Restaurar padrão de qualidade alta"),
                                             Action::Reset,
                                             &mut index,
                                         );
@@ -746,6 +748,13 @@ fn setup(
                                             &skin,
                                             localization.text("settings_upper"),
                                             Action::Settings,
+                                            &mut index,
+                                        );
+                                        button(
+                                            body,
+                                            &skin,
+                                            localization.text("main_menu"),
+                                            Action::ReturnTitle,
                                             &mut index,
                                         );
                                     }
@@ -799,14 +808,14 @@ fn setup(
                                                 button(
                                                     row,
                                                     &skin,
-                                                    "CANCEL",
+                                                    localization.choose("CANCEL", "CANCELAR"),
                                                     Action::Cancel,
                                                     &mut index,
                                                 );
                                                 button(
                                                     row,
                                                     &skin,
-                                                    "SAVE SETTINGS",
+                                                    localization.choose("SAVE SETTINGS", "SALVAR CONFIGURAÇÕES"),
                                                     Action::Save,
                                                     &mut index,
                                                 );
@@ -915,6 +924,7 @@ fn actions(
             let _ = campaign.save();
         }
         Action::Resume => next.set(GameState::Playing),
+        Action::ReturnTitle => next.set(GameState::Title),
         Action::Settings => {
             options.cancel();
             origin.0 = *state.get();
@@ -933,10 +943,20 @@ fn actions(
         Action::Lighting(q) => options.current.lighting = q,
         Action::TextureWarping(enabled) => options.current.texture_warping = enabled,
         Action::VertexJitter(enabled) => options.current.vertex_jitter = enabled,
-        Action::Language(language) => localization.language = language,
+        Action::Language(language) => {
+            localization.language = language;
+            #[cfg(target_arch = "wasm32")]
+            if let Some(root) = web_sys::window()
+                .and_then(|window| window.document())
+                .and_then(|document| document.document_element())
+            {
+                let _ = root.set_attribute("lang", localization.choose("en", "pt-BR"));
+            }
+        }
     }
 }
 fn appearance(
+    localization: Res<Localization>,
     mut commands: Commands,
     options: Res<GraphicsOptions>,
     focus: Res<InputFocus>,
@@ -955,7 +975,7 @@ fn appearance(
         &mut buttons
     {
         if let Some(mut accessible) = accessible
-            && let Some(name) = action.setting_name()
+            && let Some(name) = action.setting_name(&localization)
         {
             accessible.set_description(name);
             if !checkable {
@@ -986,6 +1006,7 @@ fn appearance(
     }
 }
 fn status(
+    localization: Res<Localization>,
     time: Res<Time<Real>>,
     state: Res<State<GameState>>,
     options: Res<GraphicsOptions>,
@@ -1003,16 +1024,16 @@ fn status(
     for (mut text, status, fps) in &mut texts {
         if status {
             **text = if !campaign.notice.is_empty() {
-                campaign.notice.clone()
+                localization.campaign_notice(&campaign.notice).into()
             } else if !options.notice.is_empty() {
-                options.notice.clone()
+                localization.graphics_notice(&options.notice).into()
             } else if *state.get() == GameState::Settings {
-                "Live preview. Cancel restores saved settings.".into()
+                localization.choose("Live preview. Cancel restores saved settings.", "Prévia em tempo real. Cancelar restaura as configurações salvas.").into()
             } else {
                 String::new()
             };
         } else if fps {
-            **text = format!("{} | {:.0} FPS", options.current.label(), sample.2);
+            **text = format!("{} | {:.0} FPS", localization.quality_label(options.current.label()), sample.2);
         }
     }
 }
@@ -1072,10 +1093,13 @@ mod tests {
         .init_asset::<Font>()
         .init_asset::<bevy::world_serialization::WorldAsset>()
         .init_resource::<InputFocus>()
+        .init_resource::<Localization>()
         .init_state::<GameState>()
         .add_plugins(MenuPlugin);
         app.world_mut().run_schedule(OnEnter(GameState::Title));
         assert!(app.world().contains_resource::<MenuSkin>());
+        assert_eq!(app.world().resource::<Localization>().language, Language::Portuguese);
+        assert!(app.world_mut().query::<&Text>().iter(app.world()).any(|text| text.0 == "Novo jogo"));
         assert_eq!(
             app.world_mut()
                 .query_filtered::<&BackgroundColor, With<TitleLoadingCover>>()
@@ -1109,6 +1133,7 @@ mod tests {
             .init_resource::<ButtonInput<KeyCode>>()
             .init_resource::<SettingsOrigin>()
             .init_resource::<NewGameConfirmation>()
+            .init_resource::<Localization>()
             .insert_resource(crate::game::campaign_save::CampaignStore::for_test(
                 Some(crate::game::campaign::Campaign::new(5)),
                 crate::game::campaign_save::SnapshotState::Available,
@@ -1152,6 +1177,76 @@ mod tests {
             .resource_mut::<InputFocus>()
             .set(button, FocusCause::Navigated);
         key(app, KeyCode::Enter);
+    }
+
+    #[test]
+    fn selecting_portuguese_localizes_graphics_settings() {
+        let mut app = app(GameState::Title);
+        select(&mut app, Action::Language(Language::English));
+        assert_eq!(app.world().resource::<Localization>().language, Language::English);
+        select(&mut app, Action::Language(Language::Portuguese));
+        assert_eq!(app.world().resource::<Localization>().language, Language::Portuguese);
+        app.insert_resource(MenuSkin { panel: default(), font: default() })
+            .add_systems(OnEnter(GameState::Settings), setup);
+        select(&mut app, Action::Settings);
+        assert_eq!(app.world().resource::<State<GameState>>().get(), &GameState::Settings);
+        let mut texts = app.world_mut().query::<&Text>();
+        for expected in ["GRÁFICOS", "Iluminação", "Distorção de texturas", "SALVAR CONFIGURAÇÕES"] {
+            assert!(texts.iter(app.world()).any(|text| text.0 == expected), "{expected}");
+        }
+    }
+
+    #[test]
+    fn pause_main_menu_returns_to_title_and_continue_keeps_progress() {
+        use crate::game::{
+            campaign::{Action as CampaignAction, Campaign},
+            campaign_save::{CampaignStore, SnapshotState},
+        };
+        let mut app = app(GameState::Menu);
+        let mut campaign = Campaign::new(5);
+        campaign.apply(CampaignAction::Wait).unwrap();
+        app.insert_resource(CampaignStore::for_test(
+            Some(campaign.clone()),
+            SnapshotState::Protected,
+        ))
+        .insert_resource(Localization {
+            language: Language::Portuguese,
+        })
+        .insert_resource(MenuSkin {
+            panel: default(),
+            font: default(),
+        })
+        .add_systems(OnEnter(GameState::Menu), setup);
+        app.world_mut().run_schedule(OnEnter(GameState::Menu));
+        let (button, children, tab) = app
+            .world_mut()
+            .query::<(Entity, &Action, &Children, &TabIndex)>()
+            .iter(app.world())
+            .find_map(|(entity, action, children, tab)| {
+                matches!(action, Action::ReturnTitle).then_some((entity, children, tab))
+            })
+            .unwrap();
+        assert_eq!(tab.0, 2);
+        assert_eq!(
+            app.world().get::<Text>(children[0]).unwrap().0,
+            "MENU PRINCIPAL"
+        );
+        *app.world_mut().get_mut::<Interaction>(button).unwrap() = Interaction::Pressed;
+        app.update();
+        app.update();
+        assert_eq!(
+            *app.world().resource::<State<GameState>>().get(),
+            GameState::Title
+        );
+        assert!(app.world().get_entity(button).is_err());
+        select(&mut app, Action::Start);
+        assert_eq!(
+            *app.world().resource::<State<GameState>>().get(),
+            GameState::Playing
+        );
+        let store = app.world().resource::<CampaignStore>();
+        assert_eq!(store.campaign(), Some(&campaign));
+        assert_eq!(store.snapshot_state(), SnapshotState::Protected);
     }
 
     #[test]
@@ -1335,9 +1430,7 @@ mod tests {
             if report {
                 campaign.apply(CampaignAction::Sleep).unwrap();
             } else {
-                campaign.support.rent_negotiated = true;
-                campaign.bills[1].due_day = 10;
-                for _ in 1..=10 {
+                for _ in 1..=campaign.last_day() {
                     campaign.apply(CampaignAction::Sleep).unwrap();
                     campaign.apply(CampaignAction::AcknowledgeReport).unwrap();
                 }

@@ -7,39 +7,22 @@ const RED: Color = Color::srgb(0.82, 0.09, 0.15);
 const PURPLE: Color = Color::srgb(0.40, 0.16, 0.64);
 const PAPER: Color = Color::srgb(0.96, 0.95, 0.97);
 
-pub(super) fn actions(phone: &Phone, c: &Campaign) -> Vec<(String, PhoneCommand)> {
+pub(super) fn actions(phone: &Phone, c: &Campaign, localization: &Localization) -> Vec<(String, PhoneCommand)> {
     match phone.page {
-        PhonePage::Food => {
-            let mut choices = vec![(
-                "Order a meal: R$20".into(),
-                PhoneCommand::Apply(Action::OrderFood),
-            )];
-            if c.require_kitchen().is_ok() {
-                choices.extend([
-                    (
-                        "Groceries: R$40 / 3 portions".into(),
-                        PhoneCommand::Apply(Action::Groceries),
-                    ),
-                    (
-                        "Cook and eat: 1 portion".into(),
-                        PhoneCommand::Apply(Action::Cook),
-                    ),
-                ]);
-            }
-            choices
-        }
         PhonePage::Household if items().any(|item| c.can_sell(item).is_ok()) => vec![(
-            "Sell an item".into(),
+            localization.choose("Sell an item", "Vender um item").into(),
             PhoneCommand::Page(PhonePage::SaleOffers),
         )],
         PhonePage::SaleOffers => items()
             .filter(|&item| c.can_sell(item).is_ok())
             .map(|item| {
                 (
-                    format!(
+                    format_text!(
+                        localization,
                         "Review {} sale: {} / 1 PA",
-                        item.label(),
-                        reais(item.sale_cents())
+                        "Revisar venda ({}) · {} / 1 PA",
+                        localization.item(item),
+                        localization.reais(item.sale_cents())
                     ),
                     PhoneCommand::Page(PhonePage::ConfirmSale(item)),
                 )
@@ -47,15 +30,15 @@ pub(super) fn actions(phone: &Phone, c: &Campaign) -> Vec<(String, PhoneCommand)
             .collect(),
         PhonePage::ConfirmSale(item) => {
             let mut choices = vec![(
-                "Cancel / keep at home".into(),
+                localization.choose("Cancel / keep at home", "Cancelar e manter em casa").into(),
                 PhoneCommand::Page(PhonePage::SaleOffers),
             )];
             if c.can_sell(item).is_ok() {
                 choices.push((
                     if item == HouseholdItem::Pipoca {
-                        "Sell Pipoca / END CAMPAIGN"
+                        localization.choose("Sell Pipoca / END CAMPAIGN", "Vender o Pipoca e ENCERRAR A CAMPANHA")
                     } else {
-                        "Confirm permanent sale"
+                        localization.choose("Confirm permanent sale", "Confirmar venda definitiva")
                     }
                     .into(),
                     PhoneCommand::Apply(Action::Sell(item)),
@@ -67,7 +50,7 @@ pub(super) fn actions(phone: &Phone, c: &Campaign) -> Vec<(String, PhoneCommand)
     }
 }
 
-fn items() -> impl Iterator<Item = HouseholdItem> {
+pub(super) fn items() -> impl Iterator<Item = HouseholdItem> {
     super::super::household::HOUSEHOLD_ITEMS
         .into_iter()
         .chain([HouseholdItem::Pipoca])
@@ -92,6 +75,7 @@ fn action(
     choices: &[(String, PhoneCommand)],
     command: PhoneCommand,
     fill: Color,
+    localization: &Localization,
 ) {
     if let Some((index, (_, command))) = choices
         .iter()
@@ -99,14 +83,11 @@ fn action(
         .find(|(_, (_, candidate))| *candidate == command)
     {
         let label = match command {
-            PhoneCommand::Apply(Action::Groceries) => "Buy groceries",
-            PhoneCommand::Apply(Action::Cook) => "Cook and eat",
-            PhoneCommand::Apply(Action::OrderFood) => "Order meal",
             PhoneCommand::Apply(Action::Sell(HouseholdItem::Pipoca)) => {
-                "Sell Pipoca / END CAMPAIGN"
+                localization.choose("Sell Pipoca / END CAMPAIGN", "Vender o Pipoca e ENCERRAR A CAMPANHA")
             }
-            PhoneCommand::Apply(Action::Sell(_)) => "Sell permanently",
-            _ => "Keep at home",
+            PhoneCommand::Apply(Action::Sell(_)) => localization.choose("Sell permanently", "Vender definitivamente"),
+            _ => localization.choose("Keep at home", "Manter em casa"),
         };
         ui::action(
             parent,
@@ -135,127 +116,19 @@ pub(super) fn render(
     art: &ui::Art,
     phone: &Phone,
     c: &Campaign,
+    localization: &Localization,
 ) {
-    let choices = actions(phone, c);
+    let choices = actions(phone, c, localization);
     match phone.page {
-        PhonePage::Food => {
-            text(parent, &assets.font, "MeFood", 34., RED);
-            parent
-                .spawn((card(), BackgroundColor(PAPER)))
-                .with_children(|summary| {
-                    text(
-                        summary,
-                        &assets.font,
-                        format!(
-                            "{}  ·  {} PA left",
-                            reais(c.balance_cents),
-                            c.clock.remaining_pa()
-                        ),
-                        21.,
-                        DARK,
-                    );
-                    text(
-                        summary,
-                        &art.regular,
-                        format!(
-                            "Hunger {} / 100  ·  {} portions",
-                            c.attributes.hunger, c.household.food_portions
-                        ),
-                        19.,
-                        GREY,
-                    );
-                });
-            for (tile, title, copy, command) in [
-                (
-                    Tile::Meal,
-                    "Prepared meal",
-                    "R$20 · 1 PA\nAlways available",
-                    PhoneCommand::Apply(Action::OrderFood),
-                ),
-                (
-                    Tile::Groceries,
-                    "Stock your kitchen",
-                    "R$40 · 3 portions · 1 PA",
-                    PhoneCommand::Apply(Action::Groceries),
-                ),
-            ] {
-                parent
-                    .spawn((card(), BackgroundColor(PAPER)))
-                    .with_children(|item| {
-                        item.spawn(ui::row()).with_children(|row| {
-                            ui::picture(row, art, tile, 64., 64.);
-                            row.spawn(Node {
-                                flex_grow: 1.,
-                                min_width: px(0),
-                                width: Val::Auto,
-                                ..ui::column()
-                            })
-                            .with_children(|copy_node| {
-                                text(copy_node, &assets.font, title, 22., DARK);
-                                text(copy_node, &art.regular, copy, 18., GREY);
-                            });
-                        });
-                        if choices.iter().any(|(_, candidate)| *candidate == command) {
-                            action(item, assets, phone, &choices, command, RED);
-                        } else {
-                            text(
-                                item,
-                                &art.regular,
-                                "Unavailable: fridge, stove and cookware needed",
-                                18.,
-                                GREY,
-                            );
-                        }
-                    });
-            }
-            parent
-                .spawn((card(), BackgroundColor(PAPER)))
-                .with_children(|kitchen| {
-                    kitchen
-                        .spawn(Node {
-                            justify_content: JustifyContent::SpaceBetween,
-                            ..ui::row()
-                        })
-                        .with_children(|row| {
-                            text(row, &assets.font, "Cook at home", 22., DARK);
-                            text(row, &art.regular, "1 portion · 1 PA", 18., GREY);
-                        });
-                    if c.require_kitchen().is_ok() {
-                        action(
-                            kitchen,
-                            assets,
-                            phone,
-                            &choices,
-                            PhoneCommand::Apply(Action::Cook),
-                            RED,
-                        );
-                    } else {
-                        text(
-                            kitchen,
-                            &art.regular,
-                            "Your kitchen is incomplete. Prepared-food delivery remains available.",
-                            19.,
-                            GREY,
-                        );
-                    }
-                });
-            text(
-                parent,
-                &art.regular,
-                "Cooking and groceries need a fridge, stove and cookware.",
-                18.,
-                GREY,
-            );
-        }
         PhonePage::Household | PhonePage::SaleOffers => {
             let history = phone.page == PhonePage::Household;
             text(
                 parent,
                 &assets.font,
                 if history {
-                    "Home Market"
+                    localization.choose("Household sales", "Vendas de itens da casa")
                 } else {
-                    "Sell an item"
+                    localization.choose("Sell an item", "Vender um item")
                 },
                 32.,
                 PURPLE,
@@ -265,7 +138,7 @@ pub(super) fn render(
                     parent,
                     &assets.font,
                     phone.page,
-                    "1  Sell an item",
+                    localization.choose("1  Sell an item", "1  Vender um item"),
                     PhoneCommand::Page(PhonePage::SaleOffers),
                     PURPLE,
                     Color::WHITE,
@@ -274,9 +147,11 @@ pub(super) fn render(
             text(
                 parent,
                 &assets.font,
-                format!(
+                format_text!(
+                    localization,
                     "{}  ·  {} PA left",
-                    reais(c.balance_cents),
+                    "{}  ·  {} PA restantes",
+                    localization.reais(c.balance_cents),
                     c.clock.remaining_pa()
                 ),
                 21.,
@@ -296,9 +171,9 @@ pub(super) fn render(
                     parent,
                     &art.regular,
                     if history {
-                        "No sales yet"
+                        localization.choose("No sales yet", "Nenhuma venda registrada")
                     } else {
-                        "No items available"
+                        localization.choose("No items available", "Nenhum item disponível")
                     },
                     21.,
                     GREY,
@@ -350,17 +225,17 @@ pub(super) fn render(
                                                     text(
                                                         badge,
                                                         &assets.font,
-                                                        "SOLD",
+                                                        localization.choose("SOLD", "VENDIDO"),
                                                         20.,
                                                         Color::WHITE,
                                                     );
                                                 });
                                         }
                                     });
-                                text(listing, &assets.font, item.label(), 23., DARK);
-                                text(listing, &assets.font, reais(item.sale_cents()), 23., PURPLE);
+                                text(listing, &assets.font, localization.item(item), 23., DARK);
+                                text(listing, &assets.font, localization.reais(item.sale_cents()), 23., PURPLE);
                                 if c.can_sell(item).is_ok() {
-                                    text(listing, &art.regular, "At home · 1 PA", 18., GREY);
+                                    text(listing, &art.regular, localization.choose("At home · 1 PA", "Em casa · 1 PA"), 18., GREY);
                                     let command = PhoneCommand::Page(PhonePage::ConfirmSale(item));
                                     if let Some(index) = choices
                                         .iter()
@@ -370,7 +245,7 @@ pub(super) fn render(
                                             listing,
                                             &assets.font,
                                             phone.page,
-                                            &format!("{}  Review sale", index + 1),
+                                            &format_text!(localization, "{}  Review sale", "{}  Revisar venda", index + 1),
                                             command,
                                             PURPLE,
                                             Color::WHITE,
@@ -383,7 +258,7 @@ pub(super) fn render(
             }
         }
         PhonePage::ConfirmSale(item) => {
-            text(parent, &assets.font, "Review permanent sale", 29., PURPLE);
+            text(parent, &assets.font, localization.choose("Review permanent sale", "Revisar venda definitiva"), 29., PURPLE);
             parent
                 .spawn((card(), BackgroundColor(PAPER)))
                 .with_children(|review| {
@@ -396,31 +271,33 @@ pub(super) fn render(
                             ..ui::column()
                         })
                         .with_children(|summary| {
-                            text(summary, &assets.font, item.label(), 26., DARK);
+                            text(summary, &assets.font, localization.item(item), 26., DARK);
                             text(
                                 summary,
                                 &assets.font,
-                                format!("Receive {}", reais(item.sale_cents())),
+                                format_text!(localization, "Receive {}", "Receber {}", localization.reais(item.sale_cents())),
                                 23.,
                                 PURPLE,
                             );
                             text(
                                 summary,
                                 &art.regular,
-                                format!("Costs 1 PA · {} PA left", c.clock.remaining_pa()),
+                                format_text!(localization, "Costs 1 PA · {} PA left", "Custo de 1 PA · {} PA restantes", c.clock.remaining_pa()),
                                 19.,
                                 GREY,
                             );
                         });
                     });
                 });
-            text(parent, &assets.font, "This cannot be undone", 25., RED);
+            text(parent, &assets.font, localization.choose("This cannot be undone", "A venda é definitiva"), 25., RED);
             if item == HouseholdItem::Fridge {
                 text(
                     parent,
                     &assets.font,
-                    format!(
+                    format_text!(
+                        localization,
                         "ALL {} stored food portions will be lost.",
+                        "Você perderá todas as {} porções de comida armazenadas.",
                         c.household.food_portions
                     ),
                     21.,
@@ -429,15 +306,15 @@ pub(super) fn render(
                 text(
                     parent,
                     &art.regular,
-                    "The fridge is permanently removed. Cooking and grocery storage become unavailable; prepared-food delivery remains available.",
+                    localization.choose("The fridge is permanently removed. Cooking and grocery storage become unavailable; prepared-food delivery remains available.", "A geladeira sai de casa definitivamente. Você fica sem poder cozinhar ou guardar mantimentos, mas ainda pode pedir comida pronta."),
                     20.,
                     DARK,
                 );
             } else {
-                text(parent, &art.regular, item.sale_loss(), 20., DARK);
+                text(parent, &art.regular, localization.sale_loss(item), 20., DARK);
             }
             if let Err(reason) = c.can_sell(item) {
-                text(parent, &art.regular, reason, 20., RED);
+                text(parent, &art.regular, localization.action_error(&reason), 20., RED);
             }
             action(
                 parent,
@@ -446,6 +323,7 @@ pub(super) fn render(
                 &choices,
                 PhoneCommand::Page(PhonePage::SaleOffers),
                 PURPLE,
+                localization,
             );
             action(
                 parent,
@@ -454,6 +332,7 @@ pub(super) fn render(
                 &choices,
                 PhoneCommand::Apply(Action::Sell(item)),
                 RED,
+                localization,
             );
         }
         _ => {}
@@ -465,48 +344,31 @@ mod tests {
     use super::*;
 
     #[test]
-    fn food_actions_keep_delivery_after_kitchen_sale() {
-        let mut c = Campaign::new(5);
-        c.household.sold.push(HouseholdItem::Fridge);
-        let phone = Phone {
-            page: PhonePage::Food,
-            ..default()
-        };
-        assert_eq!(
-            actions(&phone, &c),
-            vec![(
-                "Order a meal: R$20".into(),
-                PhoneCommand::Apply(Action::OrderFood)
-            )]
-        );
-    }
-
-    #[test]
     fn sale_registry_respects_offer_gates_and_keeps_cancel() {
         let mut c = Campaign::new(5);
         let mut phone = Phone {
             page: PhonePage::Household,
             ..default()
         };
-        assert!(actions(&phone, &c).is_empty());
+        assert!(actions(&phone, &c, &Localization::ENGLISH).is_empty());
         c.attributes.stress = 70;
         assert_eq!(
-            actions(&phone, &c),
+            actions(&phone, &c, &Localization::ENGLISH),
             vec![(
                 "Sell an item".into(),
                 PhoneCommand::Page(PhonePage::SaleOffers)
             )]
         );
         phone.page = PhonePage::SaleOffers;
-        assert_eq!(actions(&phone, &c).len(), 6);
+        assert_eq!(actions(&phone, &c, &Localization::ENGLISH).len(), 6);
         phone.page = PhonePage::ConfirmSale(HouseholdItem::Pipoca);
-        assert_eq!(actions(&phone, &c).len(), 1);
+        assert_eq!(actions(&phone, &c, &Localization::ENGLISH).len(), 1);
         c.household
             .sold
             .extend(super::super::super::household::HOUSEHOLD_ITEMS);
-        assert_eq!(actions(&phone, &c).len(), 2);
+        assert_eq!(actions(&phone, &c, &Localization::ENGLISH).len(), 2);
         assert_eq!(
-            actions(&phone, &c)[1].1,
+            actions(&phone, &c, &Localization::ENGLISH)[1].1,
             PhoneCommand::Apply(Action::Sell(HouseholdItem::Pipoca))
         );
     }

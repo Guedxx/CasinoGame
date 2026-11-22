@@ -1,13 +1,33 @@
 use super::super::campaign_save::SnapshotState;
 use super::*;
 
+fn page_actions(phone: &Phone, campaign: &Campaign) -> Vec<(String, PhoneCommand)> {
+    super::page_actions(phone, campaign, &Localization::ENGLISH)
+}
+
+fn home_reminder(campaign: &Campaign) -> String {
+    super::home_reminder(campaign, &Localization::ENGLISH)
+}
+
 fn rendered_copy(page: PhonePage, campaign: &Campaign) -> String {
+    rendered_copy_in_language(page, campaign, crate::localization::Language::English)
+}
+
+fn rendered_copy_in_language(
+    page: PhonePage,
+    campaign: &Campaign,
+    language: crate::localization::Language,
+) -> String {
     let mut app = app();
+    app.insert_resource(Localization { language });
     app.insert_resource(CampaignStore::for_test(
         Some(campaign.clone()),
         SnapshotState::Protected,
     ));
     opened(&mut app, page);
+    if page.is_game() {
+        app.world_mut().resource_mut::<Phone>().settled_round = campaign.betting.history.last().cloned();
+    }
     app.insert_resource(PhoneAssets {
         camera: Entity::PLACEHOLDER,
         target: Handle::default(),
@@ -38,43 +58,38 @@ fn wager(app: &mut App, choice: BetChoice) {
 }
 
 #[test]
-fn phone_history_links_to_saved_reports_and_browsing_keeps_campaign_identical() {
-    let mut c = Campaign::new(5);
+fn phone_history_shows_the_daily_money_log_and_leaves_the_campaign_unchanged() {
+    let mut c = campaign_after_landlord(5);
     c.apply(Action::Work).unwrap();
+    let earned = c.ledger[0].amount_cents;
+    c.apply(Action::OrderFood).unwrap();
     c.apply(Action::Sleep).unwrap();
     c.apply(Action::AcknowledgeReport).unwrap();
-    let choices = page_actions(
-        &Phone {
-            page: PhonePage::History,
-            ..default()
-        },
-        &c,
-    );
-    assert_eq!(c.ledger.len(), 1);
-    assert_eq!(choices[0].1, PhoneCommand::Page(PhonePage::Reports));
-    assert_eq!(PhonePage::Reports.back(), PhonePage::History);
-    let choices = page_actions(
-        &Phone {
-            page: PhonePage::Reports,
-            ..default()
-        },
-        &c,
-    );
-    assert_eq!(c.reports[0].day, 1);
-    assert_eq!(c.reports[0].pa_used, 2);
-    assert!(choices.is_empty());
+    let copy = rendered_copy(PhonePage::History, &c);
+    assert!(copy.contains("Day 2\nReceived: R$0.00\nSpent: R$0.00"));
+    let money = Localization::ENGLISH.reais(earned);
+    assert!(copy.contains(&format!(
+        "Day 1\nReceived: {money}\n  MeFood deliveries: {money}\nSpent: R$20.00\n  Food: R$20.00"
+    )));
+    assert!(!copy.contains("Relationships"));
     let mut app = app();
     app.insert_resource(CampaignStore::for_test(
         Some(c.clone()),
         SnapshotState::Protected,
     ));
-    opened(&mut app, PhonePage::History);
+    opened(&mut app, PhonePage::Home);
     key(&mut app, KeyCode::Digit1);
-    assert_eq!(app.world().resource::<Phone>().page, PhonePage::Reports);
+    assert_eq!(app.world().resource::<Phone>().page, PhonePage::History);
     key(&mut app, KeyCode::Enter);
     key(&mut app, KeyCode::Backspace);
-    assert_eq!(app.world().resource::<Phone>().page, PhonePage::History);
+    assert_eq!(app.world().resource::<Phone>().page, PhonePage::Home);
     assert_eq!(app.world().resource::<CampaignStore>().campaign(), Some(&c));
+}
+
+fn campaign_after_landlord(seed: u64) -> Campaign {
+    let mut campaign = Campaign::new(seed);
+    campaign.landlord_intro_seen = Some(true);
+    campaign
 }
 
 fn app() -> App {
@@ -93,14 +108,15 @@ fn app() -> App {
         .add_message::<KeyboardInput>()
         .add_message::<PhoneAppClosed>()
         .insert_resource(CampaignStore::for_test(
-            Some(Campaign::new(9)),
+            Some(campaign_after_landlord(9)),
             SnapshotState::Protected,
         ))
         .init_resource::<Phone>()
         .init_resource::<GameCursor>()
+        .insert_resource(Localization::ENGLISH)
         .add_plugins(super::super::routine::RoutinePlugin)
         .add_systems(PreUpdate, input.after(OverlayInput))
-        .add_systems(Update, (dispatch, end_session).chain())
+        .add_systems(Update, (dispatch, end_session).chain().in_set(PhoneView))
         .add_observer(reset);
     app.world_mut().spawn((
         Window {
@@ -165,7 +181,7 @@ fn opened(app: &mut App, page: PhonePage) {
 }
 
 #[test]
-fn launcher_icons_open_every_existing_app_and_navigation_preserves_campaign() {
+fn launcher_opens_only_four_apps_by_click_or_number_without_changing_campaign() {
     let mut app = app();
     app.insert_resource(PhoneAssets {
         camera: Entity::PLACEHOLDER,
@@ -187,8 +203,13 @@ fn launcher_icons_open_every_existing_app_and_navigation_preserves_campaign() {
         .iter(app.world())
         .map(|button| button.1)
         .collect();
-    assert_eq!(buttons.len(), launcher::APPS.len() + 3);
-    for (page, _) in launcher::APPS {
+    assert_eq!(buttons.len(), 4 + 3);
+    for (page, key_code) in [
+        (PhonePage::History, KeyCode::Digit1),
+        (PhonePage::Betting, KeyCode::Digit2),
+        (PhonePage::Support, KeyCode::Digit3),
+        (PhonePage::Contacts, KeyCode::Digit4),
+    ] {
         assert_eq!(
             buttons
                 .iter()
@@ -199,7 +220,13 @@ fn launcher_icons_open_every_existing_app_and_navigation_preserves_campaign() {
         click_command(&mut app, PhoneCommand::Page(page));
         assert_eq!(app.world().resource::<Phone>().page, page);
         click_command(&mut app, PhoneCommand::Page(PhonePage::Home));
+        key(&mut app, key_code);
+        assert_eq!(app.world().resource::<Phone>().page, page);
+        key(&mut app, KeyCode::Backspace);
+        assert_eq!(app.world().resource::<Phone>().page, PhonePage::Home);
     }
+    key(&mut app, KeyCode::Digit5);
+    assert_eq!(app.world().resource::<Phone>().page, PhonePage::Home);
     click_command(&mut app, PhoneCommand::Close);
     assert!(!app.world().resource::<Phone>().opened);
     assert_eq!(
@@ -209,19 +236,31 @@ fn launcher_icons_open_every_existing_app_and_navigation_preserves_campaign() {
 }
 
 #[test]
-fn household_sales_are_on_home_and_each_confirmation_explains_permanent_loss() {
-    let mut c = Campaign::new(5);
-    let home = page_actions(
-        &Phone {
-            page: PhonePage::Home,
-            ..default()
-        },
-        &c,
+fn support_shows_relevant_sales_and_confirmations_explain_permanent_loss() {
+    let mut c = campaign_after_landlord(5);
+    let support = Phone {
+        page: PhonePage::Support,
+        ..default()
+    };
+    let sales = PhoneCommand::Page(PhonePage::Household);
+    assert_eq!(
+        page_actions(&support, &c)
+            .into_iter()
+            .map(|(_, command)| command)
+            .collect::<Vec<_>>(),
+        [
+            PhoneCommand::Apply(Action::CareConversation),
+            PhoneCommand::Apply(Action::FinancialPlanning),
+            PhoneCommand::Apply(Action::TherapySession),
+            PhoneCommand::Page(PhonePage::DailyCap),
+            PhoneCommand::Apply(Action::BlockBetting),
+        ]
     );
-    assert!(
-        home.iter()
-            .any(|(_, cmd)| *cmd == PhoneCommand::Page(PhonePage::Household))
-    );
+    let copy = rendered_copy(PhonePage::Support, &c);
+    assert!(copy.contains("Therapy session · 4 PA"));
+    for preview in ["Stress −10", "Stress −6", "Urge −30"] {
+        assert!(!copy.contains(preview), "{preview}");
+    }
     assert!(
         page_actions(
             &Phone {
@@ -233,6 +272,11 @@ fn household_sales_are_on_home_and_each_confirmation_explains_permanent_loss() {
         .is_empty()
     );
     c.attributes.stress = 70;
+    assert!(
+        page_actions(&support, &c)
+            .iter()
+            .any(|(_, cmd)| *cmd == sales)
+    );
     let choices = page_actions(
         &Phone {
             page: PhonePage::SaleOffers,
@@ -272,21 +316,14 @@ fn household_sales_are_on_home_and_each_confirmation_explains_permanent_loss() {
             assert_eq!(choices.len(), 1);
         }
     }
-    assert_eq!(PhonePage::Household.back(), PhonePage::Home);
+    assert_eq!(PhonePage::Household.back(), PhonePage::Support);
     assert_eq!(PhonePage::SaleOffers.back(), PhonePage::Household);
     c.apply(Action::Sell(HouseholdItem::Stove)).unwrap();
-    assert_eq!(
-        page_actions(
-            &Phone {
-                page: PhonePage::Food,
-                ..default()
-            },
-            &c
-        ),
-        vec![(
-            "Order a meal: R$20".into(),
-            PhoneCommand::Apply(Action::OrderFood)
-        )]
+    c.attributes.stress = 0;
+    assert!(
+        page_actions(&support, &c)
+            .iter()
+            .any(|(_, cmd)| *cmd == sales)
     );
     assert_eq!(
         PhonePage::ConfirmSale(HouseholdItem::Tv).back(),
@@ -296,7 +333,7 @@ fn household_sales_are_on_home_and_each_confirmation_explains_permanent_loss() {
 
 #[test]
 fn sales_stamp_appears_only_after_a_committed_sale_without_stress_text() {
-    let mut c = Campaign::new(5);
+    let mut c = campaign_after_landlord(5);
     let before = rendered_copy(PhonePage::Household, &c);
     assert!(before.contains("No sales yet"));
     assert!(!before.contains("TV"));
@@ -334,13 +371,15 @@ fn sales_stamp_appears_only_after_a_committed_sale_without_stress_text() {
 #[test]
 fn sale_navigation_cancel_held_keys_and_stale_commands_never_auto_confirm() {
     let mut app = app();
-    let mut c = Campaign::new(5);
+    let mut c = campaign_after_landlord(5);
     c.attributes.urge = 70;
     app.insert_resource(CampaignStore::for_test(
         Some(c.clone()),
         SnapshotState::Protected,
     ));
-    opened(&mut app, PhonePage::Household);
+    opened(&mut app, PhonePage::Support);
+    click_command(&mut app, PhoneCommand::Page(PhonePage::Household));
+    assert_eq!(app.world().resource::<Phone>().page, PhonePage::Household);
     key(&mut app, KeyCode::Digit1);
     assert_eq!(app.world().resource::<Phone>().page, PhonePage::SaleOffers);
     app.world_mut()
@@ -406,7 +445,7 @@ fn sale_navigation_cancel_held_keys_and_stale_commands_never_auto_confirm() {
 #[test]
 fn fridge_confirm_destroys_only_disclosed_portions_and_dog_confirm_immediately_stops_phone() {
     let mut app = app();
-    let mut c = Campaign::new(5);
+    let mut c = campaign_after_landlord(5);
     c.attributes.stress = 70;
     app.insert_resource(CampaignStore::for_test(
         Some(c.clone()),
@@ -431,7 +470,11 @@ fn fridge_confirm_destroys_only_disclosed_portions_and_dog_confirm_immediately_s
             stored.balance_cents,
             stored.clock.pa_spent
         ),
-        (0, 24_000, 1)
+        (
+            0,
+            INITIAL_BALANCE_CENTS + HouseholdItem::Fridge.sale_cents(),
+            1
+        )
     );
     for item in super::super::household::HOUSEHOLD_ITEMS {
         c.apply(Action::Sell(item)).unwrap();
@@ -525,6 +568,28 @@ fn ray_maps_rotated_screen_corners_and_rejects_outside_behind_and_parallel() {
 }
 
 #[test]
+fn landlord_dialogue_preserves_prepaid_betting_rounds_and_the_open_phone() {
+    let mut app = app();
+    app.world_mut()
+        .resource_mut::<CampaignStore>()
+        .apply(Action::Bet {
+            choice: BetChoice::Slots,
+            stake_cents: 100,
+        })
+        .unwrap();
+    opened(&mut app, PhonePage::Slots);
+    app.world_mut().resource_mut::<GameplayOverlay>().active = Some(OverlayKind::Landlord {
+        page: 1,
+        resume_phone: true,
+    });
+    key(&mut app, KeyCode::Tab);
+    assert!(app.world().resource::<Phone>().opened);
+    let store = app.world().resource::<CampaignStore>();
+    let session = store.campaign().unwrap().betting.session.as_ref().unwrap();
+    assert_eq!(session.paid_rounds_remaining, 2);
+}
+
+#[test]
 fn tab_browsing_escape_and_app_exit_never_spend_campaign_resources() {
     let mut app = app();
     let original = app
@@ -533,13 +598,18 @@ fn tab_browsing_escape_and_app_exit_never_spend_campaign_resources() {
         .campaign()
         .unwrap()
         .clone();
+    app.world_mut().resource_mut::<GameplayOverlay>().phone_hint = true;
+    app.update();
+    let mut text = app.world_mut().query::<&Text>();
+    assert!(text.iter(app.world()).any(|text| text.0.contains("[Tab]")));
     key(&mut app, KeyCode::Tab);
     assert!(app.world().resource::<Phone>().opened);
+    assert!(!text.iter(app.world()).any(|text| text.0.contains("[Tab]")));
     assert!(app.world().resource::<GameplayOverlay>().blocks_world());
     key(&mut app, KeyCode::Digit4);
-    assert_eq!(app.world().resource::<Phone>().page, PhonePage::Household);
+    assert_eq!(app.world().resource::<Phone>().page, PhonePage::Contacts);
     key(&mut app, KeyCode::KeyH);
-    key(&mut app, KeyCode::Digit1);
+    key(&mut app, KeyCode::Digit2);
     key(&mut app, KeyCode::Digit1);
     assert_eq!(app.world().resource::<Phone>().page, PhonePage::Slots);
     key(&mut app, KeyCode::Backspace);
@@ -583,10 +653,10 @@ fn focus_loss_and_pause_preserve_page_without_exiting_the_app() {
 }
 
 #[test]
-fn stale_dismissed_unfocused_paused_and_outside_presses_do_not_apply_food() {
+fn stale_dismissed_unfocused_paused_and_outside_presses_do_not_apply_care() {
     for scenario in 0..6 {
         let mut app = app();
-        opened(&mut app, PhonePage::Food);
+        opened(&mut app, PhonePage::Support);
         let original = app
             .world()
             .resource::<CampaignStore>()
@@ -600,9 +670,9 @@ fn stale_dismissed_unfocused_paused_and_outside_presses_do_not_apply_food() {
                 if scenario == 0 {
                     PhonePage::Household
                 } else {
-                    PhonePage::Food
+                    PhonePage::Support
                 },
-                PhoneCommand::Apply(Action::Cook),
+                PhoneCommand::Apply(Action::CareConversation),
             ));
             if scenario == 1 {
                 phone.pointer = None;
@@ -648,7 +718,7 @@ fn stale_dismissed_unfocused_paused_and_outside_presses_do_not_apply_food() {
 #[test]
 fn leaving_screen_preserves_fresh_home_and_back_keyboard_navigation() {
     for (page, shortcut, expected) in [
-        (PhonePage::Food, KeyCode::KeyH, PhonePage::Home),
+        (PhonePage::DailyCap, KeyCode::KeyH, PhonePage::Home),
         (PhonePage::Roulette, KeyCode::Backspace, PhonePage::Betting),
     ] {
         let mut app = app();
@@ -679,7 +749,7 @@ fn leaving_screen_preserves_fresh_home_and_back_keyboard_navigation() {
 #[test]
 fn outside_screen_cancels_held_virtual_pointer_and_never_reuses_its_position() {
     let mut app = app();
-    opened(&mut app, PhonePage::Food);
+    opened(&mut app, PhonePage::Support);
     app.add_message::<PointerInput>()
         .insert_resource(PhoneAssets {
             camera: Entity::PLACEHOLDER,
@@ -689,7 +759,7 @@ fn outside_screen_cancels_held_virtual_pointer_and_never_reuses_its_position() {
         .add_systems(PreUpdate, drive_pointer.after(input));
     app.world_mut().resource_mut::<Phone>().pointer = Some(Vec2::new(50.0, 150.0));
     app.world_mut().resource_mut::<Phone>().pending =
-        Some((PhonePage::Food, PhoneCommand::Apply(Action::Cook)));
+        Some((PhonePage::Support, PhoneCommand::Apply(Action::CareConversation)));
     app.world_mut()
         .resource_mut::<ButtonInput<MouseButton>>()
         .press(MouseButton::Left);
@@ -729,14 +799,64 @@ fn outside_screen_cancels_held_virtual_pointer_and_never_reuses_its_position() {
 }
 
 #[test]
-fn food_uses_authoritative_actions_and_report_or_ending_blocks_phone() {
+fn attribute_feedback_shows_clamped_changes_and_waits_for_the_wager_reveal() {
     let mut app = app();
-    opened(&mut app, PhonePage::Food);
-    key(&mut app, KeyCode::Digit3);
+    let mut campaign = campaign_after_landlord(9);
+    campaign.attributes.stress = 4;
+    app.insert_resource(CampaignStore::for_test(
+        Some(campaign),
+        SnapshotState::Protected,
+    ));
+    opened(&mut app, PhonePage::Support);
+    key(&mut app, KeyCode::Digit1);
+    let mut text = app.world_mut().query::<(&Text, &TextColor, &ChildOf)>();
+    for (change, value, is_gain) in [("-4", "0", false), ("+3", "33", true)] {
+        let (_, color, parent) = text
+            .iter(app.world())
+            .find(|(t, _, _)| t.0 == change)
+            .unwrap();
+        let color = color.0.to_srgba();
+        assert_eq!(color.green > color.red, is_gain);
+        assert!(
+            text.iter(app.world())
+                .any(|(t, _, sibling)| t.0 == value && sibling == parent)
+        );
+    }
+    app.world_mut()
+        .resource_mut::<Time<Virtual>>()
+        .advance_by(std::time::Duration::from_secs(3));
+    app.update();
+    assert!(
+        !text
+            .iter(app.world())
+            .any(|(t, _, _)| matches!(t.0.as_str(), "-4" | "+3"))
+    );
+
+    opened(&mut app, PhonePage::Slots);
+    let balance = app.world().resource::<CampaignStore>().campaign().unwrap().balance_cents;
+    wager(&mut app, BetChoice::Slots);
+    let after = app.world().resource::<CampaignStore>().campaign().unwrap().balance_cents;
+    let net = after - balance;
+    let money_delta = format!("{}{}", if net > 0 { "+" } else { "" }, Localization::ENGLISH.reais(net));
+    assert!(app.world().resource::<Phone>().animating());
+    assert!(!text.iter(app.world()).any(|(t, _, _)| t.0 == "+8"));
+    assert!(!text.iter(app.world()).any(|(t, _, _)| t.0 == money_delta));
+    click_command(&mut app, PhoneCommand::Skip);
+    assert!(text.iter(app.world()).any(|(t, _, _)| t.0 == "+8"));
+    let (_, color, _) = text.iter(app.world()).find(|(t, _, _)| t.0 == money_delta).unwrap();
+    let color = color.0.to_srgba();
+    assert_eq!(color.green > color.red, net > 0);
+}
+
+#[test]
+fn care_uses_authoritative_actions_and_report_or_ending_blocks_phone() {
+    let mut app = app();
+    opened(&mut app, PhonePage::Support);
+    key(&mut app, KeyCode::Digit1);
     let campaign = app.world().resource::<CampaignStore>().campaign().unwrap();
     assert_eq!(campaign.clock.pa_spent, 1);
-    assert_eq!(campaign.household.food_portions, 2);
-    assert_eq!(campaign.attributes.hunger, 0);
+    assert_eq!(campaign.support.care_actions, 1);
+    assert_eq!(campaign.attributes.stress, 20);
     assert!(
         app.world()
             .resource::<CampaignStore>()
@@ -745,19 +865,18 @@ fn food_uses_authoritative_actions_and_report_or_ending_blocks_phone() {
     );
     for stage in [
         CampaignStage::DailyReport,
-        CampaignStage::Ended(Ending::DayTen),
+        CampaignStage::Ended(Ending::HousingLoss),
     ] {
-        let mut campaign = Campaign::new(3);
+        let mut campaign = campaign_after_landlord(3);
         if stage == CampaignStage::DailyReport {
             campaign.apply(Action::Sleep).unwrap();
         } else {
-            campaign.support.rent_negotiated = true;
-            campaign.bills[1].due_day = 10;
-            for _ in 1..=10 {
+            for _ in 1..=campaign.last_day() {
                 campaign.apply(Action::Sleep).unwrap();
                 campaign.apply(Action::AcknowledgeReport).unwrap();
             }
         }
+        assert_eq!(campaign.stage, stage);
         app.insert_resource(CampaignStore::for_test(
             Some(campaign),
             SnapshotState::Protected,
@@ -1170,8 +1289,8 @@ fn ordered_amount_events_preserve_reverse_digits_repeats_and_backspace_in_one_fr
 }
 
 #[test]
-fn bank_payment_is_free_at_zero_pa_and_contacts_remain_readable_in_blackout() {
-    let mut c = Campaign::new(5);
+fn contacts_remain_readable_in_blackout_at_zero_pa() {
+    let mut c = Campaign::legacy(5);
     for _ in 1..6 {
         c.apply(Action::Sleep).unwrap();
         c.apply(Action::AcknowledgeReport).unwrap();
@@ -1192,39 +1311,11 @@ fn bank_payment_is_free_at_zero_pa_and_contacts_remain_readable_in_blackout() {
         },
         &original,
     );
-    assert!(!care::preview(&original, Contact::Marina).is_empty());
-    assert!(!care::preview(&original, Contact::Rafa).is_empty());
     assert_eq!(choices.len(), 2);
     key(&mut app, KeyCode::KeyH);
     assert_eq!(
         app.world().resource::<CampaignStore>().campaign(),
         Some(&original)
-    );
-    key(&mut app, KeyCode::Digit2);
-    key(&mut app, KeyCode::Digit1);
-    let paid = app
-        .world()
-        .resource::<CampaignStore>()
-        .campaign()
-        .unwrap()
-        .clone();
-    assert!(paid.has_power());
-    assert_eq!(paid.clock, original.clock);
-    assert_eq!(paid.attributes, original.attributes);
-    assert_eq!(paid.balance_cents, original.balance_cents - 10_000);
-    assert!(
-        app.world()
-            .resource::<Phone>()
-            .feedback
-            .contains("Electricity paid")
-    );
-    click_command(
-        &mut app,
-        PhoneCommand::Apply(Action::PayBill(BillKind::Electricity)),
-    );
-    assert_eq!(
-        app.world().resource::<CampaignStore>().campaign(),
-        Some(&paid)
     );
     opened(&mut app, PhonePage::Contacts);
     key(&mut app, KeyCode::Digit1);
@@ -1236,13 +1327,13 @@ fn bank_payment_is_free_at_zero_pa_and_contacts_remain_readable_in_blackout() {
     assert!(app.world().resource::<Phone>().feedback.contains("1 PA"));
     assert_eq!(
         app.world().resource::<CampaignStore>().campaign(),
-        Some(&paid)
+        Some(&original)
     );
 }
 
 #[test]
 fn contacts_dispatch_the_matching_call_and_reject_visit_and_held_commands() {
-    let mut c = Campaign::new(5);
+    let mut c = campaign_after_landlord(5);
     c.apply(Action::Sleep).unwrap();
     c.apply(Action::AcknowledgeReport).unwrap();
     for _ in 0..3 {
@@ -1304,75 +1395,133 @@ fn contacts_dispatch_the_matching_call_and_reject_visit_and_held_commands() {
 }
 
 #[test]
-fn calendar_and_reactions_follow_real_bills_bets_misses_and_support() {
-    let mut c = Campaign::new(5);
-    let before = c.clone();
-    let home = home_reminder(&c);
-    let choices = page_actions(
-        &Phone {
-            page: PhonePage::Home,
-            ..default()
-        },
-        &c,
-    );
-    assert_eq!(home, "Marina: day 2 afternoon");
-    assert_eq!(choices.len(), 7);
-    assert!(home.len() <= 28);
-    assert_eq!(c.commitments[0].day, 2);
-    assert!(care::context(&c, Contact::Rafa).contains("without betting"));
-    assert_eq!(c, before);
-    for _ in 0..4 {
-        c.apply(Action::Bet {
-            choice: BetChoice::Slots,
-            stake_cents: 100,
-        })
-        .unwrap();
-    }
-    assert!(care::context(&c, Contact::Rafa).contains("4 bets"));
-    assert!(care::context(&c, Contact::Rafa).contains("beyond three rounds"));
-    while c.clock.day < 5 {
+fn home_reminder_combines_todays_calls_and_bill_counts_during_a_blackout() {
+    let mut c = campaign_after_landlord(5);
+    for _ in 1..4 {
         c.apply(Action::Sleep).unwrap();
         c.apply(Action::AcknowledgeReport).unwrap();
     }
-    assert!(c.bills.iter().any(|b| b.kind == BillKind::Electricity
-        && b.paid_day.is_none()
-        && c.clock.day > b.due_day));
-    assert_eq!(home_reminder(&c), "Overdue bill: see Bank");
-    assert!(care::preview(&c, Contact::Marina).contains("missed our plan"));
-    assert!(care::context(&c, Contact::Marina).contains("unpaid bills"));
-    c.apply(Action::PayBill(BillKind::Electricity)).unwrap();
-    assert!(
-        c.bills
-            .iter()
-            .any(|b| b.kind == BillKind::Electricity && b.paid_day.is_some())
+    let reminder = home_reminder(&c);
+    assert_eq!(
+        reminder,
+        "Rafa calls · night\n1 bill due today\n2 overdue bills\nPower off · electricity bill on the table"
     );
-    c.apply(Action::Work).unwrap();
-    assert!(
-        c.bills
-            .iter()
-            .any(|b| b.kind == BillKind::Electricity && b.paid_day.is_some())
-    );
-    assert_eq!(c.clock.day, 5);
-    c.support.care_actions = 1;
-    assert!(care::context(&c, Contact::Marina).contains("care or planning steps"));
+    assert!(rendered_copy(PhonePage::Home, &c).contains(&reminder));
+
+    let mut older = Campaign::previous_economy(5);
+    for _ in 1..4 {
+        older.apply(Action::Sleep).unwrap();
+        older.apply(Action::AcknowledgeReport).unwrap();
+    }
+    assert_eq!(home_reminder(&older), "Rafa visits · afternoon\n2 bills due today");
+    older.apply(Action::PayBill(BillKind::Electricity)).unwrap();
+    assert_eq!(home_reminder(&older), "Rafa visits · afternoon\n1 bill due today");
 }
 
 #[test]
-fn lifetime_betting_message_keeps_totals_beyond_the_balance_range_exact() {
-    let mut c = Campaign::new(5);
+fn portuguese_phone_copy_follows_the_campaign_on_all_apps() {
+    use crate::localization::Language::Portuguese;
+
+    let mut campaign = campaign_after_landlord(5);
+    campaign.apply(Action::Bet { choice: BetChoice::Slots, stake_cents: 100 }).unwrap();
+    for _ in 1..campaign.last_day() {
+        campaign.apply(Action::Sleep).unwrap();
+        campaign.apply(Action::AcknowledgeReport).unwrap();
+    }
+    for (page, expected) in [
+        (PhonePage::Home, &["Rafa liga · noite", "1 conta vence hoje", "2 contas vencidas", "Energia cortada"][..]),
+        (PhonePage::History, &["Histórico de todos os dias", "Gasto: R$1,00", "Apostas"]),
+        (PhonePage::Contacts, &["Mensagens", "Perdemos o horário combinado.", "Dia 4 · Noite"]),
+        (PhonePage::ContactThread(Contact::Rafa), &["ei mano você tá bem?", "Ligar para Rafa · 1 PA"]),
+        (PhonePage::Support, &["Sessão de terapia", "Limite diário de apostas"]),
+        (PhonePage::DailyCap, &["Aplicar limite de R$0,00", "Os prêmios não repõem o limite"]),
+        (PhonePage::Betting, &["Cassino", "Caça-níqueis", "Regras"]),
+        (PhonePage::BettingHistory, &["Minhas apostas", "Caça-níqueis · Dia 1 / Manhã", "R$1,00"]),
+        (PhonePage::Slots, &["Retorno R$", "Girar R$1,00"]),
+        (PhonePage::Roulette, &["Vermelho · 1,8×", "Preto · 1,8×"]),
+        (PhonePage::Football, &["Mandante", "Visitante", "Empate"]),
+        (PhonePage::ConfirmSale(HouseholdItem::Fridge), &["Revisar venda definitiva", "Geladeira", "Receber R$120,00"]),
+    ] {
+        let copy = rendered_copy_in_language(page, &campaign, Portuguese);
+        for text in expected {
+            assert!(copy.contains(text), "{page:?}: {text:?} missing from {copy}");
+        }
+    }
+}
+
+#[test]
+fn contact_threads_show_each_short_message_and_keep_the_call_action() {
+    let mut c = campaign_after_landlord(5);
+    assert_eq!(home_reminder(&c), "Marina: day 2 afternoon");
     c.apply(Action::Bet {
         choice: BetChoice::Slots,
         stake_cents: 100,
     })
     .unwrap();
-    let mut round = c.betting.history[0].clone();
-    round.net_cents = i64::MAX;
-    c.betting.history = vec![round.clone(), round];
-    assert!(care::context(&c, Contact::Rafa).contains("net R$184467440737095516.14"));
-    for round in &mut c.betting.history {
-        round.net_cents = i64::MIN + 1;
+    for _ in 1..3 {
+        c.apply(Action::Sleep).unwrap();
+        c.apply(Action::AcknowledgeReport).unwrap();
     }
-    assert!(care::context(&c, Contact::Rafa).contains("net −R$184467440737095516.14"));
+    for (contact, message) in [
+        (Contact::Marina, "I'm here if you need anything. You know that, right?"),
+        (Contact::Rafa, "Hey man, you okay?"),
+    ] {
+        let copy = rendered_copy(PhonePage::ContactThread(contact), &c);
+        assert!(copy.contains(message));
+        assert!(copy.contains(&format!("Call {} · 1 PA", contact.label())));
+        for detail in ["R$", "unpaid bills", "We missed our plan", "Relationships +8", "Day 4"] {
+            assert!(!copy.contains(detail), "{detail}");
+        }
+    }
+}
+
+#[test]
+fn therapy_session_costs_four_pa_and_takes_thirty_urge() {
+    let mut app = app();
+    let mut campaign = campaign_after_landlord(9);
+    campaign.attributes.urge = 48;
+    app.insert_resource(CampaignStore::for_test(Some(campaign), SnapshotState::Protected));
+    opened(&mut app, PhonePage::Support);
+    let therapy = PhoneCommand::Apply(Action::TherapySession);
+    click_command(&mut app, therapy);
+    let after = app.world().resource::<CampaignStore>().campaign().unwrap().clone();
+    assert_eq!((after.clock.pa_spent, after.attributes.urge), (4, 18));
+    click_command(&mut app, therapy);
+    assert_eq!(app.world().resource::<CampaignStore>().campaign(), Some(&after));
+    assert!(app.world().resource::<Phone>().feedback.contains("4 PA"));
+}
+
+#[test]
+fn missed_call_waits_for_the_bet_reveal_and_resumes_the_phone_after_confirmation() {
+    let mut app = app();
+    let mut campaign = campaign_after_landlord(9);
+    campaign.apply(Action::Sleep).unwrap();
+    campaign.apply(Action::AcknowledgeReport).unwrap();
+    for _ in 0..3 {
+        campaign.apply(Action::Wait).unwrap();
+    }
+    campaign.attributes.urge = 80;
+    app.insert_resource(CampaignStore::for_test(Some(campaign), SnapshotState::Protected));
+    opened(&mut app, PhonePage::Slots);
+    wager(&mut app, BetChoice::Slots);
+    let mut text = app.world_mut().query::<&Text>();
+    assert!(!text.iter(app.world()).any(|text| text.0.contains("missed my call")));
+    click_command(&mut app, PhoneCommand::Skip);
+    assert_eq!(
+        app.world().resource::<GameplayOverlay>().active,
+        Some(OverlayKind::MissedCall { contact: Contact::Marina, resume_phone: true })
+    );
+    assert!(text.iter(app.world()).any(|text| text.0.contains("missed my call with Marina")));
+    key(&mut app, KeyCode::Tab);
+    assert!(app.world().resource::<Phone>().opened);
+    assert!(app.world().resource::<GameplayOverlay>().in_dialogue());
+    key(&mut app, KeyCode::Enter);
+    assert_eq!(app.world().resource::<GameplayOverlay>().active, Some(OverlayKind::Phone));
+    assert!(!text.iter(app.world()).any(|text| text.0.contains("missed my call")));
+    let store = app.world().resource::<CampaignStore>();
+    let campaign = store.campaign().unwrap();
+    assert_eq!(campaign.attributes.relationships, 40);
+    assert_eq!(campaign.betting.session.as_ref().unwrap().paid_rounds_remaining, 2);
 }
 
 #[test]
@@ -1582,8 +1731,8 @@ fn care_dispatch_rejects_held_stale_unfocused_and_zero_pa_actions() {
 }
 
 #[test]
-fn support_and_free_crisis_pages_work_under_blackout_block_and_zero_pa() {
-    let mut c = Campaign::new(5);
+fn support_keeps_care_and_betting_limits_available_during_blackout() {
+    let mut c = Campaign::legacy(5);
     for _ in 1..6 {
         c.apply(Action::Sleep).unwrap();
         c.apply(Action::AcknowledgeReport).unwrap();
@@ -1599,23 +1748,6 @@ fn support_and_free_crisis_pages_work_under_blackout_block_and_zero_pa() {
         SnapshotState::Protected,
     ));
     opened(&mut app, PhonePage::Support);
-    for page in [
-        PhonePage::Contacts,
-        PhonePage::Bank,
-        PhonePage::History,
-        PhonePage::DailyCap,
-    ] {
-        let choices = page_actions(app.world().resource::<Phone>(), &c);
-        assert!(
-            choices
-                .iter()
-                .any(|(_, command)| *command == PhoneCommand::Page(page))
-        );
-        click_command(&mut app, PhoneCommand::Page(page));
-        assert_eq!(app.world().resource::<Phone>().page, page);
-        assert_eq!(app.world().resource::<CampaignStore>().campaign(), Some(&c));
-        opened(&mut app, PhonePage::Support);
-    }
     let choices = page_actions(
         &Phone {
             page: PhonePage::Support,
@@ -1623,12 +1755,20 @@ fn support_and_free_crisis_pages_work_under_blackout_block_and_zero_pa() {
         },
         &c,
     );
-    assert!(c.support.app_blocked_today);
-    assert!(
-        !choices
-            .iter()
-            .any(|(_, command)| *command == PhoneCommand::Apply(Action::BlockBetting))
+    assert_eq!(
+        choices.into_iter().map(|(_, command)| command).collect::<Vec<_>>(),
+        [
+            PhoneCommand::Apply(Action::CareConversation),
+            PhoneCommand::Apply(Action::FinancialPlanning),
+            PhoneCommand::Apply(Action::TherapySession),
+            PhoneCommand::Page(PhonePage::DailyCap),
+        ]
     );
+    click_command(&mut app, PhoneCommand::Page(PhonePage::DailyCap));
+    assert_eq!(app.world().resource::<Phone>().page, PhonePage::DailyCap);
+    assert_eq!(app.world().resource::<CampaignStore>().campaign(), Some(&c));
+    key(&mut app, KeyCode::Backspace);
+    assert_eq!(app.world().resource::<Phone>().page, PhonePage::Support);
 }
 
 #[test]
@@ -1759,7 +1899,7 @@ fn animation_progress_retains_phone_entities_and_scroll() {
 struct HeardSounds(Vec<Sound>);
 
 fn audio_app() -> App {
-    let mut campaign = Campaign::new(17);
+    let mut campaign = campaign_after_landlord(17);
     campaign
         .apply(Action::Bet {
             choice: BetChoice::Slots,

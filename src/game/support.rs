@@ -85,18 +85,19 @@ mod tests {
         c.apply(Action::CareConversation).unwrap();
         assert_eq!(
             (c.clock.pa_spent, c.attributes.stress, c.attributes.urge),
-            (1, 15, 4)
+            (1, 20, 24)
         );
         assert_eq!((c.attributes.hunger, c.attributes.boredom), (33, 33));
         assert_eq!((c.support.care_actions, c.support.planning_actions), (1, 0));
         c.apply(Action::FinancialPlanning).unwrap();
         assert_eq!(
             (c.clock.pa_spent, c.attributes.stress, c.attributes.urge),
-            (2, 9, 4)
+            (2, 14, 24)
         );
         c.apply(Action::CareConversation).unwrap();
-        assert_eq!((c.attributes.stress, c.attributes.urge), (0, 0));
+        assert_eq!((c.attributes.stress, c.attributes.urge), (4, 18));
         c.apply(Action::FinancialPlanning).unwrap();
+        assert_eq!(c.attributes.stress, 0);
         assert_eq!(
             (
                 c.clock.pa_spent,
@@ -189,7 +190,7 @@ mod tests {
         assert_eq!(c, before);
         for stage in [
             CampaignStage::DailyReport,
-            CampaignStage::Ended(Ending::DayTen),
+            CampaignStage::Ended(Ending::FinalDay),
         ] {
             let mut stopped = Campaign::new(5);
             stopped.stage = stage;

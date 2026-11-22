@@ -472,7 +472,7 @@ mod tests {
         assert!(!powered(Some(&campaign)));
         campaign.clock.day = 1;
         assert!(powered(Some(&campaign)));
-        campaign.attributes.stress = 80;
+        campaign.attributes.stress = 70;
         campaign.apply(Action::Sell(HouseholdItem::Tv)).unwrap();
         assert!(!powered(Some(&campaign)));
     }

@@ -15,16 +15,16 @@ pub(super) struct Reel(usize);
 #[derive(Component)]
 pub(super) struct FootballBall;
 
-fn selections(page: PhonePage) -> &'static [(BetChoice, &'static str)] {
+fn selections(page: PhonePage) -> &'static [(BetChoice, &'static str, &'static str)] {
     match page {
         PhonePage::Roulette => &[
-            (BetChoice::RouletteRed, "Red · 1.8×"),
-            (BetChoice::RouletteBlack, "Black · 1.8×"),
+            (BetChoice::RouletteRed, "Red · 1.8×", "Vermelho · 1,8×"),
+            (BetChoice::RouletteBlack, "Black · 1.8×", "Preto · 1,8×"),
         ],
         PhonePage::Football => &[
-            (BetChoice::FootballHome, "Home\n1.8×"),
-            (BetChoice::FootballDraw, "Draw\n3.6×"),
-            (BetChoice::FootballAway, "Away\n3.6×"),
+            (BetChoice::FootballHome, "Home\n1.8×", "Mandante\n1,8×"),
+            (BetChoice::FootballDraw, "Draw\n3.6×", "Empate\n3,6×"),
+            (BetChoice::FootballAway, "Away\n3.6×", "Visitante\n3,6×"),
         ],
         _ => &[],
     }
@@ -40,17 +40,17 @@ fn chosen(phone: &Phone) -> Option<BetChoice> {
     }
 }
 
-fn wager(phone: &Phone) -> Option<(String, PhoneCommand)> {
+fn wager(phone: &Phone, localization: &Localization) -> Option<(String, PhoneCommand)> {
     chosen(phone).map(|choice| {
         (
             format!(
                 "{} {}",
                 if choice == BetChoice::Slots {
-                    "Spin"
+                    localization.choose("Spin", "Girar")
                 } else {
-                    "Bet"
+                    localization.choose("Bet", "Apostar")
                 },
-                reais(phone.stake_cents)
+                localization.reais(phone.stake_cents)
             ),
             PhoneCommand::Apply(Action::Bet {
                 choice,
@@ -60,34 +60,34 @@ fn wager(phone: &Phone) -> Option<(String, PhoneCommand)> {
     })
 }
 
-pub(super) fn actions(phone: &Phone, c: &Campaign) -> Vec<(String, PhoneCommand)> {
+pub(super) fn actions(phone: &Phone, c: &Campaign, localization: &Localization) -> Vec<(String, PhoneCommand)> {
     let mut result = Vec::new();
     if !phone.bet_info_open {
         if phone.page == PhonePage::Betting {
             for (page, label) in [
-                (PhonePage::Slots, "Slots"),
-                (PhonePage::Roulette, "Roulette"),
-                (PhonePage::Football, "Football"),
+                (PhonePage::Slots, localization.choose("Slots", "Caça-níqueis")),
+                (PhonePage::Roulette, localization.choose("Roulette", "Roleta")),
+                (PhonePage::Football, localization.choose("Football", "Futebol")),
             ] {
                 result.push((label.into(), PhoneCommand::Page(page)));
             }
         } else if phone.page.is_game() {
             if phone.animation_left > 0.0 {
-                result.push(("Show result".into(), PhoneCommand::Skip));
+                result.push((localization.choose("Show result", "Ver resultado").into(), PhoneCommand::Skip));
             } else if phone.stake_entry.is_none() {
                 result.extend(
                     selections(phone.page)
                         .iter()
-                        .map(|&(choice, label)| (label.into(), PhoneCommand::SelectBet(choice))),
+                        .map(|&(choice, english, portuguese)| (localization.choose(english, portuguese).into(), PhoneCommand::SelectBet(choice))),
                 );
                 if !c.support.app_blocked_today {
-                    result.extend(wager(phone));
+                    result.extend(wager(phone, localization));
                 }
             }
             if phone.stake_entry.is_some() {
-                result.push(("Set stake".into(), PhoneCommand::ConfirmStake));
+                result.push((localization.choose("Set stake", "Definir valor da aposta").into(), PhoneCommand::ConfirmStake));
             } else {
-                result.push(("Stake".into(), PhoneCommand::EditStake));
+                result.push((localization.choose("Stake", "Valor da aposta").into(), PhoneCommand::EditStake));
                 for (label, delta) in [("−10", -1000), ("−1", -100), ("+1", 100), ("+10", 1000)]
                 {
                     result.push((label.into(), PhoneCommand::Stake(delta)));
@@ -96,30 +96,30 @@ pub(super) fn actions(phone: &Phone, c: &Campaign) -> Vec<(String, PhoneCommand)
         }
     }
     for (page, label) in [
-        (PhonePage::Betting, "Casino"),
-        (PhonePage::Football, "Sport"),
-        (PhonePage::BettingHistory, "My bets"),
+        (PhonePage::Betting, localization.choose("Casino", "Cassino")),
+        (PhonePage::Football, localization.choose("Sport", "Esporte")),
+        (PhonePage::BettingHistory, localization.choose("My bets", "Minhas apostas")),
     ] {
         result.push((label.into(), PhoneCommand::Page(page)));
     }
     result.push((
         if phone.bet_info_open {
-            "Close rules"
+            localization.choose("Close rules", "Fechar regras")
         } else {
-            "Rules"
+            localization.choose("Rules", "Regras")
         }
         .into(),
         PhoneCommand::ToggleBetInfo,
     ));
     result.push((
-        "Open Support".into(),
+        localization.choose("Open Support", "Abrir o Respiro").into(),
         PhoneCommand::Page(PhonePage::Support),
     ));
     result
 }
 
-fn signed(cents: i64) -> String {
-    format!("{}{}", if cents >= 0 { "+" } else { "" }, reais(cents))
+fn signed(cents: i64, localization: &Localization) -> String {
+    format!("{}{}", if cents >= 0 { "+" } else { "" }, localization.reais(cents))
 }
 
 fn action(
@@ -158,7 +158,7 @@ fn primary_key(phone: &Phone, command: PhoneCommand) -> Option<usize> {
         PhoneCommand::Skip if phone.animation_left > 0.0 => Some(1),
         PhoneCommand::SelectBet(choice) if phone.animation_left <= 0.0 => selections(phone.page)
             .iter()
-            .position(|(allowed, _)| *allowed == choice)
+            .position(|(allowed, _, _)| *allowed == choice)
             .map(|index| index + 1),
         PhoneCommand::Apply(Action::Bet { .. }) if phone.animation_left <= 0.0 => {
             Some(selections(phone.page).len() + 1)
@@ -202,6 +202,7 @@ pub(super) fn render(
     art: &ui::Art,
     phone: &Phone,
     c: &Campaign,
+    localization: &Localization,
 ) {
     parent
         .spawn(Node {
@@ -210,13 +211,13 @@ pub(super) fn render(
         })
         .with_children(|header| {
             text(header, &assets.font, "VIRA", 24.0, GREEN);
-            text(header, &assets.font, reais(c.balance_cents), 24.0, INK);
+            text(header, &assets.font, localization.reais(c.balance_cents), 24.0, INK);
         });
     parent.spawn(ui::row()).with_children(|tabs| {
         for (page, label) in [
-            (PhonePage::Betting, "Casino"),
-            (PhonePage::Football, "Sport"),
-            (PhonePage::BettingHistory, "My bets"),
+            (PhonePage::Betting, localization.choose("Casino", "Cassino")),
+            (PhonePage::Football, localization.choose("Sport", "Esporte")),
+            (PhonePage::BettingHistory, localization.choose("My bets", "Minhas apostas")),
         ] {
             let selected = phone.page == page
                 || (page == PhonePage::Betting
@@ -233,7 +234,7 @@ pub(super) fn render(
         }
     });
     if phone.bet_info_open {
-        rules(parent, art, phone);
+        rules(parent, art, phone, localization);
     } else {
         match phone.page {
             PhonePage::Betting => {
@@ -243,7 +244,7 @@ pub(super) fn render(
                     phone,
                     PhonePage::Slots,
                     ui::Tile::Slots,
-                    "Slots\nThree sevens · 3×",
+                    localization.choose("Slots\nThree sevens · 3×", "Caça-níqueis\nTrês setes · 3×"),
                     true,
                 );
                 tile(
@@ -252,7 +253,7 @@ pub(super) fn render(
                     phone,
                     PhonePage::Roulette,
                     ui::Tile::Roulette,
-                    "Roulette\nRed or black · 1.8×",
+                    localization.choose("Roulette\nRed or black · 1.8×", "Roleta\nVermelho ou preto · 1,8×"),
                     false,
                 );
                 tile(
@@ -261,34 +262,34 @@ pub(super) fn render(
                     phone,
                     PhonePage::Football,
                     ui::Tile::Football,
-                    "Football\nHome · Draw · Away",
+                    localization.choose("Football\nHome · Draw · Away", "Futebol\nMandante · Empate · Visitante"),
                     false,
                 );
                 if let Ok(day) = c.daily_finances(c.clock.day) {
                     text(
                         parent,
                         &art.regular,
-                        format!("Today {}", signed(day.payouts_cents - day.gross_bets_cents)),
+                        format_text!(localization, "Today {}", "Hoje {}", signed(day.payouts_cents - day.gross_bets_cents, localization)),
                         18.0,
                         MUTED,
                     );
                 }
             }
-            PhonePage::BettingHistory => history(parent, art, c),
-            _ => game(parent, assets, art, phone, c),
+            PhonePage::BettingHistory => history(parent, art, c, localization),
+            _ => game(parent, assets, art, phone, c, localization),
         }
     }
     parent.spawn(ui::row()).with_children(|footer| {
         for (label, command) in [
             (
                 if phone.bet_info_open {
-                    "Close rules"
+                    localization.choose("Close rules", "Fechar regras")
                 } else {
-                    "Rules"
+                    localization.choose("Rules", "Regras")
                 },
                 PhoneCommand::ToggleBetInfo,
             ),
-            ("Open Support", PhoneCommand::Page(PhonePage::Support)),
+            (localization.choose("Open Support", "Abrir o Respiro"), PhoneCommand::Page(PhonePage::Support)),
         ] {
             footer
                 .spawn(Node {
@@ -304,28 +305,28 @@ pub(super) fn render(
     });
 }
 
-fn rules(parent: &mut ChildSpawnerCommands, art: &ui::Art, phone: &Phone) {
+fn rules(parent: &mut ChildSpawnerCommands, art: &ui::Art, phone: &Phone, localization: &Localization) {
     let odds = match phone.page {
-        PhonePage::Roulette => "Red 50% · Black 50%\nWinning return 1.8×",
-        PhonePage::Slots => "Win 30% · Loss 70%\nWinning return 3×",
-        PhonePage::Football => "Home 50% · 1.8×\nDraw 25% · 3.6×\nAway 25% · 3.6×",
+        PhonePage::Roulette => localization.choose("Red 50% · Black 50%\nWinning return 1.8×", "Vermelho 50% · Preto 50%\nRetorno em caso de vitória: 1,8×"),
+        PhonePage::Slots => localization.choose("Win 30% · Loss 70%\nWinning return 3×", "Vitória 30% · Derrota 70%\nRetorno em caso de vitória: 3×"),
+        PhonePage::Football => localization.choose("Home 50% · 1.8×\nDraw 25% · 3.6×\nAway 25% · 3.6×", "Mandante 50% · 1,8×\nEmpate 25% · 3,6×\nVisitante 25% · 3,6×"),
         _ => {
-            "Roulette: 50% each · 1.8×\nSlots: win 30% · 3×\nFootball: home 50% · 1.8×\nDraw / away: 25% each · 3.6×"
+            localization.choose("Roulette: 50% each · 1.8×\nSlots: win 30% · 3×\nFootball: home 50% · 1.8×\nDraw / away: 25% each · 3.6×", "Roleta: 50% para cada cor · 1,8×\nCaça-níqueis: vitória 30% · 3×\nFutebol: mandante 50% · 1,8×\nEmpate ou visitante: 25% cada · 3,6×")
         }
     };
     text(parent, &art.regular, odds, 18.0, INK);
     text(
         parent,
         &art.regular,
-        "Returns include your stake.\nAverage return: 90%. No guaranteed win.\n\nWhole reais · minimum R$1 · no borrowing.\n1 PA buys 3 rounds across all games.\nLeaving this app forfeits unused rounds.\n\nFictional games. Campaign money only.",
+        localization.choose("Returns include your stake.\nAverage return: 90%. No guaranteed win.\n\nWhole reais · minimum R$1 · no borrowing.\n1 PA buys 3 rounds across all games.\nLeaving this app forfeits unused rounds.\n\nFictional games. Campaign money only.", "O retorno inclui o valor apostado.\nRetorno médio: 90%. Não há vitória garantida.\n\nReais inteiros · mínimo de R$1 · sem empréstimos.\n1 PA dá direito a 3 rodadas em qualquer jogo.\nAo sair do aplicativo, você perde as rodadas restantes.\n\nJogos fictícios. Apenas dinheiro da campanha."),
         18.0,
         MUTED,
     );
 }
 
-fn history(parent: &mut ChildSpawnerCommands, art: &ui::Art, c: &Campaign) {
+fn history(parent: &mut ChildSpawnerCommands, art: &ui::Art, c: &Campaign, localization: &Localization) {
     if c.betting.history.is_empty() {
-        text(parent, &art.regular, "No bets yet.", 18.0, MUTED);
+        text(parent, &art.regular, localization.choose("No bets yet.", "Nenhuma aposta registrada."), 18.0, MUTED);
     }
     for round in c.betting.history.iter().rev() {
         parent
@@ -341,11 +342,13 @@ fn history(parent: &mut ChildSpawnerCommands, art: &ui::Art, c: &Campaign) {
                 text(
                     row,
                     &art.regular,
-                    format!(
+                    format_text!(
+                        localization,
                         "{} · Day {} / {}",
-                        choice_label(round.choice),
+                        "{} · Dia {} / {}",
+                        choice_label(round.choice, localization),
                         round.clock.day,
-                        round.clock.period().label()
+                        localization.period(round.clock.period().label())
                     ),
                     18.0,
                     INK,
@@ -355,9 +358,9 @@ fn history(parent: &mut ChildSpawnerCommands, art: &ui::Art, c: &Campaign) {
                     &art.regular,
                     format!(
                         "{} → {}   {}",
-                        reais(round.stake_cents),
-                        reais(round.total_return_cents),
-                        signed(round.net_cents)
+                        localization.reais(round.stake_cents),
+                        localization.reais(round.total_return_cents),
+                        signed(round.net_cents, localization)
                     ),
                     18.0,
                     if round.net_cents > 0 { GREEN } else { MUTED },
@@ -366,26 +369,26 @@ fn history(parent: &mut ChildSpawnerCommands, art: &ui::Art, c: &Campaign) {
     }
 }
 
-fn choice_label(choice: BetChoice) -> &'static str {
+fn choice_label(choice: BetChoice, localization: &Localization) -> &'static str {
     match choice {
-        BetChoice::RouletteRed => "Roulette · Red",
-        BetChoice::RouletteBlack => "Roulette · Black",
-        BetChoice::Slots => "Slots",
-        BetChoice::FootballHome => "Football · Home",
-        BetChoice::FootballDraw => "Football · Draw",
-        BetChoice::FootballAway => "Football · Away",
+        BetChoice::RouletteRed => localization.choose("Roulette · Red", "Roleta · Vermelho"),
+        BetChoice::RouletteBlack => localization.choose("Roulette · Black", "Roleta · Preto"),
+        BetChoice::Slots => localization.choose("Slots", "Caça-níqueis"),
+        BetChoice::FootballHome => localization.choose("Football · Home", "Futebol · Mandante"),
+        BetChoice::FootballDraw => localization.choose("Football · Draw", "Futebol · Empate"),
+        BetChoice::FootballAway => localization.choose("Football · Away", "Futebol · Visitante"),
     }
 }
 
-fn result_label(outcome: BetOutcome) -> &'static str {
+fn result_label(outcome: BetOutcome, localization: &Localization) -> &'static str {
     match outcome {
-        BetOutcome::RouletteRed => "Red",
-        BetOutcome::RouletteBlack => "Black",
-        BetOutcome::SlotsWin => "Three sevens",
-        BetOutcome::SlotsLoss => "No match",
-        BetOutcome::FootballHome => "Home wins",
-        BetOutcome::FootballDraw => "Draw",
-        BetOutcome::FootballAway => "Away wins",
+        BetOutcome::RouletteRed => localization.choose("Red", "Vermelho"),
+        BetOutcome::RouletteBlack => localization.choose("Black", "Preto"),
+        BetOutcome::SlotsWin => localization.choose("Three sevens", "Três setes"),
+        BetOutcome::SlotsLoss => localization.choose("No match", "Sem combinação"),
+        BetOutcome::FootballHome => localization.choose("Home wins", "O mandante venceu"),
+        BetOutcome::FootballDraw => localization.choose("Draw", "Empate"),
+        BetOutcome::FootballAway => localization.choose("Away wins", "O visitante venceu"),
     }
 }
 
@@ -402,24 +405,27 @@ fn game(
     art: &ui::Art,
     phone: &Phone,
     c: &Campaign,
+    localization: &Localization,
 ) {
     match phone.page {
         PhonePage::Roulette => wheel(parent, assets, art, phone),
         PhonePage::Slots => reels(parent, art, phone),
-        PhonePage::Football => pitch(parent, art, phone),
+        PhonePage::Football => pitch(parent, art, phone, localization),
         _ => return,
     }
     if phone.animation_left > 0.0 {
-        action(parent, art, phone, "Show result", PhoneCommand::Skip, false);
+        action(parent, art, phone, localization.choose("Show result", "Ver resultado"), PhoneCommand::Skip, false);
     } else if let Some(round) = settled(phone) {
         text(
             parent,
             &art.regular,
-            format!(
+            format_text!(
+                localization,
                 "{} · Return {} · {}",
-                result_label(round.outcome),
-                reais(round.total_return_cents),
-                signed(round.net_cents)
+                "{} · Retorno {} · {}",
+                result_label(round.outcome, localization),
+                localization.reais(round.total_return_cents),
+                signed(round.net_cents, localization)
             ),
             18.0,
             if round.net_cents > 0 { GOLD } else { INK },
@@ -427,7 +433,8 @@ fn game(
     }
     if phone.animation_left <= 0.0 && phone.stake_entry.is_none() {
         parent.spawn(ui::row()).with_children(|choices| {
-            for &(choice, label) in selections(phone.page) {
+            for &(choice, english, portuguese) in selections(phone.page) {
+                let label = localization.choose(english, portuguese);
                 choices
                     .spawn(Node {
                         flex_grow: 1.0,
@@ -454,19 +461,19 @@ fn game(
             parent,
             art,
             phone,
-            "Set stake",
+            localization.choose("Set stake", "Definir valor da aposta"),
             PhoneCommand::ConfirmStake,
             true,
         );
         text(
             parent,
             &art.regular,
-            "Whole reais · Enter to set",
+            localization.choose("Whole reais · Enter to set", "Valores inteiros em reais · Enter para confirmar"),
             18.0,
             MUTED,
         );
     } else {
-        let amount = reais(phone.stake_cents);
+        let amount = localization.reais(phone.stake_cents);
         parent
             .spawn(Node {
                 column_gap: px(6),
@@ -505,10 +512,10 @@ fn game(
                 }
             });
         if phone.animation_left <= 0.0 && !c.support.app_blocked_today {
-            if let Some((label, command)) = wager(phone) {
+            if let Some((label, command)) = wager(phone, localization) {
                 action(parent, art, phone, &label, command, true);
             } else {
-                text(parent, &art.regular, "Choose a side", 18.0, MUTED);
+                text(parent, &art.regular, localization.choose("Choose a side", "Escolha um resultado"), 18.0, MUTED);
             }
         }
     }
@@ -535,21 +542,23 @@ fn game(
         text(
             rounds,
             &art.regular,
-            format!("Next: {} PA", u8::from(left == 0)),
+            format_text!(localization, "Next: {} PA", "Próxima rodada: {} PA", u8::from(left == 0)),
             18.0,
             MUTED,
         );
     });
     if c.support.app_blocked_today {
-        text(parent, &art.regular, "Blocked until morning", 18.0, GOLD);
+        text(parent, &art.regular, localization.choose("Blocked until morning", "Bloqueadas até amanhã"), 18.0, GOLD);
     } else if let Some(cap) = c.support.daily_cap_cents {
         if let Ok(day) = c.daily_finances(c.clock.day) {
             text(
                 parent,
                 &art.regular,
-                format!(
+                format_text!(
+                    localization,
                     "Daily cap left {}",
-                    reais((cap - day.gross_bets_cents).max(0))
+                    "Limite restante hoje {}",
+                    localization.reais((cap - day.gross_bets_cents).max(0))
                 ),
                 18.0,
                 MUTED,
@@ -677,15 +686,15 @@ fn reels(parent: &mut ChildSpawnerCommands, art: &ui::Art, phone: &Phone) {
         });
 }
 
-fn pitch(parent: &mut ChildSpawnerCommands, art: &ui::Art, phone: &Phone) {
+fn pitch(parent: &mut ChildSpawnerCommands, art: &ui::Art, phone: &Phone, localization: &Localization) {
     parent
         .spawn(Node {
             justify_content: JustifyContent::SpaceBetween,
             ..ui::row()
         })
         .with_children(|teams| {
-            text(teams, &art.regular, "HOME", 18.0, INK);
-            text(teams, &art.regular, "AWAY", 18.0, INK);
+            text(teams, &art.regular, localization.choose("HOME", "MANDANTE"), 18.0, INK);
+            text(teams, &art.regular, localization.choose("AWAY", "VISITANTE"), 18.0, INK);
         });
     parent
         .spawn((
@@ -853,31 +862,31 @@ mod tests {
             ..default()
         };
         assert!(
-            !actions(&phone, &c)
+            !actions(&phone, &c, &Localization::default())
                 .iter()
                 .any(|(_, command)| matches!(command, PhoneCommand::Apply(_)))
         );
         phone.selected_bet = Some(BetChoice::FootballHome);
-        assert!(wager(&phone).is_none());
+        assert!(wager(&phone, &Localization::default()).is_none());
         phone.selected_bet = Some(BetChoice::RouletteRed);
-        assert!(actions(&phone, &c).iter().any(|(_, command)| *command
+        assert!(actions(&phone, &c, &Localization::default()).iter().any(|(_, command)| *command
             == PhoneCommand::Apply(Action::Bet {
                 choice: BetChoice::RouletteRed,
                 stake_cents: 100,
             })));
         phone.animation_left = 1.6;
         assert!(
-            !actions(&phone, &c)
+            !actions(&phone, &c, &Localization::default())
                 .iter()
                 .any(|(_, command)| matches!(command, PhoneCommand::Apply(_)))
         );
         assert!(
-            actions(&phone, &c)
+            actions(&phone, &c, &Localization::default())
                 .iter()
                 .any(|(_, command)| *command == PhoneCommand::Skip)
         );
         phone.bet_info_open = true;
-        assert!(!actions(&phone, &c).iter().any(|(_, command)| matches!(
+        assert!(!actions(&phone, &c, &Localization::default()).iter().any(|(_, command)| matches!(
             command,
             PhoneCommand::Apply(_) | PhoneCommand::SelectBet(_) | PhoneCommand::Skip
         )));
@@ -908,7 +917,7 @@ mod tests {
             BetOutcome::FootballDraw,
             BetOutcome::FootballAway,
         ] {
-            assert!(!result_label(outcome).chars().any(|ch| ch.is_ascii_digit()));
+            assert!(!result_label(outcome, &Localization::default()).chars().any(|ch| ch.is_ascii_digit()));
         }
     }
 
@@ -946,12 +955,12 @@ mod tests {
         ] {
             let phone = Phone {
                 page,
-                selected_bet: selections(page).first().map(|(choice, _)| *choice),
+                selected_bet: selections(page).first().map(|(choice, _, _)| *choice),
                 ..default()
             };
-            for (index, (_, command)) in actions(&phone, &c).iter().enumerate() {
+            for (index, (_, command)) in actions(&phone, &c, &Localization::default()).iter().enumerate() {
                 if let Some(key) = primary_key(&phone, *command) {
-                    let first = actions(&phone, &c)
+                    let first = actions(&phone, &c, &Localization::default())
                         .iter()
                         .position(|(_, candidate)| candidate == command)
                         .unwrap();

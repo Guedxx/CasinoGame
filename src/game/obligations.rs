@@ -16,7 +16,7 @@ impl Campaign {
             .bills
             .iter()
             .position(|bill| bill.kind == kind)
-            .unwrap();
+            .ok_or("This bill is unavailable in the campaign.")?;
         if self.bills[index].paid_day.is_some() {
             return Err("This bill is already paid. See History for the payment.".into());
         }
@@ -29,6 +29,9 @@ impl Campaign {
     }
 
     pub(super) fn negotiate_rent(&mut self) -> Result<(), String> {
+        if !self.is_legacy() {
+            return Err("Rent is due by the end of the last day.".into());
+        }
         if self.support.rent_negotiated {
             return Err(
                 "The one-time rent extension is already in place: due end of day 10.".into(),
@@ -54,22 +57,25 @@ impl Campaign {
     }
 
     pub(super) fn call_contact(&mut self, contact: Contact) -> Result<(), String> {
-        if contact == Contact::Marina && self.commitment_due(contact) {
+        if self.uses_phone_for(contact) && self.commitment_due(contact) {
             self.complete_commitment(contact);
         }
         self.conversation()
     }
 
     pub(super) fn receive_visit(&mut self, contact: Contact) -> Result<(), String> {
-        if contact != Contact::Rafa || !self.commitment_due(contact) {
-            return Err("Rafa visits at the front door on days 4 and 9, in the afternoon. No scheduled visit is waiting now.".into());
+        if self.uses_phone_for(contact) || !self.commitment_due(contact) {
+            return Err(
+                "No scheduled visit is waiting at the front door. Check Chats for the schedule."
+                    .into(),
+            );
         }
         self.complete_commitment(contact);
         self.conversation()
     }
 
     fn complete_commitment(&mut self, contact: Contact) {
-        // Mark it before the last afternoon PA can close the commitment's period.
+        // Mark it before spending the last PA of the scheduled period.
         self.commitments
             .iter_mut()
             .find(|plan| plan.contact == contact && plan.day == self.clock.day)
@@ -105,13 +111,16 @@ impl Campaign {
             }
         }
         for plan in &self.commitments {
-            let passed = (plan.day, plan.period) < (self.clock.day, self.clock.period());
+            let passed = (plan.day, plan.period) < (self.clock.day, self.clock.period())
+                || (plan.day, plan.period) == (self.clock.day, self.clock.period())
+                    && self.clock.remaining_pa() == 0;
             let invalid = match plan.status {
                 CommitmentStatus::Scheduled => passed,
                 CommitmentStatus::Missed => !passed,
                 CommitmentStatus::Completed => {
                     plan.day > self.clock.day
-                        || plan.day == self.clock.day && self.clock.pa_spent < 3
+                        || plan.day == self.clock.day
+                            && self.clock.pa_spent < if plan.period == Period::Night { 5 } else { 3 }
                 }
             };
             if invalid {
@@ -148,17 +157,19 @@ mod tests {
     fn payments_are_exact_free_atomic_and_cannot_repeat_even_after_restore() {
         let mut c = Campaign::new(5);
         reject(&mut c, Action::PayBill(BillKind::Rent));
+        reject(&mut c, Action::PayBill(BillKind::Electricity));
+        c.record_money(LedgerKind::Work, 6_000).unwrap();
         for _ in 0..6 {
             c.apply(Action::Wait).unwrap();
         }
         let attributes = c.attributes.clone();
         let clock = c.clock;
         c.apply(Action::PayBill(BillKind::Electricity)).unwrap();
-        assert_eq!(c.balance_cents, 2_000);
+        assert_eq!(c.balance_cents, 3_000);
         assert_eq!(c.clock, clock);
         assert_eq!(c.attributes, attributes);
-        assert_eq!(c.ledger.len(), 1);
-        assert_eq!(c.ledger[0].amount_cents, -10_000);
+        assert_eq!(c.ledger.len(), 2);
+        assert_eq!(c.ledger[1].amount_cents, -9_000);
         assert_eq!(c.bills[0].paid_day, Some(1));
         let mut c = decode_campaign(&encode_campaign(&c).unwrap()).unwrap();
         reject(&mut c, Action::PayBill(BillKind::Electricity));
@@ -167,8 +178,30 @@ mod tests {
     }
 
     #[test]
-    fn electricity_warns_then_cuts_off_and_payment_restores_it() {
+    fn water_light_and_rent_have_distinct_costs_and_end_of_day_deadlines() {
         let mut c = Campaign::new(5);
+        let terms = [
+            (BillKind::Water, 6_000, 2),
+            (BillKind::Electricity, 9_000, 3),
+            (BillKind::Rent, 11_000, 4),
+        ];
+        for (kind, amount, due_day) in terms {
+            let bill = c.bills.iter().find(|bill| bill.kind == kind).unwrap();
+            assert_eq!((bill.amount_cents, bill.due_day), (amount, due_day));
+        }
+        for day in 1..=c.last_day() {
+            c.apply(Action::Sleep).unwrap();
+            let overdue = &c.reports.last().unwrap().overdue_bills;
+            for (kind, _, due_day) in terms {
+                assert_eq!(overdue.contains(&kind), day >= due_day);
+            }
+            c.apply(Action::AcknowledgeReport).unwrap();
+        }
+    }
+
+    #[test]
+    fn electricity_warns_then_cuts_off_and_payment_restores_it() {
+        let mut c = Campaign::legacy(5);
         day(&mut c, 5);
         assert!(c.has_power());
         c.apply(Action::Sleep).unwrap();
@@ -183,14 +216,36 @@ mod tests {
         reject(&mut c, Action::WatchTv);
         c.apply(Action::PayBill(BillKind::Electricity)).unwrap();
         assert!(c.has_power());
+        c.apply(Action::OrderFood).unwrap();
         c.apply(Action::WatchTv).unwrap();
     }
 
     #[test]
-    fn rent_warning_loss_and_one_time_extension_keep_report_stages() {
+    fn unpaid_electricity_cuts_power_on_day_four_and_paying_restores_it() {
         let mut c = Campaign::new(5);
+        c.apply(Action::Work).unwrap();
+        day(&mut c, 3);
+        assert!(c.has_power());
+
+        let mut paid_on_time = c.clone();
+        paid_on_time.apply(Action::PayBill(BillKind::Electricity)).unwrap();
+        next_day(&mut paid_on_time);
+        assert!(paid_on_time.has_power());
+
+        next_day(&mut c);
+        assert_eq!(c.clock.day, 4);
+        assert!(!c.has_power());
+        assert!(c.apply(Action::WatchTv).unwrap_err().contains("power is off"));
+        c.apply(Action::PayBill(BillKind::Electricity)).unwrap();
+        assert!(c.has_power());
+    }
+
+    #[test]
+    fn rent_warning_loss_and_one_time_extension_keep_report_stages() {
+        let mut c = Campaign::legacy(5);
         day(&mut c, 8);
         let mut extended = c.clone();
+        extended.attributes.stress = 60;
         extended.apply(Action::NegotiateRent).unwrap();
         assert_eq!(extended.clock.pa_spent, 1);
         assert_eq!(extended.bills[1].due_day, 10);
@@ -211,17 +266,17 @@ mod tests {
         day(&mut extended, 10);
         assert_eq!(extended.stage, CampaignStage::Playing);
         next_day(&mut extended);
-        assert_eq!(extended.stage, CampaignStage::Ended(Ending::DayTen));
+        assert_eq!(extended.stage, CampaignStage::Ended(Ending::FinalDay));
         assert_eq!(
             extended.reports[9].overdue_bills,
             [BillKind::Electricity, BillKind::Rent]
         );
 
-        let mut paid = Campaign::new(5);
+        let mut paid = Campaign::legacy(5);
         paid.record_money(LedgerKind::Work, 30_000).unwrap();
         paid.apply(Action::PayBill(BillKind::Rent)).unwrap();
         reject(&mut paid, Action::NegotiateRent);
-        let mut no_pa = Campaign::new(5);
+        let mut no_pa = Campaign::legacy(5);
         for _ in 0..6 {
             no_pa.apply(Action::Wait).unwrap();
         }
@@ -236,7 +291,7 @@ mod tests {
             (7, Contact::Marina, Action::Call(Contact::Marina)),
             (9, Contact::Rafa, Action::ReceiveVisit(Contact::Rafa)),
         ] {
-            let mut c = Campaign::new(5);
+            let mut c = Campaign::legacy(5);
             c.apply(Action::NegotiateRent).unwrap();
             day(&mut c, target);
             for _ in 0..3 {
@@ -267,8 +322,34 @@ mod tests {
     }
 
     #[test]
+    fn new_campaign_calls_can_be_kept_on_the_last_pa_or_missed_once() {
+        for (target, contact, final_pa) in [(2, Contact::Marina, 4), (4, Contact::Rafa, 6)] {
+            let mut c = Campaign::new(5);
+            day(&mut c, target);
+            for _ in 1..final_pa {
+                c.apply(Action::Wait).unwrap();
+            }
+            assert!(c.commitment_due(contact));
+            let relationships = c.attributes.relationships;
+            let mut answered = c.clone();
+            answered.apply(Action::Call(contact)).unwrap();
+            answered.apply(Action::Sleep).unwrap();
+            assert_eq!(answered.reports.last().unwrap().completed_commitments, [contact]);
+            assert_eq!(answered.attributes.relationships, relationships + 8);
+
+            c.apply(Action::Wait).unwrap();
+            assert!(!c.commitment_due(contact));
+            assert_eq!(c.attributes.relationships, relationships - 25);
+            c.apply(Action::Sleep).unwrap();
+            assert_eq!(c.reports.last().unwrap().missed_commitments, [contact]);
+            assert_eq!(c.attributes.relationships, relationships - 25);
+            assert_eq!(decode_campaign(&encode_campaign(&c).unwrap()).unwrap(), c);
+        }
+    }
+
+    #[test]
     fn wrong_contact_phone_visit_early_sleep_and_late_calls_never_rewrite_a_miss() {
-        let mut c = Campaign::new(5);
+        let mut c = Campaign::previous_economy(5);
         reject(&mut c, Action::ReceiveVisit(Contact::Rafa));
         day(&mut c, 4);
         c.apply(Action::Wait).unwrap();
@@ -310,7 +391,7 @@ mod tests {
         assert_eq!(c.attributes.stress, 0);
         assert!(c.betting.relief.is_none());
         assert_eq!(c.attributes.relationships, 73);
-        assert_eq!(c.attributes.urge, 10);
+        assert_eq!(c.attributes.urge, 30);
     }
 
     #[test]
@@ -320,12 +401,14 @@ mod tests {
         bad.bills[0].paid_day = Some(1);
         assert!(bad.validate().is_err());
         let mut paid = base.clone();
+        paid.record_money(LedgerKind::Work, 6_000).unwrap();
         paid.apply(Action::PayBill(BillKind::Electricity)).unwrap();
         for variant in 0..4 {
             let mut bad = paid.clone();
             match variant {
                 0 => bad.bills[0].paid_day = None,
                 1 => {
+                    bad.apply(Action::Work).unwrap();
                     bad.record_money(LedgerKind::BillPayment(BillKind::Electricity), -100)
                         .unwrap();
                 }
@@ -357,7 +440,7 @@ mod tests {
 
     #[test]
     fn ten_day_no_bet_budget_keeps_bills_meals_and_all_commitments() {
-        let mut c = Campaign::new(5);
+        let mut c = Campaign::legacy(5);
         let rng = c.rng.clone();
         for current_day in 1..=10 {
             if [1, 2, 3, 5, 6, 7, 8].contains(&current_day) {
@@ -390,7 +473,7 @@ mod tests {
             next_day(&mut c);
             c = decode_campaign(&encode_campaign(&c).unwrap()).unwrap();
         }
-        assert_eq!(c.stage, CampaignStage::Ended(Ending::DayTen));
+        assert_eq!(c.stage, CampaignStage::Ended(Ending::FinalDay));
         assert_eq!(c.balance_cents, 4_000);
         assert_eq!(c.household.food_portions, 2);
         assert_eq!(c.worked_days.len(), 7);

@@ -1,26 +1,29 @@
-//! The wall calendar reads the same clock and bills as the bank.
+//! The wall calendar reads the same clock and bills as the phone.
 use bevy::{
     camera::RenderTarget,
     core_pipeline::tonemapping::{DebandDither, Tonemapping},
     image::ImageSampler,
     light::NotShadowCaster,
+    mesh::{Indices, VertexAttributeValues},
     prelude::*,
     render::render_resource::TextureFormat,
-    text::FontSmoothing,
     ui::FocusPolicy,
     ui_render::UiAntiAlias,
 };
 
 use super::{
-    campaign::{Bill, BillKind, DAYS},
+    campaign::{Bill, BillKind},
     campaign_save::CampaignStore,
 };
+
+use crate::localization::{Localization, format_text};
 
 const INK: Color = Color::srgb(0.13, 0.11, 0.08);
 const RULE: Color = Color::srgb(0.30, 0.25, 0.18);
 const TODAY: Color = Color::srgb(0.13, 0.27, 0.31);
 const UNPAID: Color = Color::srgb(0.55, 0.15, 0.10);
 const PAID: Color = Color::srgb(0.17, 0.33, 0.17);
+const PAPER_DEPTH: f32 = 0.02;
 
 pub(super) struct CalendarPlugin;
 
@@ -96,7 +99,7 @@ fn setup(
         ))
         .with_children(|calendar| {
             calendar.spawn((
-                Mesh3d(meshes.add(Cuboid::new(0.80, 1.00, 0.02))),
+                Mesh3d(meshes.add(paper_backing())),
                 MeshMaterial3d(paper),
                 Pickable::IGNORE,
             ));
@@ -110,7 +113,7 @@ fn setup(
                     perceptual_roughness: 1.0,
                     ..default()
                 })),
-                Transform::from_xyz(0.0, 0.0, 0.0105),
+                Transform::from_xyz(0.0, 0.0, PAPER_DEPTH / 2.0),
                 NotShadowCaster,
                 Pickable::IGNORE,
             ));
@@ -131,15 +134,29 @@ fn setup(
     });
 }
 
-fn bill_status(bill: &Bill, today: u8) -> (&'static str, Color) {
+fn paper_backing() -> Mesh {
+    let mut mesh = Mesh::from(Cuboid::new(0.80, 1.00, PAPER_DEPTH));
+    let Some(VertexAttributeValues::Float32x3(normals)) = mesh.attribute(Mesh::ATTRIBUTE_NORMAL) else {
+        unreachable!("Cuboid mesh must have face normals");
+    };
+    // The textured page is the front face. A second face here can show through as the camera moves.
+    let sides_and_back = mesh.indices().unwrap().iter()
+        .filter(|&index| normals[index][2] != 1.0)
+        .map(|index| index as u32)
+        .collect();
+    mesh.insert_indices(Indices::U32(sides_and_back));
+    mesh
+}
+
+fn bill_status(bill: &Bill, today: u8, localization: &Localization) -> (&'static str, Color) {
     if bill.paid_day.is_some() {
-        ("Paid", PAID)
+        (localization.choose("Paid", "Pago"), PAID)
     } else if today > bill.due_day {
-        ("Overdue", UNPAID)
+        (localization.choose("Overdue", "Vencida"), UNPAID)
     } else if today == bill.due_day {
-        ("Due today", UNPAID)
+        (localization.choose("Due today", "Vence hoje"), UNPAID)
     } else {
-        ("Unpaid", UNPAID)
+        (localization.choose("Unpaid", "Em aberto"), UNPAID)
     }
 }
 
@@ -153,21 +170,20 @@ fn text(
     parent.spawn((
         CalendarText,
         Text::new(value),
-        TextFont::from_font_size(size)
-            .with_font(font.clone())
-            .with_font_smoothing(FontSmoothing::None),
+        TextFont::from_font_size(size).with_font(font.clone()),
         TextColor(color),
         Pickable::IGNORE,
     ));
 }
 
 fn present(
+    localization: Res<Localization>,
     mut commands: Commands,
     store: Res<CampaignStore>,
     assets: Res<CalendarAssets>,
     existing: Query<Entity, With<CalendarContent>>,
 ) {
-    if !store.is_changed() && !assets.is_added() {
+    if !store.is_changed() && !assets.is_added() && !localization.is_changed() {
         return;
     }
     for entity in &existing {
@@ -197,7 +213,7 @@ fn present(
             text(
                 content,
                 &assets.font,
-                format!("TODAY: DAY {}", campaign.clock.day),
+                format_text!(localization, "TODAY: DAY {}", "HOJE: DIA {}", campaign.clock.day),
                 42.0,
                 TODAY,
             );
@@ -208,13 +224,16 @@ fn present(
                     ..default()
                 })
                 .with_children(|grid| {
-                    for row in 0..2 {
+                    for first_day in (1..=campaign.last_day()).step_by(5) {
                         grid.spawn(Node {
                             column_gap: px(6),
+                            justify_content: JustifyContent::Center,
                             ..default()
                         })
                         .with_children(|cells| {
-                            for day in (row * 5 + 1)..=(row * 5 + 5).min(DAYS) {
+                            for day in
+                                first_day..=first_day.saturating_add(4).min(campaign.last_day())
+                            {
                                 let today = day == campaign.clock.day;
                                 cells
                                     .spawn((
@@ -236,7 +255,7 @@ fn present(
                                         text(
                                             cell,
                                             &assets.font,
-                                            if today { "TODAY" } else { "" },
+                                            if today { localization.choose("TODAY", "HOJE") } else { "" },
                                             18.0,
                                             TODAY,
                                         );
@@ -244,14 +263,21 @@ fn present(
                                             campaign.bills.iter().filter(|b| b.due_day == day)
                                         {
                                             let label = match bill.kind {
-                                                BillKind::Electricity => "POWER",
-                                                BillKind::Rent => "RENT",
+                                                BillKind::Electricity => localization.choose("POWER", "LUZ"),
+                                                BillKind::Rent => localization.choose("RENT", "ALUG."),
+                                                BillKind::Water => localization.choose("WATER", "ÁGUA"),
                                             };
-                                            let (status, color) =
-                                                bill_status(bill, campaign.clock.day);
-                                            text(cell, &assets.font, label, 18.0, color);
-                                            if status == "Paid" {
-                                                text(cell, &assets.font, "PAID", 18.0, color);
+                                            let (_, color) = bill_status(bill, campaign.clock.day, &localization);
+                                            if bill.paid_day.is_some() {
+                                                text(
+                                                    cell,
+                                                    &assets.font,
+                                                    format_text!(localization, "{label} PAID", "{label}\nPAGO"),
+                                                    13.0,
+                                                    color,
+                                                );
+                                            } else {
+                                                text(cell, &assets.font, label, 18.0, color);
                                             }
                                         }
                                     });
@@ -281,11 +307,11 @@ fn present(
                                 text(
                                     row,
                                     &assets.font,
-                                    format!("{}: Day {}", bill.kind.label(), bill.due_day),
+                                    format!("{}: {} {}", localization.bill(bill.kind), localization.text("day"), bill.due_day),
                                     34.0,
                                     INK,
                                 );
-                                let (status, color) = bill_status(bill, campaign.clock.day);
+                                let (status, color) = bill_status(bill, campaign.clock.day, &localization);
                                 text(row, &assets.font, status, 24.0, color);
                             });
                     }
@@ -303,14 +329,25 @@ mod tests {
     };
 
     #[test]
+    fn calendar_backing_leaves_the_textured_page_as_the_only_front_face() {
+        let backing = paper_backing();
+        let Some(VertexAttributeValues::Float32x3(normals)) = backing.attribute(Mesh::ATTRIBUTE_NORMAL) else {
+            panic!("Calendar backing is missing face normals");
+        };
+        let indices = backing.indices().unwrap();
+        assert_eq!(indices.len(), 30);
+        assert!(indices.iter().all(|index| normals[index][2] != 1.0));
+    }
+
+    #[test]
     fn bill_status_uses_end_of_day_deadline_and_payment_takes_priority() {
         let mut bill = Campaign::new(1).bills.remove(0);
-        assert_eq!(bill_status(&bill, 3).0, "Unpaid");
-        assert_eq!(bill_status(&bill, 4).0, "Due today");
-        assert_eq!(bill_status(&bill, 5).0, "Overdue");
+        assert_eq!(bill_status(&bill, 2, &Localization::ENGLISH).0, "Unpaid");
+        assert_eq!(bill_status(&bill, 3, &Localization::ENGLISH).0, "Due today");
+        assert_eq!(bill_status(&bill, 4, &Localization::ENGLISH).0, "Overdue");
         bill.paid_day = Some(2);
         for day in [2, 4, 5, 10] {
-            assert_eq!(bill_status(&bill, day), ("Paid", PAID));
+            assert_eq!(bill_status(&bill, day, &Localization::ENGLISH), ("Paid", PAID));
         }
     }
 
@@ -366,9 +403,10 @@ mod tests {
             root,
             font: Handle::default(),
         })
+        .insert_resource(Localization::ENGLISH)
         .add_systems(Update, present);
         show(&mut app, None);
-        let mut campaign = Campaign::new(9);
+        let mut campaign = Campaign::legacy(9);
         show(&mut app, Some(campaign.clone()));
         assert!(copy(&mut app).contains("TODAY: DAY 1"));
         assert!(copy(&mut app).contains("Electricity: Day 4"));
@@ -403,10 +441,29 @@ mod tests {
         assert!(copy(&mut app).contains("Overdue"));
         assert!(day_copy(&mut app, 5).contains("TODAY"));
 
-        show(&mut app, Some(Campaign::new(10)));
-        assert!(copy(&mut app).contains("Rent: Day 7"));
+        let new_campaign = Campaign::new(10);
+        let last_day = new_campaign.last_day();
+        show(&mut app, Some(new_campaign));
+        assert!(copy(&mut app).contains(&format!("Rent: Day {last_day}")));
+        assert!(copy(&mut app).contains("Electricity: Day 3"));
+        assert!(copy(&mut app).contains("Water: Day 2"));
+        assert!(day_copy(&mut app, 2).contains("WATER"));
+        assert!(day_copy(&mut app, 3).contains("POWER"));
+        assert!(day_copy(&mut app, 4).contains("RENT"));
+        assert_eq!(
+            app.world_mut()
+                .query::<&Name>()
+                .iter(app.world())
+                .filter(|name| name.as_str().starts_with("Calendar day "))
+                .count(),
+            usize::from(last_day)
+        );
         assert!(!copy(&mut app).contains("PAID"));
         assert!(day_copy(&mut app, 1).contains("TODAY"));
+        app.world_mut().resource_mut::<Localization>().language = crate::localization::Language::Portuguese;
+        app.update();
+        assert!(copy(&mut app).contains("Aluguel: Dia 4"));
+        assert!(day_copy(&mut app, 1).contains("HOJE"));
         show(&mut app, None);
         assert!(copy(&mut app).is_empty());
     }

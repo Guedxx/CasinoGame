@@ -27,9 +27,9 @@ use super::{
     campaign_save::{CampaignReplaced, CampaignStore},
     cursor::{CursorInput, GameCursor},
     player::{Player, PlayerInput},
-    routine::{GameplayOverlay, OverlayInput, OverlayKind, reais},
+    routine::{GameplayOverlay, OverlayInput, OverlayKind},
 };
-use crate::state::GameState;
+use crate::{localization::{Localization, format_text}, state::GameState};
 
 const SCREEN_SIZE: Vec2 = Vec2::new(420.0, 735.0);
 const SCREEN_METERS: Vec2 = Vec2::new(0.300, 0.525);
@@ -57,9 +57,7 @@ pub(crate) enum PhonePage {
     Roulette,
     Slots,
     Football,
-    Bank,
     History,
-    Reports,
     Household,
     SaleOffers,
     ConfirmSale(HouseholdItem),
@@ -67,7 +65,6 @@ pub(crate) enum PhonePage {
     ContactThread(Contact),
     Support,
     DailyCap,
-    Food,
 }
 impl PhonePage {
     pub(crate) fn is_betting(self) -> bool {
@@ -80,13 +77,11 @@ impl PhonePage {
         matches!(self, Self::Roulette | Self::Slots | Self::Football)
     }
     fn back(self) -> Self {
-        if self == Self::Reports {
-            Self::History
-        } else if self == Self::SaleOffers {
+        if self == Self::SaleOffers {
             Self::Household
         } else if matches!(self, Self::ConfirmSale(_)) {
             Self::SaleOffers
-        } else if self == Self::DailyCap {
+        } else if matches!(self, Self::DailyCap | Self::Household) {
             Self::Support
         } else if matches!(self, Self::ContactThread(_)) {
             Self::Contacts
@@ -390,6 +385,10 @@ fn input(
     mut exits: MessageWriter<PhoneAppClosed>,
 ) {
     let Ok(window) = windows.single() else { return };
+    if overlay.in_dialogue() {
+        phone.pending = None;
+        return;
+    }
     if phone.opened && overlay.active != Some(OverlayKind::Phone) {
         leave_app(&mut phone, &mut exits);
         phone.opened = false;
@@ -408,6 +407,7 @@ fn input(
         return;
     }
     if keys.just_pressed(KeyCode::Tab) && (overlay.active.is_none() || phone.opened) {
+        overlay.phone_hint = false;
         if phone.opened {
             leave_app(&mut phone, &mut exits);
             phone.opened = false;
@@ -571,6 +571,7 @@ fn queue_press(press: On<Pointer<Press>>, buttons: Query<&PhoneButton>, mut phon
 
 fn dispatch(
     mut commands: Commands,
+    localization: Res<Localization>,
     keys: Res<ButtonInput<KeyCode>>,
     mut keyboard: MessageReader<KeyboardInput>,
     mouse: Res<ButtonInput<MouseButton>>,
@@ -595,7 +596,7 @@ fn dispatch(
         keyboard.clear();
         return;
     };
-    let choices = page_actions(&phone, campaign);
+    let choices = page_actions(&phone, campaign, &localization);
     let editing_cap = phone.cap_entry.is_some();
     if phone.stake_entry.is_some() || editing_cap {
         let entry = if editing_cap {
@@ -619,9 +620,9 @@ fn dispatch(
             });
         if confirm {
             if editing_cap {
-                confirm_cap(&mut phone);
+                confirm_cap(&mut phone, &localization);
             } else {
-                confirm_stake(&mut phone, campaign.balance_cents);
+                confirm_stake(&mut phone, campaign.balance_cents, &localization);
             }
             commands.trigger(
                 if phone.stake_entry.is_some() || phone.cap_entry.is_some() {
@@ -809,22 +810,18 @@ fn dispatch(
             }
             phone.feedback = match result {
                 Ok(_) => match action {
-                    Action::Groceries => "+3 portions",
-                    Action::Cook | Action::OrderFood => "Meal finished",
-                    Action::PayBill(BillKind::Electricity) => "Electricity paid. Power is on.",
-                    Action::PayBill(BillKind::Rent) => "Rent paid",
-                    Action::NegotiateRent => "Rent extended to end of day 10. R$420 is still owed.",
-                    Action::Call(Contact::Marina) => "Call with Marina finished",
-                    Action::Call(Contact::Rafa) => "Call with Rafa finished",
-                    Action::CareConversation => "Care step recorded",
-                    Action::FinancialPlanning => "Plan recorded",
-                    Action::SetDailyCap(_) => "Limit updated",
-                    Action::BlockBetting => "Betting blocked until morning",
-                    Action::Sell(_) => "Sold",
-                    _ => "Done.",
+                    Action::Call(Contact::Marina) => localization.choose("Call with Marina finished", "Ligação com a Marina encerrada"),
+                    Action::Call(Contact::Rafa) => localization.choose("Call with Rafa finished", "Ligação com o Rafa encerrada"),
+                    Action::CareConversation => localization.choose("Care step recorded", "Conversa de apoio concluída"),
+                    Action::TherapySession => localization.choose("Therapy session completed", "Sessão de terapia concluída"),
+                    Action::FinancialPlanning => localization.choose("Plan recorded", "Planejamento registrado"),
+                    Action::SetDailyCap(_) => localization.choose("Limit updated", "Limite atualizado"),
+                    Action::BlockBetting => localization.choose("Betting blocked until morning", "Apostas bloqueadas até amanhã de manhã"),
+                    Action::Sell(_) => localization.choose("Sold", "Venda concluída"),
+                    _ => localization.choose("Done.", "Concluído."),
                 }
                 .into(),
-                Err(error) => error,
+                Err(error) => localization.action_error(&error),
             };
         }
     }
@@ -863,7 +860,7 @@ fn edit_amount<'a>(
     false
 }
 
-fn confirm_stake(phone: &mut Phone, balance: i64) {
+fn confirm_stake(phone: &mut Phone, balance: i64, localization: &Localization) {
     let cents = phone
         .stake_entry
         .as_ref()
@@ -874,11 +871,11 @@ fn confirm_stake(phone: &mut Phone, balance: i64) {
         phone.stake_entry = None;
         phone.feedback.clear();
     } else {
-        phone.feedback = "Enter whole reais from R$1 to your balance.".into();
+        phone.feedback = localization.choose("Enter whole reais from R$1 to your balance.", "Digite um valor inteiro em reais, entre R$1 e seu saldo.").into();
     }
 }
 
-fn confirm_cap(phone: &mut Phone) {
+fn confirm_cap(phone: &mut Phone, localization: &Localization) {
     let cents = phone
         .cap_entry
         .as_ref()
@@ -887,9 +884,9 @@ fn confirm_cap(phone: &mut Phone) {
     if let Some(cents) = cents.filter(|value| *value >= 0) {
         phone.cap_cents = cents;
         phone.cap_entry = None;
-        phone.feedback = "Amount selected. Apply to save.".into();
+        phone.feedback = localization.choose("Amount selected. Apply to save.", "Valor selecionado. Aplique o limite para salvar.").into();
     } else {
-        phone.feedback = "Enter a whole-real cap of R$0 or more.".into();
+        phone.feedback = localization.choose("Enter a whole-real cap of R$0 or more.", "Digite um limite inteiro em reais, a partir de R$0.").into();
     }
 }
 
@@ -988,38 +985,70 @@ impl Phone {
     }
 }
 
-fn page_actions(phone: &Phone, c: &Campaign) -> Vec<(String, PhoneCommand)> {
+fn page_actions(phone: &Phone, c: &Campaign, localization: &Localization) -> Vec<(String, PhoneCommand)> {
     match phone.page {
         PhonePage::Home => launcher::APPS
             .iter()
-            .map(|&(page, label)| (label.into(), PhoneCommand::Page(page)))
+            .map(|&(page, english, portuguese, _)| (localization.choose(english, portuguese).into(), PhoneCommand::Page(page)))
             .collect(),
-        page if page.is_betting() => betting::actions(phone, c),
-        PhonePage::Bank | PhonePage::History | PhonePage::Reports => finance::actions(phone, c),
-        PhonePage::Household
-        | PhonePage::SaleOffers
-        | PhonePage::ConfirmSale(_)
-        | PhonePage::Food => life::actions(phone, c),
-        _ => care::actions(phone, c),
+        page if page.is_betting() => betting::actions(phone, c, localization),
+        PhonePage::Household | PhonePage::SaleOffers | PhonePage::ConfirmSale(_) => {
+            life::actions(phone, c, localization)
+        }
+        _ => care::actions(phone, c, localization),
     }
 }
 
-fn home_reminder(c: &Campaign) -> String {
+fn home_reminder(c: &Campaign, localization: &Localization) -> String {
+    let mut lines = Vec::new();
+    let scheduled = c
+        .commitments
+        .iter()
+        .filter(|plan| plan.status == CommitmentStatus::Scheduled);
+    for plan in scheduled.clone().filter(|plan| plan.day == c.clock.day) {
+        let activity = if c.uses_phone_for(plan.contact) { localization.choose("calls", "liga") } else { localization.choose("visits", "vem visitar") };
+        lines.push(format!(
+            "{} {activity} · {}",
+            plan.contact.label(),
+            localization.period(plan.period.label()).to_lowercase()
+        ));
+    }
+    let unpaid = c.bills.iter().filter(|bill| bill.paid_day.is_none());
+    let due_today = unpaid.clone().filter(|bill| bill.due_day == c.clock.day).count();
+    if due_today > 0 {
+        lines.push(if due_today == 1 {
+            localization.choose("1 bill due today", "1 conta vence hoje").into()
+        } else {
+            format_text!(localization, "{due_today} bills due today", "{due_today} contas vencem hoje")
+        });
+    }
+    let overdue = unpaid.filter(|bill| bill.due_day < c.clock.day).count();
+    if overdue > 0 {
+        lines.push(if overdue == 1 {
+            localization.choose("1 overdue bill", "1 conta vencida").into()
+        } else {
+            format_text!(localization, "{overdue} overdue bills", "{overdue} contas vencidas")
+        });
+    }
     if !c.has_power() {
-        return "Power off: see Bank".into();
+        lines.push(localization.choose("Power off · electricity bill on the table", "Energia cortada · conta de luz em cima da mesa").into());
     }
-    if c.bills
-        .iter()
-        .any(|bill| bill.paid_day.is_none() && c.clock.day > bill.due_day)
-    {
-        return "Overdue bill: see Bank".into();
+    if !lines.is_empty() {
+        return lines.join("\n");
     }
-    c.commitments
-        .iter()
-        .filter(|plan| plan.status == CommitmentStatus::Scheduled)
+    scheduled
         .min_by_key(|plan| (plan.day, plan.period))
-        .map(|plan| format!("{}: day {} afternoon", plan.contact.label(), plan.day))
-        .unwrap_or_else(|| "Review Contacts / messages".into())
+        .map(|plan| {
+            format_text!(
+                localization,
+                "{}: day {} {}",
+                "{}: dia {} · {}",
+                plan.contact.label(),
+                plan.day,
+                localization.period(plan.period.label()).to_lowercase()
+            )
+        })
+        .unwrap_or_else(|| localization.choose("Check Chats for messages", "Confira as mensagens em Conversas").into())
 }
 
 fn text(
@@ -1047,6 +1076,7 @@ fn present(
     assets: Res<PhoneAssets>,
     skin: Res<launcher::Skin>,
     art: Res<ui::Art>,
+    localization: Res<Localization>,
     existing: Query<Entity, With<PhoneUi>>,
     scrolling: Query<&ScrollPosition, With<PhoneScroll>>,
     mut previous: Local<String>,
@@ -1067,7 +1097,7 @@ fn present(
         phone.selected_bet,
         phone.bet_info_open,
     );
-    if *previous == signature && !store.is_changed() && !existing.is_empty() {
+    if *previous == signature && !store.is_changed() && !localization.is_changed() && !existing.is_empty() {
         return;
     }
     *previous = signature;
@@ -1135,12 +1165,12 @@ fn present(
                         ))
                         .with_children(|notice| {
                             if !store.notice.is_empty() {
-                                text(notice, &art.regular, &store.notice, 18., Color::BLACK);
+                                text(notice, &art.regular, localization.campaign_notice(&store.notice), 18., Color::BLACK);
                                 ui::action(
                                     notice,
                                     &assets.font,
                                     phone.page,
-                                    "Retry saving",
+                                    localization.choose("Retry saving", "Tentar salvar novamente"),
                                     PhoneCommand::RetrySave,
                                     Color::srgb(0.30, 0.20, 0.08),
                                     Color::WHITE,
@@ -1169,21 +1199,18 @@ fn present(
                         body.insert((PhoneScroll, ScrollPosition(offset)));
                     }
                     body.with_children(|body| match phone.page {
-                        PhonePage::Home => launcher::home(body, &skin, c),
+                        PhonePage::Home => launcher::home(body, &skin, c, &localization),
                         page if page.is_betting() => {
-                            betting::render(body, &assets, &art, &phone, c)
+                            betting::render(body, &assets, &art, &phone, c, &localization)
                         }
-                        PhonePage::Bank | PhonePage::History | PhonePage::Reports => {
-                            finance::render(body, &assets, &art, &phone, c)
+                        PhonePage::History => finance::render(body, &assets, &art, c, &localization),
+                        PhonePage::Household | PhonePage::SaleOffers | PhonePage::ConfirmSale(_) => {
+                            life::render(body, &assets, &art, &phone, c, &localization)
                         }
-                        PhonePage::Household
-                        | PhonePage::SaleOffers
-                        | PhonePage::ConfirmSale(_)
-                        | PhonePage::Food => life::render(body, &assets, &art, &phone, c),
-                        _ => care::render(body, &assets, &art, &phone, c),
+                        _ => care::render(body, &assets, &art, &phone, c, &localization),
                     });
                 });
-            launcher::navigation(shell, &skin, phone.page);
+            launcher::navigation(shell, &skin, phone.page, &localization);
         });
 }
 
@@ -1229,13 +1256,18 @@ fn scroll(
 fn animate(
     time: Res<Time<Real>>,
     state: Res<State<GameState>>,
+    overlay: Res<GameplayOverlay>,
     mut phone: ResMut<Phone>,
     mut roots: Query<(&mut Transform, &mut Visibility), With<PhoneRoot>>,
     mut cameras: Query<&mut Camera, Or<(With<PhoneCamera>, With<TextureCamera>)>>,
     windows: Query<&Window, With<PrimaryWindow>>,
 ) {
     let playing = *state.get() == GameState::Playing;
-    let target = if phone.opened { 1.0 } else { 0.0 };
+    let target = if phone.opened && !overlay.in_dialogue() {
+        1.0
+    } else {
+        0.0
+    };
     let step = time.delta_secs() / 0.22;
     phone.raise += (target - phone.raise).clamp(-step, step);
     let visible = playing && phone.raise > 0.0;
