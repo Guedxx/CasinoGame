@@ -13,7 +13,7 @@ use bevy::{
 use super::title_render::TitleRender;
 use crate::{
     graphics::{ApplyGraphics, GraphicsOptions, GraphicsSettings, Quality},
-    localization::{Language, Localization},
+    localization::{Language, LanguageSelected, Localization},
     state::GameState,
 };
 
@@ -888,7 +888,9 @@ fn actions(
             })
     };
     let Some(action) = action else { return };
-    if confirmation.0 && !matches!(action, Action::ConfirmNewGame | Action::CancelNewGame) {
+    if confirmation.0
+        && !matches!(action, Action::ConfirmNewGame | Action::CancelNewGame | Action::Language(_))
+    {
         return;
     }
     commands.trigger(crate::game::audio::Sound::Click);
@@ -945,13 +947,7 @@ fn actions(
         Action::VertexJitter(enabled) => options.current.vertex_jitter = enabled,
         Action::Language(language) => {
             localization.language = language;
-            #[cfg(target_arch = "wasm32")]
-            if let Some(root) = web_sys::window()
-                .and_then(|window| window.document())
-                .and_then(|document| document.document_element())
-            {
-                let _ = root.set_attribute("lang", localization.choose("en", "pt-BR"));
-            }
+            commands.trigger(LanguageSelected);
         }
     }
 }
@@ -1177,6 +1173,28 @@ mod tests {
             .resource_mut::<InputFocus>()
             .set(button, FocusCause::Navigated);
         key(app, KeyCode::Enter);
+    }
+
+    #[test]
+    fn language_changes_while_new_game_confirmation_is_open() {
+        let mut app = app(GameState::Title);
+        let campaign = app
+            .world()
+            .resource::<crate::game::campaign_save::CampaignStore>()
+            .campaign()
+            .cloned();
+        select(&mut app, Action::NewGame);
+        assert!(app.world().resource::<NewGameConfirmation>().0);
+
+        select(&mut app, Action::Language(Language::English));
+
+        assert_eq!(app.world().resource::<Localization>().language, Language::English);
+        assert!(app.world().resource::<NewGameConfirmation>().0);
+        assert_eq!(*app.world().resource::<State<GameState>>().get(), GameState::Title);
+        assert_eq!(
+            app.world().resource::<crate::game::campaign_save::CampaignStore>().campaign(),
+            campaign.as_ref()
+        );
     }
 
     #[test]

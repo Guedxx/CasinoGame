@@ -35,6 +35,14 @@
 </script>
 <script type="module">
   const status = document.querySelector('#status');
+  try {
+    if (JSON.parse(localStorage.getItem('casino-game.language.v1')) === 'en') {
+      document.documentElement.lang = 'en';
+      status.textContent = 'Loading Saldo Zero…';
+    }
+  } catch (error) {
+    console.warn('Could not read the saved language.', error);
+  }
   function failed(error, message = 'O jogo encontrou um erro. Recarregue a página para tentar novamente.') {
     status.hidden = false;
     status.textContent = document.documentElement.lang === 'pt-BR'

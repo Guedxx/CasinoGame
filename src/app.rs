@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{game::GamePlugin, screens::ScreensPlugin, state::GameState};
+use crate::{game::GamePlugin, localization::Localization, screens::ScreensPlugin, state::GameState};
 
 pub fn run() {
     App::new()
@@ -22,7 +22,8 @@ pub fn run() {
                 }),
         )
         .init_state::<GameState>()
-        .init_resource::<crate::localization::Localization>()
+        .insert_resource(Localization::load())
+        .add_observer(Localization::save_selection)
         .add_plugins((crate::graphics::GraphicsPlugin, GamePlugin, ScreensPlugin))
         .run();
 }

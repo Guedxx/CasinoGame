@@ -112,7 +112,7 @@ pub(super) fn actions(phone: &Phone, c: &Campaign, localization: &Localization) 
         PhoneCommand::ToggleBetInfo,
     ));
     result.push((
-        localization.choose("Open Support", "Abrir o Respiro").into(),
+        localization.choose("Open Support", "Abrir Apoio").into(),
         PhoneCommand::Page(PhonePage::Support),
     ));
     result
@@ -289,7 +289,7 @@ pub(super) fn render(
                 },
                 PhoneCommand::ToggleBetInfo,
             ),
-            (localization.choose("Open Support", "Abrir o Respiro"), PhoneCommand::Page(PhonePage::Support)),
+            (localization.choose("Open Support", "Abrir Apoio"), PhoneCommand::Page(PhonePage::Support)),
         ] {
             footer
                 .spawn(Node {
